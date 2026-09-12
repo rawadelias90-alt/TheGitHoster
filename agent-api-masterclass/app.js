@@ -1906,3 +1906,146 @@ function initializeEducationalLab(){
   hydrateBuilder();renderLearnDetails();renderFunctionArguments();renderOutputFields();renderToolDesignerVisibility();renderStructuredDesignerVisibility();renderFunctionSchema();renderOutputSchemaPreview();renderConfigurationViews();renderBadGoodTraining();renderCustomOrchestration();renderGuidedMode();renderLearningHome();wireLabControls();translateLab();generateCode();refreshMastery();lucide.createIcons();
 }
 document.addEventListener('DOMContentLoaded',initializeEducationalLab);
+
+/* =========================================================
+   Premium academy shell — additive UX layer over core lab
+   ========================================================= */
+var premiumText = {
+  en: {
+    hero_badge:'CURRENT AGENTS SDK CONCEPTS', hero_kicker:'SELF-PACED AI ACADEMY', hero_title:'Build agents by seeing what happens.', hero_desc:'Learn the concepts, configure a real Blueprint, run a safe local simulation, inspect the trace, and prove each skill.', hero_continue:'Continue learning', hero_build:'Open Agent Builder', hero_competencies:'competencies', hero_local:'Local', hero_simulation:'safe simulation', hero_bilingual:'bilingual lab', hero_mastery:'mastery',
+    path_eyebrow:'YOUR LEARNING PATH', path_title:'From first concept to confident agent builder', stage_learn:'Learn', stage_learn_desc:'Core concepts', stage_build:'Build', stage_build_desc:'Blueprint', stage_run:'Run', stage_run_desc:'Simulation', stage_inspect:'Inspect', stage_inspect_desc:'Trace & debug', stage_master:'Master', stage_master_desc:'Prove skills',
+    training_rep:'TRAINING REPRESENTATION', architecture_eyebrow:'LIVE BLUEPRINT MAP', architecture_title:'See the agent you are building', architecture_desc:'Every enabled capability appears here so you can connect configuration choices to architecture.',
+    simulation_label:'SIMULATION', run_summary:'Run summary', run_summary_desc:'Updates as the execution path changes.', summary_status:'Status', summary_tools:'Tools used', summary_approvals:'Approvals', summary_handoffs:'Handoffs', summary_duration:'Simulated duration',
+    debug_eyebrow:'DEBUGGING WORKFLOW', debug_title:'Find the span that explains the outcome', debug_step1:'Locate the first failed, blocked, or unexpected span.', debug_step2:'Inspect its input, output, parent, and related Builder setting.', debug_step3:'Change one setting, rerun, and compare the new trace.', debug_idle:'No run selected yet.',
+    concept_eyebrow:'AGENTS SDK CONCEPT MAP', concept_title:'Read the architecture at a glance', concept_desc:'These visual roles mirror the concepts used throughout the lab. The diagram itself remains a training representation.', concept_agent:'Agent', concept_agent_desc:'instructions + model', concept_tool:'Tool', concept_tool_desc:'capability', concept_mcp_desc:'server tools', concept_handoff:'Handoff', concept_handoff_desc:'transfer control', concept_guardrail:'Guardrail', concept_guardrail_desc:'validate', concept_approval:'Approval', concept_approval_desc:'human decision', concept_output:'Output', concept_output_desc:'final result',
+    verified_sdk:'VERIFIED SDK EXAMPLE', code_eyebrow:'VISUAL → CONFIG → CODE', code_intro_title:'Read the same agent in three forms', code_intro_desc:'Builder changes stay synchronized with the generated SDK example so you can connect a visual choice to the code it adds.', code_agent_label:'Current agent', code_tools_label:'Tools', code_output_label:'Output',
+    mastery_path_eyebrow:'SKILL JOURNEY', mastery_path_title:'Your next level is earned by doing', level_explorer:'Explorer', level_builder:'Builder', level_operator:'Operator', level_master:'Master',
+    lesson_goal:'LEARNING OUTCOME', try_next:'Try next', module_of:'module', concept:'Concept'
+  },
+  ar: {
+    hero_badge:'مفاهيم AGENTS SDK الحالية', hero_kicker:'أكاديمية ذكاء اصطناعي ذاتية', hero_title:'ابنِ الوكلاء من خلال رؤية ما يحدث.', hero_desc:'تعلّم المفاهيم، واضبط Blueprint حقيقياً، وشغّل محاكاة محلية آمنة، وافحص التتبع، وأثبت كل مهارة.', hero_continue:'متابعة التعلّم', hero_build:'فتح Agent Builder', hero_competencies:'كفاءات', hero_local:'محلي', hero_simulation:'محاكاة آمنة', hero_bilingual:'مختبر ثنائي اللغة', hero_mastery:'الإتقان',
+    path_eyebrow:'مسار التعلّم', path_title:'من أول مفهوم إلى بناء الوكلاء بثقة', stage_learn:'تعلّم', stage_learn_desc:'المفاهيم الأساسية', stage_build:'ابنِ', stage_build_desc:'Blueprint', stage_run:'شغّل', stage_run_desc:'المحاكاة', stage_inspect:'افحص', stage_inspect_desc:'التتبع والتصحيح', stage_master:'أتقن', stage_master_desc:'أثبت المهارات',
+    training_rep:'تمثيل تدريبي', architecture_eyebrow:'خريطة BLUEPRINT مباشرة', architecture_title:'شاهد الوكيل الذي تبنيه', architecture_desc:'تظهر كل قدرة مفعّلة هنا حتى تربط خيارات الإعداد بالمعمارية.',
+    simulation_label:'محاكاة', run_summary:'ملخص التشغيل', run_summary_desc:'يتحدث مع تغير مسار التنفيذ.', summary_status:'الحالة', summary_tools:'الأدوات المستخدمة', summary_approvals:'الموافقات', summary_handoffs:'التسليمات', summary_duration:'المدة المحاكاة',
+    debug_eyebrow:'مسار التصحيح', debug_title:'حدد الـ span الذي يفسر النتيجة', debug_step1:'حدد أول span فاشل أو محجوب أو غير متوقع.', debug_step2:'افحص المدخل والمخرج والأصل وإعداد Builder المرتبط.', debug_step3:'غيّر إعداداً واحداً، وأعد التشغيل، وقارن التتبع الجديد.', debug_idle:'لم يتم تحديد تشغيل بعد.',
+    concept_eyebrow:'خريطة مفاهيم AGENTS SDK', concept_title:'اقرأ المعمارية بسرعة', concept_desc:'تعكس هذه الأدوار المرئية المفاهيم المستخدمة في المختبر. يبقى المخطط نفسه تمثيلاً تدريبياً.', concept_agent:'Agent', concept_agent_desc:'تعليمات + نموذج', concept_tool:'Tool', concept_tool_desc:'قدرة', concept_mcp_desc:'أدوات الخادم', concept_handoff:'Handoff', concept_handoff_desc:'نقل التحكم', concept_guardrail:'Guardrail', concept_guardrail_desc:'تحقق', concept_approval:'Approval', concept_approval_desc:'قرار بشري', concept_output:'Output', concept_output_desc:'النتيجة النهائية',
+    verified_sdk:'مثال SDK تم التحقق منه', code_eyebrow:'مرئي ← إعداد ← كود', code_intro_title:'اقرأ الوكيل نفسه بثلاثة أشكال', code_intro_desc:'تبقى تغييرات Builder متزامنة مع مثال SDK المولّد حتى تربط الخيار المرئي بالكود الذي يضيفه.', code_agent_label:'الوكيل الحالي', code_tools_label:'الأدوات', code_output_label:'المخرج',
+    mastery_path_eyebrow:'رحلة المهارات', mastery_path_title:'المستوى التالي تكسبه بالتطبيق', level_explorer:'مستكشف', level_builder:'منشئ', level_operator:'مشغّل', level_master:'متقن',
+    lesson_goal:'نتيجة التعلّم', try_next:'جرّب التالي', module_of:'الوحدة', concept:'المفهوم'
+  }
+};
+
+var premiumModuleMeta = {
+  'agents-sdk': {
+    concept:['Agent fundamentals','أساسيات Agent'],
+    outcome:['Explain the roles of Agent, Runner, tools, sessions, and execution state in plain language.','اشرح أدوار Agent وRunner والأدوات والجلسات وحالة التنفيذ بلغة بسيطة.']
+  },
+  'tools-mcp': {
+    concept:['Tools & MCP','الأدوات وMCP'],
+    outcome:['Recognize when an agent needs a hosted tool, Function Tool, or MCP server and what each adds to execution.','ميّز متى يحتاج Agent إلى أداة مستضافة أو Function Tool أو خادم MCP وما الذي يضيفه كل منها للتنفيذ.']
+  },
+  'orchestration': {
+    concept:['Orchestration','التنسيق'],
+    outcome:['Choose between an agent as a tool and a handoff by deciding who should retain control of the run.','اختر بين Agent كأداة وHandoff بناءً على من يجب أن يحتفظ بالتحكم في التشغيل.']
+  },
+  'approval-trace': {
+    concept:['Tool calls & approval','استدعاء الأدوات والموافقة'],
+    outcome:['Describe the pause → human decision → resume pattern and inspect the related trace span.','اشرح مسار التوقف ثم القرار البشري ثم الاستئناف وافحص span المرتبط في التتبع.']
+  }
+};
+
+function premiumT(key){var table=premiumText[currentLang]||premiumText.en;return table[key]??premiumText.en[key]??key;}
+function translatePremiumUi(){document.querySelectorAll('[data-premium]').forEach(function(el){var v=premiumT(el.dataset.premium);if(v!==undefined)el.textContent=v;});}
+
+function premiumMissionDone(id){try{return missionIsComplete(id);}catch(_){return false;}}
+function premiumStageState(){
+  var complete={
+    learn:completedMissionCount()>0,
+    build:premiumMissionDone('describe')&&premiumMissionDone('function')&&premiumMissionDone('approval')&&premiumMissionDone('structured'),
+    run:premiumMissionDone('function')&&premiumMissionDone('debug'),
+    inspect:premiumMissionDone('trace'),
+    master:completedMissionCount()===LAB_MISSIONS.length
+  };
+  var order=['learn','build','run','inspect','master'],current=order.find(function(k){return !complete[k];})||'master';
+  return {complete:complete,current:current,order:order};
+}
+
+function renderPremiumAcademyPath(){
+  var state=premiumStageState(),done=0;
+  document.querySelectorAll('[data-academy-stage]').forEach(function(btn){var key=btn.dataset.academyStage,st=state.complete[key]?'complete':(key===state.current?'current':'upcoming');btn.dataset.state=st;if(st==='complete')done++;btn.setAttribute('aria-current',st==='current'?'step':'false');});
+  var badge=document.getElementById('academy-path-progress');if(badge)badge.textContent=done+' / 5';
+}
+
+function renderPremiumLearningHome(){
+  var done=completedMissionCount(),pct=Math.round(done/LAB_MISSIONS.length*100),orb=document.getElementById('premium-mastery-percent');
+  if(orb)orb.textContent=pct+'%';
+  renderPremiumAcademyPath();
+}
+
+function renderBuilderArchitectureSnapshot(){
+  var canvas=document.getElementById('builder-architecture-canvas'),chips=document.getElementById('builder-architecture-chips');if(!canvas||!chips)return;
+  var nodes=[];
+  (agentBlueprint.tools||[]).forEach(function(tool){
+    var map={web_search:['tool','Web Search'],mcp:['mcp','MCP'],function:['tool',agentBlueprint.functionTool?.name||'Function Tool'],agent_tool:['agent',labT('Agent as Tool','Agent كأداة')]};
+    if(map[tool])nodes.push({kind:map[tool][0],label:map[tool][1]});
+  });
+  if(agentBlueprint.handoff&&agentBlueprint.handoff!=='none')nodes.push({kind:'agent',label:labT('Handoff','Handoff')});
+  if((agentBlueprint.guardrails||[]).length)nodes.push({kind:'guardrail',label:labT('Guardrails','ضوابط')});
+  if(agentBlueprint.tools?.includes('function')&&agentBlueprint.functionTool?.approval!=='never')nodes.push({kind:'approval',label:labT('Approval','موافقة')});
+  chips.innerHTML='';nodes.forEach(function(n){var el=document.createElement('span');el.dataset.kind=n.kind;el.textContent=n.label;chips.append(el);});
+  var visible=nodes.slice(0,5);
+  canvas.innerHTML='<img src="./assets/agent-network.svg" alt="" loading="lazy"><div class="live-arch"><div class="live-arch-center"><strong>'+escapeHtml(agentBlueprint.name||'Agent')+'</strong><small>'+escapeHtml(agentBlueprint.model||'')+'</small></div><div class="live-arch-nodes">'+visible.map(function(n){return '<span class="live-arch-node" data-kind="'+escapeAttr(n.kind)+'">'+escapeHtml(n.label)+'</span>';}).join('')+'</div></div>';
+}
+
+function renderSimulatorRunSummary(){
+  var tl=simulationState.timeline||[],toolSteps=tl.filter(function(s){return s.kind==='tool';}),approvalSteps=tl.filter(function(s){return s.kind==='approval';}),handoffSteps=tl.filter(function(s){return s.kind==='handoff';});
+  var duration=tl.reduce(function(total,step,index){try{return total+durationForTraceStep(step,index);}catch(_){return total+55;}},0);
+  var set=function(id,value){var el=document.getElementById(id);if(el)el.textContent=value;};
+  set('sim-summary-status',simulationStatusText());set('sim-summary-tools',String(toolSteps.length));set('sim-summary-approvals',String(approvalSteps.length));set('sim-summary-handoffs',String(handoffSteps.length));set('sim-summary-duration',tl.length?(duration+' ms'):'—');
+}
+
+function renderTraceDebugGuide(){
+  var el=document.getElementById('trace-debug-current');if(!el)return;var selected=traceState.spans?.find(function(s){return s.id===traceState.selectedId;})||traceState.spans?.[0];
+  if(!selected){el.textContent=premiumT('debug_idle');return;}
+  el.textContent=labT('Selected: ','المحدد: ')+selected.title+' · '+traceStatusLabel(selected.status)+' · '+(selected.duration?selected.duration+' ms':'—');
+}
+
+function renderPremiumCodeMeta(){
+  var set=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+  set('premium-code-agent',agentBlueprint.name||'—');set('premium-code-tools',String((agentBlueprint.tools||[]).length));set('premium-code-output',agentBlueprint.output==='structured'?labT('Structured','منظم'):labT('Text','نص'));
+}
+
+function renderPremiumMasteryPath(){
+  var done=completedMissionCount(),next=nextIncompleteMission(),levels=[['explorer',0],['builder',3],['operator',6],['master',9]],active=done>=9?'master':done>=6?'operator':done>=3?'builder':'explorer';
+  levels.forEach(function(pair){var el=document.querySelector('[data-mastery-stage="'+pair[0]+'"]');if(!el)return;var state=done>=pair[1]?'complete':'upcoming';if(pair[0]===active)state='current';el.dataset.state=state;});
+  var nextEl=document.getElementById('mastery-next-skill');if(nextEl)nextEl.textContent=labT(next.title[0],next.title[1]);
+}
+
+function renderPremiumLesson(index){
+  var article=document.getElementById('module-content-container');if(!article||!modulesData[index])return;var module=modulesData[index],meta=premiumModuleMeta[module.id];if(!meta)return;
+  var intro=article.querySelector('.module-intro');if(intro&&!intro.querySelector('.premium-lesson-meta')){
+    var metaEl=document.createElement('div');metaEl.className='premium-lesson-meta';metaEl.innerHTML='<span class="premium-lesson-pill is-concept">'+escapeHtml(premiumT('concept'))+' · '+escapeHtml(labT(meta.concept[0],meta.concept[1]))+'</span><span class="premium-lesson-pill">'+escapeHtml(premiumT('module_of'))+' '+String(index+1)+' / '+String(modulesData.length)+'</span>';intro.prepend(metaEl);
+    var outcome=document.createElement('div');outcome.className='premium-lesson-outcome';outcome.innerHTML='<i>✓</i><div><strong>'+escapeHtml(premiumT('lesson_goal'))+'</strong><p>'+escapeHtml(labT(meta.outcome[0],meta.outcome[1]))+'</p></div>';intro.append(outcome);
+  }
+  if(!article.querySelector('.premium-try-next')){
+    var next=modulesData[index+1];var footer=document.createElement('div');footer.className='premium-try-next';footer.innerHTML='<span>'+escapeHtml(premiumT('try_next'))+'<strong>'+escapeHtml(next?next['title_'+currentLang]:labT('Open Builder and apply what you learned','افتح Builder وطبق ما تعلمته'))+'</strong></span><button type="button" class="button button-secondary compact-button">'+escapeHtml(next?labT('Next module','الوحدة التالية'):labT('Open Builder','فتح Builder'))+'</button>';footer.querySelector('button').onclick=function(){if(next)selectModule(index+1,true);else switchTab('builder');};article.append(footer);
+  }
+}
+
+function renderPremiumLearningExperience(){
+  translatePremiumUi();renderPremiumLearningHome();renderBuilderArchitectureSnapshot();renderSimulatorRunSummary();renderTraceDebugGuide();renderPremiumCodeMeta();renderPremiumMasteryPath();renderPremiumLesson(currentModuleIndex);if(window.lucide)lucide.createIcons();
+}
+
+(function wirePremiumLayer(){
+  var baseLearningHome=window.renderLearningHome;window.renderLearningHome=function(){if(baseLearningHome)baseLearningHome();renderPremiumLearningHome();renderPremiumMasteryPath();};
+  var baseBlueprint=window.renderBlueprint;window.renderBlueprint=function(){if(baseBlueprint)baseBlueprint();renderBuilderArchitectureSnapshot();renderPremiumCodeMeta();renderPremiumLearningHome();};
+  var baseTimeline=window.renderSimulationTimeline;window.renderSimulationTimeline=function(){if(baseTimeline)baseTimeline();renderSimulatorRunSummary();};
+  var baseStatus=window.setSimulationStatus;window.setSimulationStatus=function(state){if(baseStatus)baseStatus(state);renderSimulatorRunSummary();};
+  var baseTrace=window.renderTraceInspector;window.renderTraceInspector=function(){if(baseTrace)baseTrace();renderTraceDebugGuide();};
+  var baseMastery=window.renderMasteryProgress;window.renderMasteryProgress=function(){if(baseMastery)baseMastery();renderPremiumMasteryPath();renderPremiumLearningHome();};
+  var baseModule=window.renderModuleContent;window.renderModuleContent=function(index){if(baseModule)baseModule(index);renderPremiumLesson(index);};
+  var baseTranslate=window.translateShell;window.translateShell=function(){if(baseTranslate)baseTranslate();translatePremiumUi();renderPremiumLearningExperience();};
+  var baseSwitch=window.switchTab;window.switchTab=function(tabId){if(baseSwitch)baseSwitch(tabId);setTimeout(renderPremiumLearningExperience,0);};
+})();
+
+document.addEventListener('DOMContentLoaded',function(){setTimeout(renderPremiumLearningExperience,0);});

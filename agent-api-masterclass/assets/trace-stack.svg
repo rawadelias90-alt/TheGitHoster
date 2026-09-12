@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">Trace span stack</title>
+  <desc id="desc">A nested trace showing an agent span with child model, tool, approval and output spans.</desc>
+  <rect width="720" height="420" rx="32" fill="none"/>
+  <g font-family="Arial, sans-serif">
+    <text x="70" y="66" font-size="12" font-weight="700" fill="#667085">TRACE</text>
+    <rect x="70" y="86" width="580" height="266" rx="24" fill="#FFFFFF" stroke="#D9E0DC" stroke-width="2"/>
+    <rect x="96" y="112" width="528" height="52" rx="14" fill="#F4F1FA" stroke="#7450C0" stroke-width="2"/>
+    <circle cx="122" cy="138" r="8" fill="#7450C0"/>
+    <text x="144" y="143" font-size="14" font-weight="700" fill="#111827">Agent span</text>
+    <text x="550" y="143" font-size="11" fill="#667085">842 ms</text>
+    <rect x="126" y="184" width="468" height="40" rx="12" fill="#FFFFFF" stroke="#CBD5D1"/>
+    <circle cx="150" cy="204" r="6" fill="#7450C0"/>
+    <text x="168" y="208" font-size="12" font-weight="700" fill="#111827">Model generation</text>
+    <rect x="126" y="238" width="468" height="40" rx="12" fill="#EFF8F9" stroke="#087E91"/>
+    <circle cx="150" cy="258" r="6" fill="#087E91"/>
+    <text x="168" y="262" font-size="12" font-weight="700" fill="#111827">Tool call · web_search</text>
+    <rect x="156" y="292" width="408" height="34" rx="11" fill="#FFF7E9" stroke="#A85610"/>
+    <circle cx="178" cy="309" r="5" fill="#A85610"/>
+    <text x="194" y="313" font-size="11" font-weight="700" fill="#111827">Approval / guardrail decision</text>
+    <path d="M108 164V326" stroke="#CBD5D1" stroke-width="2"/>
+    <path d="M108 204H126M108 258H126M108 309H156" stroke="#CBD5D1" stroke-width="2"/>
+  </g>
+</svg>

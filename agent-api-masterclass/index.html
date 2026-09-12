@@ -73,6 +73,29 @@
       <div><p class="eyebrow" data-ui="learning_space">YOUR LEARNING SPACE</p><h2 id="modules-heading" data-i18n="nav_modules">Learning Modules</h2></div>
       <span class="quiet-badge"><i data-lucide="book-open"></i><span id="course-count">4 topics</span></span>
     </div>
+    <section id="premium-academy-hero" class="premium-academy-hero panel" aria-labelledby="premium-hero-title">
+      <div class="premium-hero-copy">
+        <div class="premium-hero-badges"><span class="accuracy-badge verified" data-premium="hero_badge">CURRENT AGENTS SDK CONCEPTS</span><span class="premium-hero-kicker" data-premium="hero_kicker">SELF-PACED AI ACADEMY</span></div>
+        <h3 id="premium-hero-title" data-premium="hero_title">Build agents by seeing what happens.</h3>
+        <p data-premium="hero_desc">Learn the concepts, configure a real Blueprint, run a safe local simulation, inspect the trace, and prove each skill.</p>
+        <div class="premium-hero-actions">
+          <button type="button" class="button button-primary" onclick="continueLearning()"><span data-premium="hero_continue">Continue learning</span><i data-lucide="arrow-right" class="directional"></i></button>
+          <button type="button" class="button button-secondary" onclick="switchTab('builder')"><i data-lucide="bot"></i><span data-premium="hero_build">Open Agent Builder</span></button>
+        </div>
+        <div class="premium-hero-facts" aria-label="Learning experience summary">
+          <span><strong>9</strong><small data-premium="hero_competencies">competencies</small></span>
+          <span><strong data-premium="hero_local">Local</strong><small data-premium="hero_simulation">safe simulation</small></span>
+          <span><strong>EN / AR</strong><small data-premium="hero_bilingual">bilingual lab</small></span>
+        </div>
+      </div>
+      <div class="premium-hero-visual" aria-hidden="true">
+        <img src="./assets/agent-network.svg" alt="" loading="eager">
+        <div class="premium-progress-orb">
+          <span id="premium-mastery-percent">0%</span>
+          <small data-premium="hero_mastery">mastery</small>
+        </div>
+      </div>
+    </section>
     <section id="learning-home" class="learning-home panel" aria-labelledby="learning-home-title">
       <div class="learning-home-main">
         <div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><p class="eyebrow" data-lab="home_eyebrow">LEARNING HOME</p><h3 id="learning-home-title" data-lab="home_title">Continue your agent lab</h3><p id="home-next-copy" data-lab="home_desc">See where you are, what you built, and the next skill to prove.</p></div>
@@ -86,6 +109,21 @@
         <div><span data-lab="home_trace">Recent trace</span><strong id="home-trace">No trace yet</strong></div>
         <div><span data-lab="home_course">Course progress</span><strong id="home-course">0 / 9 competencies</strong></div>
       </div>
+    </section>
+    <section id="academy-path" class="academy-path panel" aria-labelledby="academy-path-title">
+      <div class="academy-path-head"><div><p class="eyebrow" data-premium="path_eyebrow">YOUR LEARNING PATH</p><h3 id="academy-path-title" data-premium="path_title">From first concept to confident agent builder</h3></div><span id="academy-path-progress" class="coverage-chip">0 / 5</span></div>
+      <div class="academy-path-track" role="list">
+        <button type="button" class="academy-path-step" data-academy-stage="learn" onclick="switchTab('modules')" role="listitem"><span>01</span><strong data-premium="stage_learn">Learn</strong><small data-premium="stage_learn_desc">Core concepts</small></button>
+        <i aria-hidden="true"></i>
+        <button type="button" class="academy-path-step" data-academy-stage="build" onclick="switchTab('builder')" role="listitem"><span>02</span><strong data-premium="stage_build">Build</strong><small data-premium="stage_build_desc">Blueprint</small></button>
+        <i aria-hidden="true"></i>
+        <button type="button" class="academy-path-step" data-academy-stage="run" onclick="switchTab('simulator')" role="listitem"><span>03</span><strong data-premium="stage_run">Run</strong><small data-premium="stage_run_desc">Simulation</small></button>
+        <i aria-hidden="true"></i>
+        <button type="button" class="academy-path-step" data-academy-stage="inspect" onclick="switchTab('trace')" role="listitem"><span>04</span><strong data-premium="stage_inspect">Inspect</strong><small data-premium="stage_inspect_desc">Trace & debug</small></button>
+        <i aria-hidden="true"></i>
+        <button type="button" class="academy-path-step" data-academy-stage="master" onclick="switchTab('quiz')" role="listitem"><span>05</span><strong data-premium="stage_master">Master</strong><small data-premium="stage_master_desc">Prove skills</small></button>
+      </div>
+      <img class="academy-path-reference" src="./assets/learning-path.svg" alt="" loading="lazy" aria-hidden="true">
     </section>
     <div class="learning-layout">
       <aside id="curriculum-panel" class="curriculum-panel" aria-labelledby="curriculum-heading">
@@ -147,6 +185,10 @@
     <section id="builder-json-view" class="panel builder-secondary-view hidden" aria-labelledby="builder-json-title"><div class="secondary-view-head"><div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><h3 id="builder-json-title" data-lab="json_title">Blueprint JSON</h3><p data-lab="json_desc">This JSON teaches the configuration shape. It is not an official OpenAI API request body.</p></div><button type="button" class="button button-secondary compact-button" onclick="copyBuilderJson()"><i data-lucide="copy"></i><span data-lab="copy_json">Copy JSON</span></button></div><pre id="builder-json-output" class="training-json" tabindex="0"></pre><div id="json-field-links" class="json-field-links"></div></section>
     <section id="builder-code-view" class="panel builder-secondary-view hidden" aria-labelledby="builder-code-title"><div class="secondary-view-head"><div><span class="accuracy-badge verified" data-lab="verified_sdk">VERIFIED SDK EXAMPLE</span><h3 id="builder-code-title" data-lab="code_shortcut_title">Equivalent SDK code</h3><p data-lab="code_shortcut_desc">Code Studio generates the synchronized Agents SDK example and explains what changed.</p></div><button type="button" class="button button-primary" onclick="switchTab('codestudio')"><span data-lab="open_code_studio">Open Code Studio</span><i data-lucide="arrow-right" class="directional"></i></button></div><pre id="builder-code-preview" class="training-json"></pre></section>
 
+    <section id="builder-architecture-snapshot" class="builder-architecture-snapshot panel builder-visual-surface" aria-labelledby="builder-architecture-title">
+      <div class="builder-architecture-copy"><span class="accuracy-badge training" data-premium="training_rep">TRAINING REPRESENTATION</span><p class="eyebrow" data-premium="architecture_eyebrow">LIVE BLUEPRINT MAP</p><h3 id="builder-architecture-title" data-premium="architecture_title">See the agent you are building</h3><p id="builder-architecture-copy" data-premium="architecture_desc">Every enabled capability appears here so you can connect configuration choices to architecture.</p><div id="builder-architecture-chips" class="builder-architecture-chips"></div></div>
+      <div id="builder-architecture-canvas" class="builder-architecture-canvas" role="img" aria-label="Current agent architecture"><img src="./assets/agent-network.svg" alt="" loading="lazy"></div>
+    </section>
     <div class="builder-flow-wrap builder-visual-surface" aria-labelledby="builder-flow-heading">
       <div class="builder-flow-head">
         <div><p class="eyebrow" id="builder-flow-heading" data-p2="blueprint_map">BLUEPRINT MAP</p><p class="builder-flow-hint" data-p2="blueprint_map_hint">Tap any block to edit that part of the agent.</p></div>
@@ -264,6 +306,16 @@
       <div><p class="eyebrow" data-ui="interactive_sandbox">INTERACTIVE SANDBOX</p><h2 id="simulator-heading" data-i18n="nav_simulator">Session Simulator</h2><p class="section-description" data-p3="simulator_desc">Watch a training run unfold step by step, pause for human approval, then inspect the technical event payloads underneath.</p></div>
       <span class="quiet-badge"><span class="status-dot"></span><span data-ui="local_simulation">Local simulation</span></span>
     </div>
+    <section id="sim-run-summary" class="sim-run-summary panel" aria-label="Simulation run summary">
+      <div class="sim-run-summary-intro"><span class="accuracy-badge simulation" data-premium="simulation_label">SIMULATION</span><strong data-premium="run_summary">Run summary</strong><small data-premium="run_summary_desc">Updates as the execution path changes.</small></div>
+      <div class="sim-run-summary-grid">
+        <div><span data-premium="summary_status">Status</span><strong id="sim-summary-status">Ready</strong></div>
+        <div><span data-premium="summary_tools">Tools used</span><strong id="sim-summary-tools">0</strong></div>
+        <div><span data-premium="summary_approvals">Approvals</span><strong id="sim-summary-approvals">0</strong></div>
+        <div><span data-premium="summary_handoffs">Handoffs</span><strong id="sim-summary-handoffs">0</strong></div>
+        <div><span data-premium="summary_duration">Simulated duration</span><strong id="sim-summary-duration">—</strong></div>
+      </div>
+    </section>
     <div class="simulator-layout">
       <div class="panel configuration-panel">
         <div class="panel-heading"><i data-lucide="sliders"></i><h3 data-i18n="sim_config_title">Agent Session Builder</h3></div>
@@ -390,6 +442,10 @@
       </div>
     </div>
 
+    <section id="trace-debug-guide" class="trace-debug-guide panel" aria-labelledby="trace-debug-guide-title">
+      <div class="trace-debug-copy"><span class="accuracy-badge training" data-premium="training_rep">TRAINING REPRESENTATION</span><p class="eyebrow" data-premium="debug_eyebrow">DEBUGGING WORKFLOW</p><h3 id="trace-debug-guide-title" data-premium="debug_title">Find the span that explains the outcome</h3><ol><li data-premium="debug_step1">Locate the first failed, blocked, or unexpected span.</li><li data-premium="debug_step2">Inspect its input, output, parent, and related Builder setting.</li><li data-premium="debug_step3">Change one setting, rerun, and compare the new trace.</li></ol><p id="trace-debug-current" class="trace-debug-current">No run selected yet.</p></div>
+      <img src="./assets/trace-stack.svg" alt="" loading="lazy" aria-hidden="true">
+    </section>
     <div class="trace-metrics" aria-label="Trace summary">
       <article class="trace-metric"><span class="trace-metric-icon"><i data-lucide="activity"></i></span><div><span data-p45="total_spans">Total spans</span><strong id="trace-total-spans">0</strong></div></article>
       <article class="trace-metric"><span class="trace-metric-icon trace-tool"><i data-lucide="wrench"></i></span><div><span data-p45="tool_spans">Tool spans</span><strong id="trace-tool-spans">0</strong></div></article>
@@ -447,6 +503,18 @@
       <button type="button" class="button button-secondary" onclick="syncDesignFromBlueprint()"><i data-lucide="refresh-cw"></i><span data-p45="sync_blueprint">Use current blueprint</span></button>
     </div>
 
+    <section id="design-concept-legend" class="design-concept-legend panel" aria-labelledby="design-concept-title">
+      <div><p class="eyebrow" data-premium="concept_eyebrow">AGENTS SDK CONCEPT MAP</p><h3 id="design-concept-title" data-premium="concept_title">Read the architecture at a glance</h3><p data-premium="concept_desc">These visual roles mirror the concepts used throughout the lab. The diagram itself remains a training representation.</p></div>
+      <div class="concept-chip-list" role="list">
+        <span class="concept-chip concept-agent" role="listitem"><i></i><b data-premium="concept_agent">Agent</b><small data-premium="concept_agent_desc">instructions + model</small></span>
+        <span class="concept-chip concept-tool" role="listitem"><i></i><b data-premium="concept_tool">Tool</b><small data-premium="concept_tool_desc">capability</small></span>
+        <span class="concept-chip concept-mcp" role="listitem"><i></i><b>MCP</b><small data-premium="concept_mcp_desc">server tools</small></span>
+        <span class="concept-chip concept-handoff" role="listitem"><i></i><b data-premium="concept_handoff">Handoff</b><small data-premium="concept_handoff_desc">transfer control</small></span>
+        <span class="concept-chip concept-guardrail" role="listitem"><i></i><b data-premium="concept_guardrail">Guardrail</b><small data-premium="concept_guardrail_desc">validate</small></span>
+        <span class="concept-chip concept-approval" role="listitem"><i></i><b data-premium="concept_approval">Approval</b><small data-premium="concept_approval_desc">human decision</small></span>
+        <span class="concept-chip concept-output" role="listitem"><i></i><b data-premium="concept_output">Output</b><small data-premium="concept_output_desc">final result</small></span>
+      </div>
+    </section>
     <div class="design-lab-grid">
       <section id="orchestration-designer" class="panel design-panel" aria-labelledby="orchestration-heading">
         <div class="design-panel-head">
@@ -512,6 +580,10 @@
       <div><p class="eyebrow" data-p67="sdk_workspace">BLUEPRINT CODE WORKSPACE</p><h2 id="codestudio-heading" data-i18n="nav_codestudio">Code Studio</h2><p class="section-description" data-p67="code_desc">Generated code stays synchronized with the Agent Blueprint. Apply a preset here to push a configuration back into the visual Builder.</p></div>
       <span class="quiet-badge code-sync-badge" id="code-sync-status"><span class="status-dot"></span><span data-p67="synced_blueprint">Synced to Blueprint</span></span>
     </div>
+    <section id="code-studio-intro" class="code-studio-intro panel" aria-label="Code Studio learning context">
+      <div><span class="accuracy-badge verified" data-premium="verified_sdk">VERIFIED SDK EXAMPLE</span><p class="eyebrow" data-premium="code_eyebrow">VISUAL → CONFIG → CODE</p><h3 data-premium="code_intro_title">Read the same agent in three forms</h3><p data-premium="code_intro_desc">Builder changes stay synchronized with the generated SDK example so you can connect a visual choice to the code it adds.</p></div>
+      <div class="code-intro-meta"><span><small data-premium="code_agent_label">Current agent</small><strong id="premium-code-agent">Research Agent</strong></span><span><small data-premium="code_tools_label">Tools</small><strong id="premium-code-tools">0</strong></span><span><small data-premium="code_output_label">Output</small><strong id="premium-code-output">Text</strong></span></div>
+    </section>
     <div class="code-layout phase67-code-layout">
       <div class="panel configuration-panel code-configuration">
         <div class="panel-heading"><i data-lucide="file-code"></i><h3 data-p67="code_controls">Code controls</h3></div>
@@ -565,6 +637,10 @@
         <div class="mastery-progress-copy"><div><span class="eyebrow" data-p67="mastery_progress">MASTERY PROGRESSION</span><h3 id="mastery-progress-heading" data-p67="keep_building">Build, run, inspect and prove it</h3></div><strong id="mastery-progress-percent">0%</strong></div>
         <div id="mastery-progress" class="mastery-progress-track" role="progressbar" aria-label="Mastery progress" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0"><span id="mastery-progress-bar"></span></div>
         <div class="mastery-stage-row" aria-hidden="true"><span data-p67="level_explorer">Explorer</span><span data-p67="level_builder">Builder</span><span data-p67="level_operator">Operator</span><span data-p67="level_master">Master</span></div>
+      </section>
+      <section id="mastery-path" class="mastery-path panel" aria-labelledby="mastery-path-title">
+        <div class="mastery-path-head"><div><p class="eyebrow" data-premium="mastery_path_eyebrow">SKILL JOURNEY</p><h3 id="mastery-path-title" data-premium="mastery_path_title">Your next level is earned by doing</h3></div><strong id="mastery-next-skill">Define the agent</strong></div>
+        <div class="mastery-level-track" role="list"><span data-mastery-stage="explorer" role="listitem"><i></i><b data-premium="level_explorer">Explorer</b></span><em></em><span data-mastery-stage="builder" role="listitem"><i></i><b data-premium="level_builder">Builder</b></span><em></em><span data-mastery-stage="operator" role="listitem"><i></i><b data-premium="level_operator">Operator</b></span><em></em><span data-mastery-stage="master" role="listitem"><i></i><b data-premium="level_master">Master</b></span></div>
       </section>
       <div id="mission-list" class="mission-list" aria-live="polite"></div>
       <section id="knowledge-check" class="knowledge-check">
