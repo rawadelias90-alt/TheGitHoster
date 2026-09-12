@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f7f7f5">
+<meta name="description" content="Agent API Masterclass: a bilingual local learning lab for the current OpenAI Agents SDK and Responses API concepts, with an editable blueprint, simulation, traces, orchestration, guardrails, guided missions and synchronized SDK examples.">
+<title>Agent API Masterclass &amp; Interactive Sandbox</title>
+<!-- Phase 3: Phase 2 builder plus an execution timeline, technical event inspector and human approval simulation.
+     Existing learning content, Agent Blueprint, architecture, code examples and quiz are preserved.
+     All simulator actions remain local training behavior; no live API calls or external actions are performed. -->
+<link rel="stylesheet" href="./styles.css">
+<script src="./app.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#workspace" data-ui="skip">Skip to content</a>
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"><i data-lucide="bot"></i></span>
+    <div class="brand-copy">
+      <div class="brand-title-line"><h1 id="app-title">Agent API Masterclass</h1><span class="version-badge">Local learning lab</span></div>
+      <p id="app-subtitle">Agents SDK Learning Lab · Responses API concepts</p>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button type="button" id="theme-switch-btn" class="icon-button" onclick="toggleTheme()" aria-label="Switch to light mode" title="Switch to light mode">
+      <i id="theme-icon" data-lucide="sun"></i><span id="theme-label" class="sr-only">Light Mode</span>
+    </button>
+    <button type="button" id="lang-switch-btn" class="language-button" onclick="toggleLanguage()" aria-label="Switch to Arabic" title="Switch to Arabic">
+      <i data-lucide="languages" aria-hidden="true"></i><span id="lang-label" lang="ar">العربية</span>
+    </button>
+  </div>
+</header>
+
+<nav id="app-nav" class="app-nav" aria-label="Primary navigation">
+  <button type="button" class="nav-item is-active" id="tab-btn-modules" data-view="modules" aria-current="page" aria-controls="view-modules" onclick="switchTab('modules')">
+    <span class="nav-icon nav-green"><i data-lucide="book-open"></i></span><span data-ui="nav_learn">Learn</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-builder" data-view="builder" aria-controls="view-builder" onclick="switchTab('builder')">
+    <span class="nav-icon nav-violet"><i data-lucide="bot"></i></span><span data-p2="nav_build">Build</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-simulator" data-view="simulator" aria-controls="view-simulator" onclick="switchTab('simulator')">
+    <span class="nav-icon nav-violet"><i data-lucide="play-circle"></i></span><span data-ui="nav_simulate">Simulate</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-trace" data-view="trace" aria-controls="view-trace" onclick="switchTab('trace')">
+    <span class="nav-icon nav-cyan"><i data-lucide="route"></i></span><span data-p45="nav_trace">Trace</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-architecture" data-view="architecture" aria-controls="view-architecture" onclick="switchTab('architecture')">
+    <span class="nav-icon nav-orange"><i data-lucide="git-branch"></i></span><span data-p45="nav_design">Design</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-codestudio" data-view="codestudio" aria-controls="view-codestudio" onclick="switchTab('codestudio')">
+    <span class="nav-icon nav-orange"><i data-lucide="code"></i></span><span data-ui="nav_code">Code</span>
+  </button>
+  <button type="button" class="nav-item" id="tab-btn-quiz" data-view="quiz" aria-controls="view-quiz" onclick="switchTab('quiz')">
+    <span class="nav-icon nav-rose"><i data-lucide="trophy"></i></span><span data-p67="nav_challenge">Challenge</span>
+  </button>
+</nav>
+
+<main id="workspace" class="workspace" tabindex="-1">
+  <section id="learning-mode-bar" class="learning-mode-bar panel" aria-label="Learning mode">
+    <div class="learning-mode-copy"><span class="eyebrow" data-lab="mode_label">LEARNING MODE</span><strong id="learning-mode-title">Explore</strong><span id="guided-step-summary" class="learning-mode-summary">Use the lab freely.</span></div>
+    <div class="learning-mode-actions" role="group" aria-label="Learning mode selection">
+      <button type="button" class="mode-button is-active" data-learning-mode="explore" aria-pressed="true" onclick="setLearningMode('explore')" data-lab="mode_explore">Explore</button>
+      <button type="button" class="mode-button" data-learning-mode="guided" aria-pressed="false" onclick="setLearningMode('guided')" data-lab="mode_guided">Guided</button>
+      <button type="button" id="guided-next-button" class="button button-primary compact-button hidden" onclick="advanceGuidedStep()"><span data-lab="guided_continue">Continue</span></button>
+    </div>
+    <div id="guided-progress" class="guided-progress hidden" role="progressbar" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1"><span id="guided-progress-bar"></span></div>
+  </section>
+  <section id="view-modules" class="tab-view" aria-labelledby="modules-heading">
+    <div class="section-heading">
+      <div><p class="eyebrow" data-ui="learning_space">YOUR LEARNING SPACE</p><h2 id="modules-heading" data-i18n="nav_modules">Learning Modules</h2></div>
+      <span class="quiet-badge"><i data-lucide="book-open"></i><span id="course-count">4 topics</span></span>
+    </div>
+    <section id="learning-home" class="learning-home panel" aria-labelledby="learning-home-title">
+      <div class="learning-home-main">
+        <div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><p class="eyebrow" data-lab="home_eyebrow">LEARNING HOME</p><h3 id="learning-home-title" data-lab="home_title">Continue your agent lab</h3><p id="home-next-copy" data-lab="home_desc">See where you are, what you built, and the next skill to prove.</p></div>
+        <button type="button" class="button button-primary" onclick="continueLearning()"><span data-lab="continue_learning">Continue Learning</span><i data-lucide="arrow-right" class="directional"></i></button>
+      </div>
+      <div class="learning-home-grid">
+        <div><span data-lab="home_mastery">Mastery</span><strong id="home-mastery">Explorer · 0%</strong></div>
+        <div><span data-lab="home_blueprint">Current Blueprint</span><strong id="home-blueprint">Research Agent</strong></div>
+        <div><span data-lab="home_next">Next mission</span><strong id="home-next-mission">Describe an agent</strong></div>
+        <div><span data-lab="home_last_run">Latest simulation</span><strong id="home-last-run">Not run yet</strong></div>
+        <div><span data-lab="home_trace">Recent trace</span><strong id="home-trace">No trace yet</strong></div>
+        <div><span data-lab="home_course">Course progress</span><strong id="home-course">0 / 9 competencies</strong></div>
+      </div>
+    </section>
+    <div class="learning-layout">
+      <aside id="curriculum-panel" class="curriculum-panel" aria-labelledby="curriculum-heading">
+        <div class="curriculum-desktop-heading"><h3 id="curriculum-heading" class="eyebrow" data-i18n="curriculum">Curriculum Index</h3></div>
+        <button type="button" id="curriculum-toggle" class="curriculum-toggle" aria-expanded="false" aria-controls="module-list" onclick="toggleCurriculum()">
+          <span class="curriculum-toggle-copy"><span class="eyebrow" data-i18n="curriculum">Curriculum Index</span><span id="current-module-label"></span></span>
+          <i data-lucide="chevron-down" class="curriculum-chevron"></i>
+        </button>
+        <div id="module-list" class="module-list"></div>
+        <div class="curriculum-foot"><i data-lucide="layers"></i><span data-ui="course_hint">Choose a topic to explore.</span></div>
+      </aside>
+      <div class="lesson-column">
+        <article id="module-content-container" class="lesson-article"></article>
+        <nav class="lesson-pagination" aria-label="Module navigation">
+          <button type="button" class="button button-secondary" id="module-prev" onclick="selectModule(currentModuleIndex - 1, true)"><i data-lucide="arrow-left" class="directional"></i><span data-ui="previous">Previous</span></button>
+          <span id="module-position" class="pagination-position" aria-live="polite">01 / 04</span>
+          <button type="button" class="button button-secondary" id="module-next" onclick="selectModule(currentModuleIndex + 1, true)"><span data-ui="next">Next</span><i data-lucide="arrow-right" class="directional"></i></button>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-builder" class="tab-view hidden" hidden aria-labelledby="builder-heading">
+    <div class="section-heading builder-section-heading">
+      <div>
+        <p class="eyebrow" data-p2="builder_eyebrow">AGENT WORKBENCH</p>
+        <h2 id="builder-heading" data-p2="builder_title">Agent Builder</h2>
+        <p class="section-description" data-p2="builder_desc">Configure the core agent building blocks, then watch the blueprint update instantly across the training platform.</p>
+      </div>
+      <span class="quiet-badge"><span class="status-dot"></span><span data-p2="local_blueprint">Local blueprint</span></span>
+    </div>
+
+    <section id="describe-agent-card" class="panel describe-agent-card" aria-labelledby="describe-agent-title">
+      <div class="describe-agent-head">
+        <div><span class="accuracy-badge simulation" data-lab="simulation">SIMULATION</span><p class="eyebrow" data-lab="describe_eyebrow">BEGINNER START</p><h3 id="describe-agent-title" data-lab="describe_title">Describe your agent</h3><p data-lab="describe_desc">Explain what you want in normal language. This local lab will propose a training Blueprint without contacting an API.</p></div>
+      </div>
+      <div class="field"><label for="agent-description" data-lab="describe_label">What should the agent do?</label><textarea id="agent-description" class="field-control describe-textarea" rows="5" dir="auto" placeholder="Create a research agent that can search the web, use a documentation MCP server, ask for approval before sensitive actions, and return structured findings."></textarea></div>
+      <div class="starter-prompts" aria-label="Example starter prompts">
+        <button type="button" onclick="useStarterDescription('research')" data-lab="starter_research">Research agent</button>
+        <button type="button" onclick="useStarterDescription('support')" data-lab="starter_support">Support agent</button>
+        <button type="button" onclick="useStarterDescription('approval')" data-lab="starter_approval">Approval workflow</button>
+      </div>
+      <div class="describe-actions"><button type="button" id="generate-blueprint-btn" class="button button-primary describe-primary" onclick="generateBlueprintFromDescription()"><i data-lucide="sparkles"></i><span data-lab="generate_blueprint">Generate Agent Blueprint</span></button></div>
+      <div id="description-transform" class="description-transform hidden" aria-live="polite">
+        <div class="transform-flow" aria-label="Description transformation"><span data-lab="tf_description">Natural-language description</span><b>↓</b><span data-lab="tf_requirements">Interpreted requirements</span><b>↓</b><span data-lab="tf_blueprint">Agent Blueprint</span><b>↓</b><span data-lab="tf_config">Configuration / JSON</span><b>↓</b><span data-lab="tf_code">SDK code</span><b>↓</b><span data-lab="tf_sim">Simulation</span></div>
+        <p class="transform-explanation" data-lab="transform_explain">You described the behavior in plain language. The lab translated that intent into a proposed agent configuration.</p>
+        <section class="understood-card" aria-labelledby="understood-title"><div class="understood-head"><div><span class="eyebrow" data-lab="understood_eyebrow">WHAT I UNDERSTOOD</span><h4 id="understood-title" data-lab="understood_title">Review before applying</h4></div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span></div><dl id="understood-summary" class="understood-summary"></dl><div class="understood-actions"><button type="button" class="button button-primary" onclick="acceptGeneratedBlueprint()" data-lab="accept">Accept</button><button type="button" class="button button-secondary" onclick="editGeneratedBlueprint()" data-lab="edit">Edit</button><button type="button" class="button button-secondary" onclick="compareDescriptionConfiguration()" data-lab="compare_description">Compare with description</button><button type="button" class="button button-quiet" onclick="resetDescriptionDraft()" data-lab="reset">Reset</button></div></section>
+        <div id="description-compare" class="description-compare hidden"></div>
+      </div>
+    </section>
+
+    <div class="builder-view-tabs" role="tablist" aria-label="Builder views">
+      <button type="button" role="tab" aria-selected="true" data-builder-view-tab="visual" onclick="selectBuilderView('visual')" data-lab="view_visual">Visual</button>
+      <button type="button" role="tab" aria-selected="false" data-builder-view-tab="configuration" onclick="selectBuilderView('configuration')" data-lab="view_configuration">Configuration</button>
+      <button type="button" role="tab" aria-selected="false" data-builder-view-tab="json" onclick="selectBuilderView('json')" data-lab="view_json">JSON</button>
+      <button type="button" role="tab" aria-selected="false" data-builder-view-tab="code" onclick="selectBuilderView('code')" data-lab="view_code">Code</button>
+    </div>
+    <section id="builder-configuration-view" class="panel builder-secondary-view hidden" aria-labelledby="builder-configuration-title"><div class="secondary-view-head"><div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><h3 id="builder-configuration-title" data-lab="configuration_title">Human-readable configuration</h3><p data-lab="configuration_desc">A readable map of the current Blueprint. Select a row to jump back to the visual setting.</p></div></div><div id="configuration-map" class="configuration-map"></div></section>
+    <section id="builder-json-view" class="panel builder-secondary-view hidden" aria-labelledby="builder-json-title"><div class="secondary-view-head"><div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><h3 id="builder-json-title" data-lab="json_title">Blueprint JSON</h3><p data-lab="json_desc">This JSON teaches the configuration shape. It is not an official OpenAI API request body.</p></div><button type="button" class="button button-secondary compact-button" onclick="copyBuilderJson()"><i data-lucide="copy"></i><span data-lab="copy_json">Copy JSON</span></button></div><pre id="builder-json-output" class="training-json" tabindex="0"></pre><div id="json-field-links" class="json-field-links"></div></section>
+    <section id="builder-code-view" class="panel builder-secondary-view hidden" aria-labelledby="builder-code-title"><div class="secondary-view-head"><div><span class="accuracy-badge verified" data-lab="verified_sdk">VERIFIED SDK EXAMPLE</span><h3 id="builder-code-title" data-lab="code_shortcut_title">Equivalent SDK code</h3><p data-lab="code_shortcut_desc">Code Studio generates the synchronized Agents SDK example and explains what changed.</p></div><button type="button" class="button button-primary" onclick="switchTab('codestudio')"><span data-lab="open_code_studio">Open Code Studio</span><i data-lucide="arrow-right" class="directional"></i></button></div><pre id="builder-code-preview" class="training-json"></pre></section>
+
+    <div class="builder-flow-wrap builder-visual-surface" aria-labelledby="builder-flow-heading">
+      <div class="builder-flow-head">
+        <div><p class="eyebrow" id="builder-flow-heading" data-p2="blueprint_map">BLUEPRINT MAP</p><p class="builder-flow-hint" data-p2="blueprint_map_hint">Tap any block to edit that part of the agent.</p></div>
+        <span id="builder-flow-coverage" class="coverage-chip">0 / 8</span>
+      </div>
+      <div class="builder-flow" role="list">
+        <button type="button" class="builder-flow-node" data-builder-part="agent" data-target="builder-identity" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">01</span><span data-p2="part_agent">Agent</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="instructions" data-target="builder-identity" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">02</span><span data-p2="part_instructions">Instructions</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="model" data-target="builder-model-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">03</span><span data-p2="part_model">Model</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="tools" data-target="builder-tools-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">04</span><span data-p2="part_tools">Tools</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="guardrails" data-target="builder-guardrails-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">05</span><span data-p2="part_guardrails">Guardrails</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="handoff" data-target="builder-orchestration-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">06</span><span data-p2="part_handoff">Handoff</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="session" data-target="builder-runtime-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">07</span><span data-p2="part_session">Session</span><span class="flow-state" aria-hidden="true"></span></button>
+        <span class="flow-link" aria-hidden="true">→</span>
+        <button type="button" class="builder-flow-node" data-builder-part="output" data-target="builder-output-card" onclick="jumpToBuilderSection(this.dataset.target)" role="listitem"><span class="flow-index">08</span><span data-p2="part_output">Output</span><span class="flow-state" aria-hidden="true"></span></button>
+      </div>
+    </div>
+
+    <div class="builder-grid builder-visual-surface">
+      <article id="builder-identity" class="panel builder-card builder-card-wide" data-builder-section="identity">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="bot"></i></div><div><p class="eyebrow">01</p><h3 data-p2="identity_title">Agent identity &amp; instructions</h3><p data-p2="identity_desc">Give the agent a clear name and define what it should do.</p></div><span class="builder-status" data-builder-status="identity">—</span></div>
+        <div class="builder-fields two-column-fields">
+          <div class="field"><label for="builder-name" data-p2="agent_name">Agent name</label><input class="field-control" id="builder-name" type="text" maxlength="80" autocomplete="off" placeholder="Research Agent"></div>
+          <div class="field field-span-2"><label for="builder-instructions" data-p2="agent_instructions">Instructions</label><textarea class="field-control" id="builder-instructions" rows="5" dir="auto" placeholder="Describe the agent's role, boundaries and working style."></textarea><p class="field-help" data-p2="instructions_help">Keep this focused on role, goals, boundaries and how the agent should respond.</p></div>
+        </div>
+        <details class="learn-details"><summary data-lab="learn_instructions">Learn: Instructions</summary><div class="learn-grid" data-learn-topic="instructions"></div></details>
+      </article>
+
+      <article id="builder-model-card" class="panel builder-card" data-builder-section="model">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="cpu"></i></div><div><p class="eyebrow">02</p><h3 data-p2="model_title">Model</h3><p data-p2="model_desc">Choose the model used by this training blueprint.</p></div><span class="builder-status" data-builder-status="model">—</span></div>
+        <div class="field"><label for="builder-model" data-p2="model_label">Model selection</label><select class="field-control" id="builder-model">
+          <option value="gpt-6-astra">gpt-6-astra</option><option value="gpt-5.6-terra">gpt-5.6-terra</option><option value="gpt-5.6-luna">gpt-5.6-luna</option>
+        </select></div>
+        <details class="learn-details"><summary data-lab="learn_model">Learn: Model</summary><div class="learn-grid" data-learn-topic="model"></div></details>
+      </article>
+
+      <article id="builder-tools-card" class="panel builder-card" data-builder-section="tools">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="layers"></i></div><div><p class="eyebrow">03</p><h3 data-p2="tools_title">Tools</h3><p data-p2="tools_desc">Select the capabilities available to the agent.</p></div><span class="builder-status" data-builder-status="tools">—</span></div>
+        <div class="builder-option-list">
+          <label class="builder-option"><input type="checkbox" data-builder-tool="web_search"><span><strong>Web search</strong><small data-p2="tool_web_desc">Hosted search capability</small></span></label>
+          <label class="builder-option"><input type="checkbox" data-builder-tool="mcp"><span><strong>MCP server</strong><small data-p2="tool_mcp_desc">External tools exposed through MCP</small></span></label>
+          <label class="builder-option"><input type="checkbox" data-builder-tool="function"><span><strong>Function tool</strong><small data-p2="tool_function_desc">Schema-defined application function</small></span></label>
+          <label class="builder-option"><input type="checkbox" data-builder-tool="agent_tool"><span><strong data-p2="agent_as_tool">Agent as tool</strong><small data-p2="tool_agent_desc">Manager-style specialist delegation</small></span></label>
+        </div>
+        <details class="learn-details"><summary data-lab="learn_tools">Learn: Tools and delegation</summary><div class="learn-grid" data-learn-topic="tools"></div></details>
+        <section id="function-tool-designer" class="subdesigner hidden" aria-labelledby="function-tool-title">
+          <div class="subdesigner-head"><div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><h4 id="function-tool-title" data-lab="function_title">Function Tool Designer</h4><p data-lab="function_desc">Define what the model sees, the arguments it may choose, and the local result returned during simulation.</p></div></div>
+          <div class="builder-fields two-column-fields"><div class="field"><label for="function-tool-name" data-lab="tool_name">Tool name</label><input id="function-tool-name" class="field-control" value="query_customer_db" autocomplete="off"></div><div class="field"><label for="function-tool-description" data-lab="tool_description">Description</label><input id="function-tool-description" class="field-control" value="Look up customer account details by customer ID." autocomplete="off"></div></div>
+          <div class="designer-block"><div class="designer-block-head"><div><span class="eyebrow" data-lab="arguments">ARGUMENTS</span><p data-lab="arguments_desc">The schema tells the model which inputs the tool accepts.</p></div><button type="button" class="button button-secondary compact-button" onclick="addFunctionArgument()"><i data-lucide="plus"></i><span data-lab="add_field">Add field</span></button></div><div id="function-argument-list" class="designer-row-list"></div></div>
+          <div class="approval-config"><div class="field"><label for="function-approval-mode" data-lab="approval_behavior">Approval</label><select id="function-approval-mode" class="field-control"><option value="never" data-lab="approval_never">Never</option><option value="always" data-lab="approval_always">Always</option><option value="conditional" data-lab="approval_conditional">Conditional</option></select></div><div id="function-approval-rule-wrap" class="field hidden"><label for="function-approval-rule" data-lab="approval_rule">Require approval when</label><input id="function-approval-rule" class="field-control" value="amount > 5000" placeholder="amount > 5000"><p class="field-help" data-lab="approval_rule_help">Simple training rule. If it cannot be evaluated, the simulation asks for approval.</p></div></div>
+          <div class="designer-grid"><div><span class="eyebrow" data-lab="generated_schema">GENERATED TOOL SCHEMA</span><pre id="function-schema-output" class="mini-code"></pre></div><div><span class="eyebrow" data-lab="simulated_result">SIMULATED TOOL RESULT</span><textarea id="function-simulated-result" class="field-control code-textarea" rows="7" spellcheck="false">{
+  "customer_id": "9421",
+  "status": "active",
+  "tier": "enterprise"
+}</textarea></div></div>
+          <div class="concept-flow"><span data-lab="human_description">Human description</span><b>→</b><span data-lab="tool_schema">Tool schema</span><b>→</b><span data-lab="agent_sees_tool">Agent sees tool</span><b>→</b><span data-lab="model_args">Model chooses arguments</span><b>→</b><span data-lab="tool_executes">Tool executes</span><b>→</b><span data-lab="tool_returns">Result returns</span></div>
+        </section>
+        <section id="mcp-training-card" class="subdesigner hidden" aria-labelledby="mcp-training-title">
+          <div class="subdesigner-head"><div><span class="accuracy-badge simulation" data-lab="simulation">SIMULATION</span><h4 id="mcp-training-title" data-lab="mcp_title">MCP Configuration Training</h4><p data-lab="mcp_desc">MCP lets an agent use tools exposed by a server. This page simulates discovery only.</p></div></div>
+          <div class="builder-fields two-column-fields"><div class="field"><label for="mcp-server-label" data-lab="server_label">Server label</label><input id="mcp-server-label" class="field-control" value="docs_server" autocomplete="off"></div><div class="field"><label for="mcp-transport" data-lab="transport">Transport</label><select id="mcp-transport" class="field-control"><option value="hosted">Hosted MCP tool</option><option value="streamable_http">Streamable HTTP</option><option value="sse">SSE</option><option value="stdio">stdio</option></select></div><div class="field"><label for="mcp-server-url" data-lab="server_url">Server URL</label><input id="mcp-server-url" class="field-control" value="https://example.com/mcp" autocomplete="off"></div><div class="field"><label for="mcp-approval" data-lab="approval_behavior">Approval behavior</label><select id="mcp-approval" class="field-control"><option value="never" data-lab="approval_never">Never</option><option value="always" data-lab="approval_always">Always</option></select></div></div>
+          <div class="mcp-test-row"><button type="button" class="button button-secondary" onclick="testMcpConnection()"><i data-lucide="plug"></i><span data-lab="test_connection">Test connection</span></button><span id="mcp-test-result" class="mcp-test-result" data-lab="mcp_not_tested">Not tested</span></div><div><span class="eyebrow" data-lab="available_sim_tools">AVAILABLE SIMULATED TOOLS</span><div id="mcp-simulated-tools" class="tool-chip-row"></div></div>
+          <details class="learn-details"><summary data-lab="learn_mcp">Learn: MCP</summary><div class="learn-grid" data-learn-topic="mcp"></div></details>
+        </section>
+      </article>
+
+      <article id="builder-guardrails-card" class="panel builder-card" data-builder-section="guardrails">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="check-circle"></i></div><div><p class="eyebrow">04</p><h3 data-p2="guardrails_title">Guardrails</h3><p data-p2="guardrails_desc">Add checks around agent input and final output.</p></div><span class="builder-status" data-builder-status="guardrails">—</span></div>
+        <div class="builder-option-list">
+          <label class="builder-option"><input type="checkbox" data-builder-guardrail="input"><span><strong data-p2="input_guardrail">Input guardrail</strong><small data-p2="input_guardrail_desc">Validate the initial user input</small></span></label>
+          <label class="builder-option"><input type="checkbox" data-builder-guardrail="output"><span><strong data-p2="output_guardrail">Output guardrail</strong><small data-p2="output_guardrail_desc">Validate the final agent output</small></span></label>
+          <label class="builder-option"><input type="checkbox" data-builder-guardrail="tool"><span><strong data-lab="tool_guardrail">Tool guardrail</strong><small data-lab="tool_guardrail_desc">Validate a custom function tool before or after execution</small></span></label>
+        </div>
+        <details class="learn-details"><summary data-lab="learn_guardrails">Learn: Guardrails</summary><div class="learn-grid" data-learn-topic="guardrails"></div></details>
+      </article>
+
+      <article id="builder-orchestration-card" class="panel builder-card" data-builder-section="handoff">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="network"></i></div><div><p class="eyebrow">05</p><h3 data-p2="handoff_title">Handoffs</h3><p data-p2="handoff_desc">Let this agent transfer the conversation to a specialist.</p></div><span class="builder-status" data-builder-status="handoff">—</span></div>
+        <div class="field"><label for="builder-handoff" data-p2="handoff_label">Specialist handoff</label><select class="field-control" id="builder-handoff">
+          <option value="none" data-p2="handoff_none">None</option>
+          <option value="research" data-p2="handoff_research">Research specialist</option>
+          <option value="support" data-p2="handoff_support">Support specialist</option>
+        </select></div>
+        <details class="learn-details"><summary data-lab="learn_handoff">Learn: Handoffs and agents as tools</summary><div class="learn-grid" data-learn-topic="handoff"></div></details>
+      </article>
+
+      <article id="builder-runtime-card" class="panel builder-card" data-builder-section="session">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="box"></i></div><div><p class="eyebrow">06</p><h3 data-p2="session_title">Session memory</h3><p data-p2="session_desc">Keep working context available across turns in the training run.</p></div><span class="builder-status" data-builder-status="session">—</span></div>
+        <label class="switch-row"><span><strong data-p2="persistent_session">Persistent session</strong><small data-p2="persistent_session_desc">Retain working context between turns</small></span><input type="checkbox" id="builder-session" role="switch"></label>
+        <details class="learn-details"><summary data-lab="learn_session">Learn: Session memory</summary><div class="learn-grid" data-learn-topic="session"></div></details>
+      </article>
+
+      <article id="builder-output-card" class="panel builder-card" data-builder-section="output">
+        <div class="builder-card-head"><div class="builder-card-icon"><i data-lucide="code"></i></div><div><p class="eyebrow">07</p><h3 data-p2="output_title">Output</h3><p data-p2="output_desc">Choose how the final response should be shaped.</p></div><span class="builder-status" data-builder-status="output">—</span></div>
+        <div class="field"><label for="builder-output" data-p2="output_label">Output type</label><select class="field-control" id="builder-output">
+          <option value="text" data-p2="output_text">Text</option>
+          <option value="structured" data-p2="output_structured">Structured output</option>
+        </select></div>
+        <section id="structured-output-designer" class="subdesigner hidden" aria-labelledby="structured-output-title"><div class="subdesigner-head"><div><span class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span><h4 id="structured-output-title" data-lab="structured_title">Structured Output Designer</h4><p data-lab="structured_desc">Define the object shape the training simulation should return.</p></div><button type="button" class="button button-secondary compact-button" onclick="addOutputField()"><i data-lucide="plus"></i><span data-lab="add_field">Add field</span></button></div><div id="output-schema-fields" class="designer-row-list"></div><span class="eyebrow" data-lab="generated_schema">GENERATED SCHEMA</span><pre id="output-schema-preview" class="mini-code"></pre></section>
+        <details class="learn-details"><summary data-lab="learn_output">Learn: Structured output</summary><div class="learn-grid" data-learn-topic="output"></div></details>
+      </article>
+    </div>
+
+    <div class="builder-note builder-visual-surface"><i data-lucide="info"></i><p data-p2="builder_note">This builder is a local training surface. It teaches the main SDK concepts but does not create, deploy or call a live OpenAI agent.</p></div>
+    <section id="bad-good-training" class="panel bad-good-training builder-visual-surface" aria-labelledby="bad-good-title"><div class="secondary-view-head"><div><p class="eyebrow" data-lab="compare_training">CONFIGURATION TRAINING</p><h3 id="bad-good-title" data-lab="bad_good_title">Poor vs improved configuration</h3><p data-lab="bad_good_desc">Compare a weak setup with a clearer one, then see how behavior, tool use, trace, and output change.</p></div><select id="bad-good-topic" class="field-control compact-select" onchange="renderBadGoodTraining()"><option value="instructions" data-lab="bg_instructions">Instructions</option><option value="tool_description" data-lab="bg_tool_desc">Tool description</option><option value="permissions" data-lab="bg_permissions">Agent permissions</option><option value="guardrails" data-lab="bg_guardrails">Guardrails</option><option value="multiagent" data-lab="bg_multiagent">Multi-agent design</option><option value="structured" data-lab="bg_structured">Structured output</option><option value="approval" data-lab="bg_approval">Approval settings</option></select></div><div id="bad-good-content" class="bad-good-grid"></div></section>
+  </section>
+
+  <section id="view-simulator" class="tab-view hidden" hidden aria-labelledby="simulator-heading">
+    <div class="section-heading">
+      <div><p class="eyebrow" data-ui="interactive_sandbox">INTERACTIVE SANDBOX</p><h2 id="simulator-heading" data-i18n="nav_simulator">Session Simulator</h2><p class="section-description" data-p3="simulator_desc">Watch a training run unfold step by step, pause for human approval, then inspect the technical event payloads underneath.</p></div>
+      <span class="quiet-badge"><span class="status-dot"></span><span data-ui="local_simulation">Local simulation</span></span>
+    </div>
+    <div class="simulator-layout">
+      <div class="panel configuration-panel">
+        <div class="panel-heading"><i data-lucide="sliders"></i><h3 data-i18n="sim_config_title">Agent Session Builder</h3></div>
+        <p class="panel-description" data-i18n="sim_config_desc">Configure instructions, tools, environments and triggers</p>
+        <div class="field"><label for="sim-model" data-i18n="lbl_model">Model Selection</label><select class="field-control" id="sim-model">
+<option value="gpt-6-astra">gpt-6-astra (flagship reasoning)</option>
+<option value="gpt-5.6-terra">gpt-5.6-terra (efficient reasoning)</option>
+<option value="gpt-5.6-luna">gpt-5.6-luna (fast everyday tasks)</option>
+</select></div>
+        <div class="field"><label for="sim-instructions" data-i18n="lbl_instructions">System Instructions</label><textarea class="field-control" dir="auto" id="sim-instructions" placeholder="Enter instructions..." rows="3">Use web search, docs MCP, and execute functions to fulfill requests. Delegate sub-tasks when complex.</textarea></div>
+        <div class="field"><label for="sim-environment" data-i18n="lbl_environment">Training session mode</label><select class="field-control" id="sim-environment">
+<option value="local_memory">local_memory (simulated persistent session)</option>
+<option value="conversations_concept">conversations_concept (OpenAI Conversations session concept)</option>
+<option value="stateless">stateless (no simulated memory)</option>
+</select><p class="field-help">Training representation only. This standalone HTML never creates a remote runtime or container.</p></div>
+        <div class="field"><label for="sim-scenario" data-lab="scenario">Scenario</label><select class="field-control" id="sim-scenario"><option value="happy" data-lab="scenario_happy">Happy Path</option><option value="tool_failure" data-lab="scenario_tool_failure">Tool Failure</option><option value="invalid_args" data-lab="scenario_invalid_args">Invalid Tool Arguments</option><option value="approval_rejected" data-lab="scenario_approval_rejected">Approval Rejected</option><option value="input_block" data-lab="scenario_input_block">Input Guardrail Block</option><option value="tool_block" data-lab="scenario_tool_block">Tool Guardrail Block</option><option value="output_block" data-lab="scenario_output_block">Output Guardrail Block</option><option value="mcp_unavailable" data-lab="scenario_mcp_unavailable">MCP Unavailable</option><option value="structured_failure" data-lab="scenario_structured_failure">Structured Output Failure</option><option value="handoff_failure" data-lab="scenario_handoff_failure">Handoff Failure</option></select><p class="field-help" data-lab="scenario_help">Each failure changes the timeline, trace, and final output.</p></div>
+        <fieldset class="tool-fieldset"><legend data-i18n="lbl_tools">Active Tools &amp; Capabilities</legend>
+          <div class="tool-options">
+            <label class="checkbox-row"><input type="checkbox" id="tool-websearch" checked><span>web_search (Native Web Query)</span></label>
+            <label class="checkbox-row"><input type="checkbox" id="tool-mcp" checked><span>mcp (simulated configured server)</span></label>
+            <label class="checkbox-row"><input type="checkbox" id="tool-functions" checked><span>function: <code>query_customer_db</code></span></label>
+            <label class="checkbox-row"><input type="checkbox" id="tool-multiagent" checked><span>multi_agent delegation (Subagents Enabled)</span></label>
+          </div>
+        </fieldset>
+        <div class="field"><label for="sim-prompt" data-i18n="lbl_prompt">User Initial Input</label><textarea class="field-control" dir="auto" id="sim-prompt" rows="3">Investigate customer ID #9421 in database and compare recent API release notes using subagents.</textarea></div>
+        <button type="button" class="button button-primary full-width" id="run-sim-btn" onclick="runSimulation()"><i data-lucide="play"></i><span data-i18n="btn_start_session">Create Session &amp; Start Turn</span></button>
+      </div>
+
+      <div class="stream-column">
+        <div id="stream-panel" class="panel stream-panel phase3-stream">
+          <div class="simulation-run-header">
+            <div id="sim-run-overview" class="sim-run-overview">
+              <span class="sim-run-avatar"><i data-lucide="bot"></i></span>
+              <div class="sim-run-copy">
+                <span class="eyebrow" data-p3="run_overview">TRAINING RUN</span>
+                <strong id="sim-run-agent">Research Agent</strong>
+                <span class="sim-run-meta"><code id="session-id-display">sess_idle</code><span id="sim-run-model">gpt-6-astra</span></span>
+              </div>
+            </div>
+            <div class="sim-run-actions">
+              <span id="sim-run-status" class="run-status" data-state="idle" aria-live="polite">Ready</span>
+              <button type="button" class="button button-quiet" onclick="clearConsole()" data-ui="clear">Clear</button>
+            </div>
+          </div>
+
+          <section id="simulation-input-zone" class="simulation-zone input-zone" aria-labelledby="simulation-input-title">
+            <div class="zone-head"><div><span class="accuracy-badge simulation" data-lab="simulation">SIMULATION</span><p class="eyebrow" data-lab="input_zone">INPUT</p><h3 id="simulation-input-title" data-lab="input_zone_title">What did I send?</h3></div></div><dl id="simulation-input-summary" class="zone-summary"><div><dt data-lab="user_prompt">User prompt</dt><dd>—</dd></div><div><dt data-lab="active_agent">Active agent</dt><dd>—</dd></div><div><dt data-lab="instructions">Instructions</dt><dd>—</dd></div><div><dt data-lab="model">Model</dt><dd>—</dd></div><div><dt data-lab="tools_available">Tools available</dt><dd>—</dd></div><div><dt data-lab="session_state">Session state</dt><dd>—</dd></div></dl>
+          </section>
+          <div class="simulation-stage">
+            <div class="simulation-stage-heading">
+              <div><span class="eyebrow" data-p3="live_execution">LIVE EXECUTION</span><h3 data-p3="timeline_title">Execution timeline</h3></div>
+              <span id="timeline-counter" class="timeline-counter">0 steps</span>
+            </div>
+            <div id="simulation-timeline" class="simulation-timeline" role="list" aria-live="polite" aria-label="Execution timeline">
+              <div id="timeline-placeholder" class="timeline-empty">
+                <span class="icon-wrap"><i data-lucide="play-circle"></i></span>
+                <p data-p3="timeline_empty">Start a simulation to watch the user request, agent work, tools, approvals and final response unfold in order.</p>
+              </div>
+            </div>
+          </div>
+
+          <section id="approval-panel" class="approval-panel hidden" role="region" aria-labelledby="approval-title" aria-live="assertive">
+            <div class="approval-panel-head">
+              <span class="approval-icon"><i data-lucide="pause-circle"></i></span>
+              <div class="approval-panel-head-copy">
+                <span class="eyebrow" data-p3="approval_eyebrow">HUMAN APPROVAL</span>
+                <h3 id="approval-title" data-p3="approval_title">Run paused for approval</h3>
+                <p data-p3="approval_desc">The agent wants to call a tool that requires human approval. Review the request before the run continues.</p>
+              </div>
+            </div>
+            <div class="approval-request">
+              <div class="approval-request-row"><span data-p3="requested_tool">Requested tool</span><strong id="approval-tool">query_customer_db</strong></div>
+              <div class="approval-request-row"><span data-p3="calling_agent">Calling agent</span><strong id="approval-agent">Research Agent</strong></div>
+              <div class="approval-request-row"><span data-p3="call_id">Call ID</span><code id="approval-call-id">call_x9421</code></div>
+            </div>
+            <button type="button" id="approval-arguments-toggle" class="approval-arguments-toggle" aria-expanded="false" aria-controls="approval-arguments" onclick="toggleApprovalArguments()"><span data-p3="view_arguments">View arguments</span><i data-lucide="eye"></i></button>
+            <pre id="approval-arguments" class="approval-arguments hidden" aria-label="Tool arguments">{
+  "customer_id": "9421"
+}</pre>
+            <p class="approval-hint"><i data-lucide="info"></i><span data-p3="approval_hint">Training model: the Agents SDK surfaces an interruption, the result can be converted to RunState, and the same run resumes after approve or reject.</span></p>
+            <div class="approval-actions">
+              <button type="button" id="approval-reject" class="button button-reject" onclick="resolveSimulationApproval('reject')"><i data-lucide="x"></i><span data-p3="reject">Reject</span></button>
+              <button type="button" id="approval-approve" class="button button-primary" onclick="resolveSimulationApproval('approve')"><i data-lucide="check-circle"></i><span data-p3="approve">Approve</span></button>
+            </div>
+          </section>
+
+          <section id="simulation-output-zone" class="simulation-zone output-zone" aria-labelledby="simulation-output-title">
+            <div class="zone-head"><div><p class="eyebrow" data-lab="output_zone">OUTPUT</p><h3 id="simulation-output-title" data-lab="output_zone_title">What came back?</h3></div><span id="output-validation-badge" class="accuracy-badge training" data-lab="training_representation">TRAINING REPRESENTATION</span></div>
+            <div id="final-user-output" class="final-output-box" data-lab="run_not_started">Run a simulation to see the final user-facing output.</div>
+            <div id="structured-output-box" class="structured-output-box hidden"><span class="eyebrow" data-lab="structured_output">STRUCTURED OUTPUT</span><pre id="structured-output-value" class="mini-code"></pre></div>
+            <dl id="simulation-output-summary" class="zone-summary output-summary"><div><dt data-lab="tools_used">Tools used</dt><dd>—</dd></div><div><dt data-lab="approval_decisions">Approval decisions</dt><dd>—</dd></div><div><dt data-lab="handoffs">Handoffs</dt><dd>—</dd></div><div><dt data-lab="guardrail_result">Guardrail result</dt><dd>—</dd></div><div><dt data-lab="run_status">Run status</dt><dd>—</dd></div><div><dt data-lab="sim_duration">Simulated duration</dt><dd>—</dd></div></dl>
+            <div id="simulation-root-cause" class="root-cause hidden"></div>
+          </section>
+          <details id="sim-technical-details" class="technical-details">
+            <summary>
+              <span class="technical-summary-copy"><i data-lucide="terminal"></i><span data-p3="technical_details">Technical details</span><span id="technical-event-count" class="technical-event-count">0 events</span></span>
+            </summary>
+            <div class="technical-body">
+              <div id="sim-console" class="technical-event-list" role="log" aria-label="Simulation events" aria-live="polite" aria-relevant="additions" tabindex="0">
+                <div id="technical-empty" class="technical-empty" data-p3="technical_empty">Run the simulation to populate the event stream.</div>
+              </div>
+              <div class="technical-inspector">
+                <div class="technical-inspector-head"><strong data-p3="selected_event">Selected event</strong><span id="technical-selected-name" class="eyebrow">—</span></div>
+                <pre id="technical-payload">Select a timeline step or event to inspect its payload.</pre>
+              </div>
+            </div>
+          </details>
+        </div>
+        <p class="workspace-note"><i data-lucide="info"></i><span data-ui="simulation_note">Simulated events only. No live API calls or external actions.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-trace" class="tab-view hidden" hidden aria-labelledby="trace-heading">
+    <div class="section-heading trace-section-heading">
+      <div>
+        <p class="eyebrow" data-p45="trace_eyebrow">RUN DIAGNOSTICS</p>
+        <h2 id="trace-heading" data-p45="trace_title">Trace Inspector</h2>
+        <p class="section-description" data-p45="trace_desc">Inspect the latest training run as a hierarchy of agent, tool, handoff, guardrail and approval spans.</p>
+      </div>
+      <div class="trace-heading-actions">
+        <span id="trace-run-badge" class="quiet-badge"><span class="status-dot"></span><span data-p45="trace_latest">Latest local run</span></span>
+        <button type="button" class="button button-secondary" onclick="switchTab('simulator')"><i data-lucide="play-circle"></i><span data-p45="open_simulator">Open simulator</span></button>
+      </div>
+    </div>
+
+    <div class="trace-metrics" aria-label="Trace summary">
+      <article class="trace-metric"><span class="trace-metric-icon"><i data-lucide="activity"></i></span><div><span data-p45="total_spans">Total spans</span><strong id="trace-total-spans">0</strong></div></article>
+      <article class="trace-metric"><span class="trace-metric-icon trace-tool"><i data-lucide="wrench"></i></span><div><span data-p45="tool_spans">Tool spans</span><strong id="trace-tool-spans">0</strong></div></article>
+      <article class="trace-metric"><span class="trace-metric-icon trace-handoff"><i data-lucide="git-branch"></i></span><div><span data-p45="handoff_spans">Handoffs</span><strong id="trace-handoff-spans">0</strong></div></article>
+      <article class="trace-metric"><span class="trace-metric-icon trace-guardrail"><i data-lucide="shield-check"></i></span><div><span data-p45="guardrail_spans">Guardrails</span><strong id="trace-guardrail-spans">0</strong></div></article>
+    </div>
+
+    <div class="trace-toolbar panel">
+      <div class="trace-run-meta">
+        <span class="eyebrow" data-p45="run_context">RUN CONTEXT</span>
+        <strong id="trace-run-agent">—</strong>
+        <span><code id="trace-run-id">sess_idle</code><span aria-hidden="true">·</span><span id="trace-run-model">—</span></span>
+      </div>
+      <div class="trace-filters">
+        <label class="trace-search-wrap" for="trace-search"><i data-lucide="search"></i><span class="sr-only" data-p45="search_trace">Search trace</span><input id="trace-search" type="search" data-p45-placeholder="search_trace_placeholder" placeholder="Search spans" oninput="setTraceFilter()"></label>
+        <label class="trace-kind-wrap"><span class="sr-only" data-p45="filter_kind">Filter by span type</span><select id="trace-kind-filter" class="field-control" onchange="setTraceFilter()">
+          <option value="all" data-p45="filter_all">All spans</option>
+          <option value="agent" data-p45="filter_agent">Agent</option>
+          <option value="tool" data-p45="filter_tool">Tools</option>
+          <option value="handoff" data-p45="filter_handoff">Handoffs</option>
+          <option value="guardrail" data-p45="filter_guardrail">Guardrails</option>
+          <option value="approval" data-p45="filter_approval">Approvals</option>
+        </select></label>
+      </div>
+    </div>
+
+    <div class="trace-layout panel">
+      <div class="trace-list-pane">
+        <div class="trace-pane-head"><div><span class="eyebrow" data-p45="span_tree">SPAN TREE</span><h3 data-p45="trace_sequence">Execution sequence</h3></div><span id="trace-visible-count" class="timeline-counter">0</span></div>
+        <div id="trace-span-list" class="trace-span-list" role="list" aria-label="Trace spans"></div>
+      </div>
+      <aside class="trace-inspector-pane" aria-labelledby="trace-inspector-title">
+        <div class="trace-pane-head"><div><span class="eyebrow" data-p45="span_details">SPAN DETAILS</span><h3 id="trace-inspector-title">—</h3></div><span id="trace-inspector-kind" class="trace-kind-badge">—</span></div>
+        <dl class="trace-detail-grid">
+          <div><dt data-p45="span_id">Span ID</dt><dd><code id="trace-inspector-id">—</code></dd></div>
+          <div><dt data-p45="parent_span">Parent</dt><dd><code id="trace-inspector-parent">—</code></dd></div>
+          <div><dt data-p45="span_status">Status</dt><dd id="trace-inspector-status">—</dd></div>
+          <div><dt data-p45="duration">Duration</dt><dd id="trace-inspector-duration">—</dd></div>
+        </dl>
+        <section id="trace-teaching-panel" class="trace-teaching-panel" aria-label="Trace teaching details"><div class="trace-teaching-grid"><div><span data-lab="what_happened">What happened</span><strong id="trace-teach-what">—</strong></div><div><span data-lab="why_happened">Why it happened</span><strong id="trace-teach-why">—</strong></div><div><span data-lab="trace_input">Input</span><strong id="trace-teach-input">—</strong></div><div><span data-lab="trace_output">Output</span><strong id="trace-teach-output">—</strong></div><div><span data-lab="related_setting">Related Builder setting</span><strong id="trace-teach-setting">—</strong></div><div><span data-lab="possible_issue">Possible issue</span><strong id="trace-teach-issue">—</strong></div><div><span data-lab="inspect_next">What to inspect next</span><strong id="trace-teach-next">—</strong></div></div><button type="button" id="trace-show-builder" class="button button-secondary full-width" onclick="showSelectedTraceInBuilder()"><i data-lucide="sliders"></i><span data-lab="show_in_builder">Show in Builder</span></button></section>
+        <div class="trace-payload-head"><strong data-p45="span_payload">Span payload</strong><span id="trace-inspector-time" class="eyebrow">—</span></div>
+        <pre id="trace-inspector-payload">Select a span to inspect its payload.</pre>
+      </aside>
+    </div>
+    <p class="workspace-note"><i data-lucide="info"></i><span data-p45="trace_note">Training trace only. Span hierarchy and durations are simulated from the local run to teach inspection patterns.</span></p>
+  </section>
+
+  <section id="view-architecture" class="tab-view hidden" hidden aria-labelledby="architecture-heading">
+    <div class="section-heading design-section-heading">
+      <div>
+        <p class="eyebrow" data-p45="design_eyebrow">SYSTEM DESIGN LAB</p>
+        <h2 id="architecture-heading" data-p45="design_title">Orchestration &amp; Guardrail Lab</h2>
+        <p class="section-description" data-p45="design_desc">Compare orchestration patterns, visualize agent relationships, and test where guardrails stop or allow a run.</p>
+      </div>
+      <button type="button" class="button button-secondary" onclick="syncDesignFromBlueprint()"><i data-lucide="refresh-cw"></i><span data-p45="sync_blueprint">Use current blueprint</span></button>
+    </div>
+
+    <div class="design-lab-grid">
+      <section id="orchestration-designer" class="panel design-panel" aria-labelledby="orchestration-heading">
+        <div class="design-panel-head">
+          <div><span class="eyebrow" data-p45="orchestration_eyebrow">ORCHESTRATION DESIGNER</span><h3 id="orchestration-heading" data-p45="orchestration_title">Choose an agent pattern</h3><p data-p45="orchestration_desc">Switch patterns to see how control, delegation, handoffs and approvals change the flow.</p></div>
+          <span id="orchestration-fit" class="coverage-chip" data-state="neutral">Training</span>
+        </div>
+        <div class="orchestration-patterns" role="group" aria-label="Orchestration patterns">
+          <button type="button" data-orchestration="single" aria-pressed="true" onclick="selectOrchestrationPattern('single')"><i data-lucide="bot"></i><span data-p45="pattern_single">Single agent</span></button>
+          <button type="button" data-orchestration="manager" aria-pressed="false" onclick="selectOrchestrationPattern('manager')"><i data-lucide="waypoints"></i><span data-p45="pattern_manager">Manager + agents as tools</span></button>
+          <button type="button" data-orchestration="handoff" aria-pressed="false" onclick="selectOrchestrationPattern('handoff')"><i data-lucide="git-branch"></i><span data-p45="pattern_handoff">Handoff</span></button>
+          <button type="button" data-orchestration="parallel" aria-pressed="false" onclick="selectOrchestrationPattern('parallel')"><i data-lucide="split"></i><span data-p45="pattern_parallel">Parallel specialists</span></button>
+          <button type="button" data-orchestration="approval" aria-pressed="false" onclick="selectOrchestrationPattern('approval')"><i data-lucide="user-check"></i><span data-p45="pattern_approval">Human approval</span></button>
+        </div>
+        <div id="orchestration-canvas" class="orchestration-canvas" role="img" aria-label="Orchestration diagram"></div>
+        <div class="orchestration-explainer">
+          <div><span class="eyebrow" data-p45="how_it_works">HOW IT WORKS</span><strong id="orchestration-pattern-title">Single agent</strong><p id="orchestration-pattern-desc"></p></div>
+          <div class="orchestration-blueprint-fit"><span data-p45="blueprint_fit">Blueprint fit</span><strong id="orchestration-fit-text">—</strong></div>
+        </div>
+        <section class="custom-orchestration" aria-labelledby="custom-orchestration-title"><div class="custom-orch-head"><div><span class="accuracy-badge simulation" data-lab="simulation">SIMULATION</span><h4 id="custom-orchestration-title" data-lab="build_architecture">Build a small orchestration</h4><p data-lab="build_architecture_desc">Add nodes, connect them, and validate the training architecture.</p></div></div><div class="orch-builder-controls"><select id="custom-node-type" class="field-control"><option value="agent">Agent</option><option value="agent_tool">Agent as Tool</option><option value="handoff">Handoff</option><option value="function">Function Tool</option><option value="mcp">MCP</option><option value="approval">Approval</option><option value="guardrail">Guardrail</option><option value="final">Final Output</option></select><button type="button" class="button button-secondary" onclick="addOrchestrationNode()"><i data-lucide="plus"></i><span data-lab="add_node">Add node</span></button></div><div id="custom-orchestration-nodes" class="custom-orch-nodes"></div><div class="connection-controls"><select id="connection-from" class="field-control"></select><span aria-hidden="true">→</span><select id="connection-to" class="field-control"></select><button type="button" class="button button-secondary" onclick="connectOrchestrationNodes()" data-lab="connect">Connect</button></div><div id="custom-orchestration-edges" class="edge-list"></div><div id="architecture-validation" class="architecture-validation"></div><button type="button" class="button button-secondary full-width" onclick="explainCustomArchitecture()"><i data-lucide="info"></i><span data-lab="explain_architecture">Explain this architecture</span></button><div id="architecture-explanation" class="architecture-explanation hidden"></div></section>
+      </section>
+
+      <section id="guardrail-visualizer" class="panel design-panel" aria-labelledby="guardrail-visualizer-heading">
+        <div class="design-panel-head">
+          <div><span class="eyebrow" data-p45="guardrail_eyebrow">GUARDRAIL VISUALIZER</span><h3 id="guardrail-visualizer-heading" data-p45="guardrail_title">Test the control path</h3><p data-p45="guardrail_desc">Run safe and blocked scenarios to see which stage stops the workflow.</p></div>
+          <span id="guardrail-blueprint-status" class="coverage-chip">0 configured</span>
+        </div>
+        <div class="guardrail-controls">
+          <label class="field"><span data-p45="scenario">Scenario</span><select id="guardrail-scenario" class="field-control">
+            <option value="safe" data-p45="scenario_safe">Safe request</option>
+            <option value="input_blocked" data-p45="scenario_input">Input blocked</option>
+            <option value="tool_blocked" data-p45="scenario_tool">Tool blocked</option>
+            <option value="output_blocked" data-p45="scenario_output">Output blocked</option>
+          </select></label>
+          <button type="button" class="button button-primary" onclick="runGuardrailScenario()"><i data-lucide="play"></i><span data-p45="run_guardrail">Run scenario</span></button>
+        </div>
+        <div id="guardrail-pipeline" class="guardrail-pipeline" aria-label="Guardrail pipeline" role="list"></div>
+        <div id="guardrail-result" class="guardrail-result" data-state="idle" role="status" aria-live="polite"><i data-lucide="info"></i><span data-p45="guardrail_idle">Choose a scenario and run it to visualize the control path.</span></div>
+        <div class="guardrail-legend" aria-label="Guardrail states"><span><i data-state="passed"></i><span data-p45="passed">Passed</span></span><span><i data-state="blocked"></i><span data-p45="blocked">Blocked</span></span><span><i data-state="skipped"></i><span data-p45="skipped">Not configured</span></span></div>
+      </section>
+    </div>
+
+    <details class="architecture-reference panel">
+      <summary><span><i data-lucide="network"></i><strong data-p45="reference_flow">SDK architecture reference</strong></span><span data-p45="reference_hint">Open the runtime concept map</span></summary>
+      <div class="architecture-panel architecture-reference-body">
+        <div class="architecture-nodes"><button type="button" class="arch-node" onclick="selectArchNode('client')" data-node="client" aria-pressed="false" aria-controls="arch-details-box">
+          <span class="node-top"><span class="eyebrow">01. Application</span><i data-lucide="smartphone"></i></span><span class="node-title">Your App</span><span class="node-desc">Starts an Agents SDK run and supplies user input, context, and optional session memory.</span></button>
+        <button type="button" class="arch-node" onclick="selectArchNode('harness')" data-node="harness" aria-pressed="false" aria-controls="arch-details-box">
+          <span class="node-top"><span class="eyebrow">02. Runtime</span><i data-lucide="cpu"></i></span><span class="managed-badge">SDK</span><span class="node-title">Agents SDK Runner</span><span class="node-desc">Runs the agent loop, model turns, tool calls, handoffs, guardrails, approvals, and tracing.</span></button>
+        <button type="button" class="arch-node" onclick="selectArchNode('environment')" data-node="environment" aria-pressed="false" aria-controls="arch-details-box">
+          <span class="node-top"><span class="eyebrow">03. State</span><i data-lucide="box"></i></span><span class="node-title">Session / RunState</span><span class="node-desc">Sessions preserve conversation memory; RunState can pause and resume interrupted runs.</span></button>
+        <button type="button" class="arch-node" onclick="selectArchNode('tools')" data-node="tools" aria-pressed="false" aria-controls="arch-details-box">
+          <span class="node-top"><span class="eyebrow">04. Capabilities</span><i data-lucide="layers"></i></span><span class="node-title">Tools &amp; Delegation</span><span class="node-desc">Hosted tools, function tools, MCP servers, agents as tools, and handoffs extend the run.</span></button></div>
+        <div id="arch-details-box" class="architecture-details" role="status" aria-live="polite">
+          <div class="panel-heading"><i data-lucide="info"></i><h3 id="arch-detail-title">Click any node above to inspect its architecture details</h3></div>
+          <p id="arch-detail-desc">Training representation: the Agents SDK provides a higher-level agent runtime over model calls, tools, guardrails, handoffs, sessions, approvals and traces.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section id="view-codestudio" class="tab-view hidden" hidden aria-labelledby="codestudio-heading">
+    <div class="section-heading code-studio-heading">
+      <div><p class="eyebrow" data-p67="sdk_workspace">BLUEPRINT CODE WORKSPACE</p><h2 id="codestudio-heading" data-i18n="nav_codestudio">Code Studio</h2><p class="section-description" data-p67="code_desc">Generated code stays synchronized with the Agent Blueprint. Apply a preset here to push a configuration back into the visual Builder.</p></div>
+      <span class="quiet-badge code-sync-badge" id="code-sync-status"><span class="status-dot"></span><span data-p67="synced_blueprint">Synced to Blueprint</span></span>
+    </div>
+    <div class="code-layout phase67-code-layout">
+      <div class="panel configuration-panel code-configuration">
+        <div class="panel-heading"><i data-lucide="file-code"></i><h3 data-p67="code_controls">Code controls</h3></div>
+        <div class="field"><label for="code-lang" data-ui="target_language">Target Language / SDK</label><select class="field-control" id="code-lang" onchange="handleCodePreferenceChange()">
+          <option value="python">Python SDK</option>
+          <option value="javascript">JavaScript / Node.js SDK</option>
+          <option value="curl">cURL / REST</option>
+        </select></div>
+        <div class="field"><label for="code-scenario" data-p67="builder_preset">Builder preset</label><select class="field-control" id="code-scenario" onchange="updateCodePresetAction()">
+          <option value="blueprint" data-p67="preset_current">Current Blueprint</option>
+          <option value="quickstart" data-p67="preset_quickstart">Quickstart agent</option>
+          <option value="mcp_tools" data-p67="preset_mcp">MCP tools</option>
+          <option value="multiagent" data-p67="preset_multiagent">Multi-agent coordinator</option>
+          <option value="functions" data-p67="preset_approval">Human approval workflow</option>
+        </select></div>
+        <button type="button" id="apply-code-preset" class="button button-secondary full-width" onclick="applyCodePresetToBlueprint()" disabled><i data-lucide="arrow-left-right"></i><span data-p67="apply_preset">Apply preset to Builder</span></button>
+        <div class="code-blueprint-summary" aria-label="Current blueprint summary">
+          <div><span data-p2="part_model">Model</span><strong id="code-summary-model">—</strong></div>
+          <div><span data-p2="part_tools">Tools</span><strong id="code-summary-tools">—</strong></div>
+          <div><span data-p2="part_guardrails">Guardrails</span><strong id="code-summary-guardrails">—</strong></div>
+          <div><span data-p2="part_output">Output</span><strong id="code-summary-output">—</strong></div>
+        </div>
+        <button type="button" class="button button-secondary full-width" onclick="editBlueprint()"><i data-lucide="sliders"></i><span data-p67="open_builder">Open visual Builder</span></button>
+      </div>
+      <div class="panel code-panel phase67-code-panel">
+        <div class="code-header"><span class="code-filename"><i data-lucide="file-code"></i><code id="code-file-name">agent_blueprint.py</code></span><span id="code-accuracy-badge" class="accuracy-badge verified" data-lab="verified_sdk">VERIFIED SDK EXAMPLE</span></div>
+        <div id="code-section-tabs" class="code-section-tabs" role="tablist" aria-label="Code sections">
+          <button type="button" role="tab" aria-selected="true" data-code-section="full" onclick="selectCodeSection('full')" data-p67="code_full">Full agent</button>
+          <button type="button" role="tab" aria-selected="false" data-code-section="agent" onclick="selectCodeSection('agent')" data-p67="code_agent">Agent</button>
+          <button type="button" role="tab" aria-selected="false" data-code-section="tools" onclick="selectCodeSection('tools')" data-p67="code_tools">Tools</button>
+          <button type="button" role="tab" aria-selected="false" data-code-section="guardrails" onclick="selectCodeSection('guardrails')" data-p67="code_guardrails">Guardrails</button>
+          <button type="button" role="tab" aria-selected="false" data-code-section="runtime" onclick="selectCodeSection('runtime')" data-p67="code_runtime">Runtime</button>
+          <button type="button" role="tab" aria-selected="false" data-code-section="json" onclick="selectCodeSection('json')" data-p67="code_json">Blueprint JSON</button>
+        </div>
+        <div id="code-teaching-toolbar" class="code-teaching-toolbar"><button type="button" class="button button-secondary compact-button" onclick="toggleCodeDiff()"><i data-lucide="git-compare"></i><span data-lab="what_changed">What changed?</span></button><button type="button" class="button button-secondary compact-button" onclick="explainCurrentCode()"><i data-lucide="info"></i><span data-lab="explain_code">Explain selected code</span></button><button type="button" class="button button-secondary compact-button" onclick="copyCurrentCodeSection()"><i data-lucide="copy"></i><span data-lab="copy_section">Copy section</span></button><button type="button" class="button button-quiet compact-button" onclick="resetCodeExample()" data-lab="reset_example">Reset example</button></div>
+        <section id="code-diff-panel" class="code-learning-panel hidden"><div><span class="eyebrow" data-lab="configuration_change">CONFIGURATION CHANGE</span><strong id="code-diff-title">—</strong></div><pre id="code-diff-output" class="mini-code"></pre><p id="code-diff-explanation"></p></section>
+        <section id="code-explain-panel" class="code-learning-panel hidden"><span class="eyebrow" data-lab="plain_explanation">PLAIN-LANGUAGE EXPLANATION</span><p id="code-explain-copy"></p></section>
+        <pre class="code-output" dir="ltr" tabindex="0" aria-label="Generated code"><code id="code-display">// Generating code...</code></pre>
+        <div class="code-footer-sync"><span><i data-lucide="refresh-cw"></i><span data-p67="live_sync_hint">Builder edits update this code immediately.</span></span><button type="button" class="button button-secondary compact-button" onclick="copyGeneratedCode()"><i data-lucide="copy"></i><span data-i18n="btn_copy_code">Copy Code to Clipboard</span></button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-quiz" class="tab-view hidden" hidden aria-labelledby="quiz-heading">
+    <div class="challenge-layout">
+      <div class="section-heading challenge-heading">
+        <div><p class="eyebrow" data-p67="challenge_eyebrow">GUIDED PRACTICE</p><h2 id="quiz-heading" data-p67="challenge_title">Missions & Mastery</h2><p class="section-description" data-p67="challenge_desc">Complete practical missions across Builder, Simulator, Trace, Design and Code Studio. Progress is saved locally.</p></div>
+        <div class="mastery-level-card"><span class="eyebrow" data-p67="mastery_level">Mastery level</span><strong id="mastery-level">Explorer</strong><span id="mastery-score-text">0 / 9</span></div>
+      </div>
+      <section class="panel mastery-progress-panel" aria-labelledby="mastery-progress-heading">
+        <div class="mastery-progress-copy"><div><span class="eyebrow" data-p67="mastery_progress">MASTERY PROGRESSION</span><h3 id="mastery-progress-heading" data-p67="keep_building">Build, run, inspect and prove it</h3></div><strong id="mastery-progress-percent">0%</strong></div>
+        <div id="mastery-progress" class="mastery-progress-track" role="progressbar" aria-label="Mastery progress" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0"><span id="mastery-progress-bar"></span></div>
+        <div class="mastery-stage-row" aria-hidden="true"><span data-p67="level_explorer">Explorer</span><span data-p67="level_builder">Builder</span><span data-p67="level_operator">Operator</span><span data-p67="level_master">Master</span></div>
+      </section>
+      <div id="mission-list" class="mission-list" aria-live="polite"></div>
+      <section id="knowledge-check" class="knowledge-check">
+        <div class="section-heading quiz-heading"><div><p class="eyebrow" data-p67="knowledge_check">KNOWLEDGE CHECK</p><h3 data-i18n="quiz_title">Agent API Mastery Challenge</h3><p class="section-description" data-i18n="quiz_subtitle">Test your understanding of Agents SDK tools, approvals, orchestration, sessions and traces.</p></div><div class="score-card"><span class="eyebrow" data-ui="score">Score</span><strong id="quiz-score" aria-live="polite">0 / 3</strong></div></div>
+        <div id="quiz-card-container" class="quiz-card-container"></div>
+      </section>
+    </div>
+  </section>
+</main>
+<aside id="agent-blueprint" class="agent-blueprint" aria-labelledby="blueprint-heading">
+  <button type="button" id="blueprint-toggle" class="blueprint-mobile-summary" aria-expanded="false" aria-controls="blueprint-body" onclick="toggleBlueprint()">
+    <span class="blueprint-mobile-copy"><span class="eyebrow" data-p2="blueprint">AGENT BLUEPRINT</span><strong id="blueprint-mobile-name">Research Agent</strong></span>
+    <span class="blueprint-mobile-progress"><span id="blueprint-mobile-progress">0 / 8</span><i data-lucide="chevron-down" class="blueprint-chevron"></i></span>
+  </button>
+  <div id="blueprint-body" class="blueprint-body">
+    <div class="blueprint-head">
+      <div><p class="eyebrow" data-p2="blueprint">AGENT BLUEPRINT</p><h2 id="blueprint-heading" data-p2="blueprint_title">Your working agent</h2></div>
+      <span class="blueprint-local-badge" data-p2="saved_local">Saved locally</span>
+    </div>
+    <div class="blueprint-identity">
+      <span class="blueprint-avatar"><i data-lucide="bot"></i></span>
+      <div><strong id="blueprint-name">Research Agent</strong><small id="blueprint-model">gpt-6-astra</small></div>
+    </div>
+    <div class="blueprint-coverage">
+      <div class="blueprint-coverage-line"><span data-p2="coverage">Blueprint coverage</span><strong id="blueprint-progress">0 / 8</strong></div>
+      <div class="blueprint-progress-track" role="progressbar" aria-label="Blueprint coverage" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0"><span id="blueprint-progress-bar"></span></div>
+    </div>
+    <dl class="blueprint-list">
+      <div><dt data-p2="part_instructions">Instructions</dt><dd id="blueprint-instructions">—</dd></div>
+      <div><dt data-p2="part_tools">Tools</dt><dd id="blueprint-tools">—</dd></div>
+      <div><dt data-p2="part_guardrails">Guardrails</dt><dd id="blueprint-guardrails">—</dd></div>
+      <div><dt data-p2="part_handoff">Handoff</dt><dd id="blueprint-handoff">—</dd></div>
+      <div><dt data-p2="part_session">Session</dt><dd id="blueprint-session">—</dd></div>
+      <div><dt data-p2="part_output">Output</dt><dd id="blueprint-output">—</dd></div>
+    </dl>
+    <div class="blueprint-actions">
+      <button type="button" class="button button-primary full-width" onclick="editBlueprint()"><i data-lucide="sliders"></i><span data-p2="edit_builder">Edit in Builder</span></button>
+      <button type="button" class="button button-secondary full-width" onclick="resetBlueprint()"><span data-p2="reset_blueprint">Reset blueprint</span></button>
+    </div>
+  </div>
+</aside>
+<div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+<noscript><div class="noscript-notice">Enable JavaScript to use the learning modules and interactive tools.</div></noscript>
+</body>
+</html>
