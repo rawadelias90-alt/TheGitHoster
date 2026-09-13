@@ -10,13 +10,16 @@
     const heroImage = document.querySelector('.hero-visual img');
     if (!heroImage) return;
 
+    // Suppress the known-broken binary source while the verified text chunks load.
+    heroImage.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+    heroImage.removeAttribute('srcset');
+
     try {
-      const paths = [1, 2, 3, 4].map((n) => `./assets/hero-inline-${n}.txt?v=1`);
+      const paths = [1, 2, 3, 4].map((n) => `./assets/hero-inline-${n}.txt?v=2`);
       const responses = await Promise.all(paths.map((path) => fetch(path, { cache: 'no-store' })));
       if (responses.some((response) => !response.ok)) throw new Error('Hero chunk request failed.');
       const chunks = await Promise.all(responses.map((response) => response.text()));
       heroImage.src = `data:image/webp;base64,${chunks.join('').replace(/\s+/g, '')}`;
-      heroImage.removeAttribute('srcset');
     } catch (error) {
       console.error('Inline hero load failed.', error);
     }
