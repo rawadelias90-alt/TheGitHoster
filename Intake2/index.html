@@ -6,6 +6,7 @@
   <meta name="description" content="Intake2 guided new-hire employment visa and work permit intake prototype.">
   <title>Intake2 | New Hire Visa & Work Permit Intake</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./approved-theme.css">
   <script src="./requirements.js" defer></script>
   <script src="./script.js" defer></script>
 </head>
@@ -14,22 +15,15 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand-lockup" href="#" aria-label="Intake2 home" id="brandHome">
-        <span class="brand-symbol" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 28 28" role="img">
-            <path d="M5 7.5h8.5v6H5zM14.5 14.5H23v6h-8.5z" fill="currentColor" opacity=".22"/>
-            <path d="M8 20.5 20 8.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <circle cx="20" cy="8.5" r="2.5" fill="currentColor"/>
-          </svg>
-        </span>
-        <span>
-          <strong>Intake2</strong>
-          <small>New Hire Mobility</small>
-        </span>
+      <a class="brand-lockup" href="#" aria-label="UAE New Hire Intake2 home" id="brandHome">
+        <span class="brand-primary">UAE New Hire</span>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-secondary">Intake2</span>
       </a>
       <div class="header-meta">
-        <span class="draft-pill"><span class="status-dot" aria-hidden="true"></span>Browser draft only</span>
-        <span class="prototype-badge">Prototype</span>
+        <span class="header-team">Government Relation Team</span>
+        <span class="header-divider" aria-hidden="true"></span>
+        <span class="header-region-pill">UAE</span>
       </div>
     </div>
   </header>
@@ -53,23 +47,25 @@
 
   <main id="mainContent" class="site-main">
     <section class="welcome-screen" id="welcomeScreen" aria-labelledby="welcomeTitle">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow">UAE new-hire mobility intake</p>
-          <h1 id="welcomeTitle">One guided journey from candidate details to submission readiness.</h1>
-          <p class="hero-lead">Complete the information and documents needed for employment visa and work permit processing. Intake2 adapts the journey to the selected service route and highlights anything still missing.</p>
-          <div class="hero-actions">
-            <button class="button button-primary button-lg" type="button" id="startRequest">Start new request</button>
-            <p class="microcopy">Nothing is sent or stored outside this browser in this prototype.</p>
+      <div class="hero-editorial">
+        <div class="hero-stage">
+          <div class="hero-copy">
+            <p class="eyebrow">UAE new-hire mobility intake</p>
+            <h1 id="welcomeTitle" class="sr-only">One guided journey from candidate details to submission readiness.</h1>
+            <p class="hero-lead">Complete the information and documents needed for employment visa and work permit processing. Intake2 adapts the journey to the selected service route and highlights anything still missing.</p>
+            <div class="hero-actions">
+              <button class="button button-primary button-lg" type="button" id="startRequest">Start new request <span class="button-arrow" aria-hidden="true">→</span></button>
+              <p class="microcopy sr-only">Nothing is sent or stored outside this browser in this prototype.</p>
+            </div>
           </div>
-          <div class="hero-trust-grid" aria-label="What to expect">
-            <div><strong>Guided</strong><span>Only relevant route steps appear.</span></div>
-            <div><strong>Clear</strong><span>Requirements and missing items stay visible.</span></div>
-            <div><strong>Reviewable</strong><span>Check everything before simulated Submit.</span></div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="./assets/mobility-hero.svg" alt="">
           </div>
         </div>
-        <div class="hero-visual" aria-hidden="true">
-          <img src="./assets/mobility-hero.svg" alt="">
+        <div class="hero-trust-grid" aria-label="What to expect">
+          <div><span class="trust-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></span><span class="trust-copy"><strong>Guided</strong><span>Only relevant route steps appear.</span></span></div>
+          <div><span class="trust-icon trust-icon-violet"><svg class="icon"><use href="./assets/icon-sprite.svg#info"></use></svg></span><span class="trust-copy"><strong>Clear</strong><span>Requirements and missing items stay visible.</span></span></div>
+          <div><span class="trust-icon trust-icon-amber"><svg class="icon"><use href="./assets/icon-sprite.svg#document"></use></svg></span><span class="trust-copy"><strong>Reviewable</strong><span>Check everything before simulated Submit.</span></span></div>
         </div>
       </div>
     </section>
