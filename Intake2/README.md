@@ -1,26 +1,30 @@
 # Intake2
 
-A standalone browser prototype for the UAE New Hire employment visa and work permit intake journey.
+A standalone browser prototype of the documented **New Hire Intake** Power Apps journey.
 
 ## Purpose
 
-Intake2 converts the approved branching logic and document-collection requirements into a guided static web experience for review and interaction. The supplied Branching Logic and Document Collection Form are the business-logic source of truth where they conflict with the earlier simplified prototype.
+Intake2 translates the sanitized logic recorded in `rawadelias90-alt/Intake-Power-Apps` and the approved source documents into a static GitHub Pages prototype for review and interaction. It is intentionally front-end only and does not connect to SharePoint, Power Automate, email, or any production service.
 
-The site is intentionally front-end only. It does not connect to SharePoint, Power Automate, email, or any production service.
+## Current experience
 
-## Current journey
+The prototype uses a nine-stage guided journey:
 
-1. Start / Welcome
+1. Start
 2. Candidate Personal Information
 3. Main Required Documents
-4. Select Service Type
-5. Route-specific Requirements
+4. Service Type
+5. Route-Specific Requirements
 6. Certificate of Equivalency & Education Details
 7. Additional Supporting Documents
 8. Review & Submission Readiness
 9. Confirmation
 
+The attached branching logic and document collection form are authoritative where they conflict with the earlier simplified prototype.
+
 ## Service routes
+
+The prototype supports the six source-defined routes:
 
 - Employment Visa & Work Permit
 - Work Permit for Relative Visa Holders
@@ -29,72 +33,70 @@ The site is intentionally front-end only. It does not connect to SharePoint, Pow
 - Work Permit for GCC National
 - Work Permit for Diplomatic Passport Holder
 
-For Employment Visa & Work Permit, the source CASE A / CASE B note and exact Yes/No `STOP & CONFIRM` question are preserved. Both answers continue to the Special Hire requirements because the supplied branching schema does not define a Yes-to-Case-A / No-to-Case-B mapping.
+Each route shows only the applicable route-specific requirements while preserving the shared candidate, baseline document, education/equivalency, additional-document, review, and confirmation stages.
 
-All service routes continue through Education / Equivalency and Additional Supporting Documents before Review.
+## Structure
 
-## Project structure
-
-- `index.html` — semantic shell, approved header, nine-stage stepper, Welcome screen, workflow shell, readiness panel, confirmation screen.
+- `index.html` — entry point and guided application shell.
 - `styles.css` — base responsive component styling.
-- `approved-theme.css` — approved Welcome Screen design language applied consistently across desktop and mobile screens, including the translucent desktop information-panel treatment.
-- `requirements.js` — source-driven fields, service routes, document rules, applicability rules, and readiness calculations.
-- `script.js` — in-memory draft state, rendering, branching, validation, file staging, review/edit flow, guarded Submit simulation, and retry-ID protection.
-- `assets/mobility-hero.svg` — local layered mobility/document hero artwork.
-- `assets/icon-sprite.svg` — local interface icons.
-- `tests/requirements.test.js` — source-rule and route tests.
-- `tests/shell.test.js` — structural shell checks.
-- `tests/approved-theme.test.js` — approved visual-contract and no-green checks.
-- `docs/2026-09-13-premium-intake2-design.md` — approved design specification.
-- `docs/2026-09-13-premium-intake2-implementation-plan.md` — staged implementation plan.
+- `approved-theme.css` — approved Welcome Screen visual language applied across all screens, including the soft-glass desktop readiness panel treatment.
+- `requirements.js` — source-driven field, document, branching, route, and readiness rules.
+- `script.js` — browser-memory draft state, rendering, navigation, validation, upload staging, review, guarded Submit simulation, and retry protection.
+- `assets/` — local SVG hero and icon assets.
+- `tests/` — source-rule and static UI contract checks.
+- `docs/` — approved design and implementation plan.
 
-All runtime references use relative paths so the project can be served from the repository subfolder.
+All runtime paths are relative so the project can run correctly from the `Intake2/` GitHub Pages subfolder.
 
-## Visual system
+## Business-rule behavior
 
-The approved Welcome Screen is the visual source of truth for all Intake2 screens:
+- One browser-memory draft is shared across the whole journey.
+- Moving between screens does not create or persist a request record.
+- Service Type selects the applicable source-defined route.
+- Employment Visa & Work Permit retains the source `STOP & CONFIRM – Does this request fall under CASE A or CASE B?` Yes/No question without reinterpreting Yes as Case A or No as Case B.
+- Both Employment answers continue to the documented Special Hire requirements.
+- Relative Visa, Golden Visa, Emirati, GCC, and Diplomatic routes show their documented route-specific requirements.
+- Every route continues to Certificate of Equivalency & Education Details, then Additional Supporting Documents.
+- External Cover Passport applicability is driven by the documented sponsorship-location rule.
+- Review shows section completion, missing required items, entered values/staged filenames, and Edit actions.
+- Submit remains disabled until required information and documents for the active route are complete.
+- The prototype creates one simulated request ID on Submit and reuses it on retry.
+- Confirmation is shown only after the simulated guarded-submit sequence succeeds.
 
-- white, editorial/minimal canvas;
-- near-black and deep navy typography/actions;
-- restrained blue, violet, amber and warm neutral accents;
-- no green;
-- thin cool-gray borders and minimal card weight;
-- editorial nine-stage progress treatment;
-- subtle layered/translucent desktop readiness panels instead of heavy dashboard cards;
-- responsive mobile interpretation of the same system rather than a separate mobile style.
+## Visual and responsive design
 
-The hero and icons are local original SVG assets. No external image or icon CDN is required.
+The approved Welcome Screen is the visual source of truth for the experience:
 
-## Prototype behavior
-
-- One in-memory draft is retained while moving backward and forward.
-- No request record or document upload occurs before Submit.
-- Files are staged as browser-side metadata only for the current session.
-- Required fields/documents are calculated from the active service route and confirmed applicability rules.
-- Review shows completion state, missing items, and Edit links back to the relevant step.
-- Submit remains guarded while the request is incomplete or already submitting.
-- One simulated request ID is created on Submit and reused if the simulated document upload fails and the user retries.
-- Confirmation appears only after the simulated submission sequence succeeds.
+- editorial/minimal layout;
+- Segoe UI system-first typography;
+- white canvas with deep navy, muted blue, restrained violet and amber accents;
+- no green styling;
+- linear nine-step progress treatment;
+- light borders and spacious hierarchy;
+- desktop readiness information shown as a lightweight layered translucent / soft-glass panel rather than a heavy dashboard card;
+- mobile forms use the same design system in a single-column responsive interpretation.
 
 ## Prototype boundaries
 
-This site does **not**:
+This site is for interaction and flow review only. It does **not**:
 
 - write to the `Visa Requests` SharePoint list;
 - upload to `NH_Documents`;
-- run the `New Hire Intake - Upload to NH Documents` Power Automate flow;
+- run `New Hire Intake - Upload to NH Documents`;
+- use local storage as persistent storage;
 - send email;
 - contain credentials, API keys, employee submissions, government identifiers, or production documents;
-- persist draft data to local storage;
-- prove end-to-end UAT of the live Canvas app.
+- prove the pending end-to-end UAT of the live Canvas app.
+
+Uploaded files are represented as browser-session metadata for the prototype experience only.
 
 ## Accessibility and responsive behavior
 
-The prototype uses semantic landmarks/headings, explicit labels, keyboard-operable controls, visible focus states, inline validation, live status regions, non-color-only state indicators, reduced-motion support, and responsive layouts. Mobile uses the same approved design language with compact top progress and a single-column form flow.
+The prototype uses semantic landmarks, labelled form controls, keyboard-operable controls, visible focus states, explicit text plus icons for status, live feedback regions, reduced-motion support, and responsive desktop/mobile layouts.
 
 ## Tests
 
-From the repository root:
+From the repository root, run:
 
 ```bash
 node Intake2/tests/requirements.test.js
@@ -104,10 +106,16 @@ node --check Intake2/requirements.js
 node --check Intake2/script.js
 ```
 
+The route tests cover the six source service types, route mapping, shared Education/Equivalency continuation, and the documented External Cover Passport location rule. The approved-theme test checks the approved header/stepper/theme hooks and prevents the previous green palette from returning.
+
 ## Preview
 
-When GitHub Pages serves the repository from the current branch/root configuration, open:
+With GitHub Pages serving the repository from the current branch/root configuration, open:
 
 `https://rawadelias90-alt.github.io/TheGitHoster/Intake2/`
 
-For local preview, serve the repository root with any static web server and open `Intake2/index.html`. No build step or dependency installation is required.
+For local preview, serve the repository root with any static web server and open `Intake2/`. No build step or dependency installation is required.
+
+## Asset provenance
+
+The SVG illustration and icon sprite under `Intake2/assets/` are original project assets created for this prototype. They do not reproduce official UAE government marks, ministry logos, or national emblems.
