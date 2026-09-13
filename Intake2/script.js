@@ -322,7 +322,8 @@
 
     const section = sectionForCurrentStep();
     if (!section) return;
-    state.draft[section][name] = control.value;
+    if (state.currentStep === 'route' && name === 'caseConfirmation') state.draft.service.caseConfirmation = control.value;
+    else state.draft[section][name] = control.value;
     updateReadiness();
 
     if (state.currentStep === 'candidate' && name === 'sponsorshipLocation') setScreenStatus(`${R.mainDocuments.filter((rule) => R.isMainDocumentRequired(rule.id, state.draft.candidate)).length} core documents will be required`);
