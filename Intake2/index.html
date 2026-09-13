@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Prototype of the New Hire Intake journey based on the documented Power Apps intake flow.">
+  <title>Intake2 | New Hire Intake Prototype</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-lockup" aria-label="Intake2">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <p class="eyebrow">New Hire Intake</p>
+        <h1>Intake2</h1>
+      </div>
+    </div>
+    <p class="prototype-badge">Prototype</p>
+  </header>
+
+  <main class="app-shell">
+    <nav class="progress" aria-label="Intake progress">
+      <ol>
+        <li data-progress="welcome" class="is-active"><span>1</span>Start</li>
+        <li data-progress="candidate"><span>2</span>Candidate</li>
+        <li data-progress="visa"><span>3</span>Visa</li>
+        <li data-progress="documents"><span>4</span>Documents</li>
+        <li data-progress="review"><span>5</span>Review</li>
+        <li data-progress="confirmation"><span>6</span>Done</li>
+      </ol>
+    </nav>
+
+    <section class="screen is-active" data-screen="welcome" aria-labelledby="welcome-title">
+      <div class="hero-panel">
+        <p class="eyebrow">One guided journey</p>
+        <h2 id="welcome-title">Start a new hire request</h2>
+        <p>Complete candidate details, visa information, supporting documents, review the draft, then submit once.</p>
+        <div class="logic-note">
+          <strong>Prototype rule:</strong> nothing is persisted while you move between steps. The draft stays in browser memory until final Submit.
+        </div>
+        <button class="button button-primary" type="button" id="startRequest">Start new request</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="candidate" aria-labelledby="candidate-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 2 of 6</p>
+          <h2 id="candidate-title">Candidate details</h2>
+        </div>
+        <p>Identity, mobilisation, contact and employment details.</p>
+      </div>
+
+      <form id="candidateForm" novalidate>
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Candidate name *</span>
+            <input name="candidateName" type="text" autocomplete="name" required>
+          </label>
+          <label class="field">
+            <span>Nationality *</span>
+            <input name="nationality" type="text" required>
+          </label>
+          <label class="field">
+            <span>Mobilisation location</span>
+            <input name="mobilisationLocation" type="text">
+          </label>
+          <label class="field">
+            <span>Email *</span>
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label class="field">
+            <span>Phone</span>
+            <input name="phone" type="tel" autocomplete="tel">
+          </label>
+          <label class="field">
+            <span>Employment start date *</span>
+            <input name="employmentDate" type="date" required>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="button button-secondary" type="button" data-go="welcome">Back</button>
+          <button class="button button-primary" type="submit">Next: Visa details</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="screen" data-screen="visa" aria-labelledby="visa-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 3 of 6</p>
+          <h2 id="visa-title">Visa details</h2>
+        </div>
+        <p>The Special Hire branch appears only for Employment Visa &amp; Work Permit.</p>
+      </div>
+
+      <form id="visaForm" novalidate>
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Service type *</span>
+            <select name="serviceType" id="serviceType" required>
+              <option value="">Select service</option>
+              <option value="Employment Visa & Work Permit">Employment Visa &amp; Work Permit</option>
+              <option value="Other service">Other / non-EV service</option>
+            </select>
+            <small>The second option is a neutral prototype path used only to demonstrate the non-EV branch.</small>
+          </label>
+          <label class="field">
+            <span>Country of birth *</span>
+            <input name="countryOfBirth" type="text" required>
+          </label>
+          <label class="field">
+            <span>UID</span>
+            <input name="uid" type="text" inputmode="numeric">
+          </label>
+          <label class="field">
+            <span>Mother's name</span>
+            <input name="mothersName" type="text">
+          </label>
+          <label class="field">
+            <span>Marital status *</span>
+            <select name="maritalStatus" required>
+              <option value="">Select status</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Visa sponsorship location *</span>
+            <input name="sponsorshipLocation" type="text" required>
+          </label>
+
+          <label class="field field-wide branch-card" id="specialHireGroup" hidden>
+            <span>Special Hire Case *</span>
+            <select name="specialHireCase" id="specialHireCase" disabled>
+              <option value="">Select Yes or No</option>
+              <option value="Yes">Yes — Case A</option>
+              <option value="No">No — Case B</option>
+            </select>
+            <small>There is no Standard case. Case B is Special Hire Case = No.</small>
+          </label>
+
+          <label class="field field-wide branch-card" id="equivalencyGroup" hidden>
+            <span>Certificate of Equivalency *</span>
+            <input name="certificateOfEquivalency" id="certificateOfEquivalency" type="text" disabled>
+            <small>Shown only for Employment Visa &amp; Work Permit when Special Hire Case = No (Case B).</small>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="button button-secondary" type="button" data-go="candidate">Back</button>
+          <button class="button button-primary" type="submit">Next: Documents</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="screen" data-screen="documents" aria-labelledby="documents-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 4 of 6</p>
+          <h2 id="documents-title">Supporting documents</h2>
+        </div>
+        <p>Stage one or more files. This prototype does not upload or store them.</p>
+      </div>
+
+      <div class="upload-card">
+        <label class="file-picker">
+          <span>Select documents</span>
+          <input id="documentInput" type="file" multiple>
+        </label>
+        <p class="helper">Files remain local to this browser session. No network upload occurs before or after Submit in this prototype.</p>
+        <ul id="documentList" class="file-list" aria-live="polite"></ul>
+      </div>
+
+      <div class="actions">
+        <button class="button button-secondary" type="button" data-go="visa">Back</button>
+        <button class="button button-primary" type="button" id="toReview">Review request</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="review" aria-labelledby="review-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 5 of 6</p>
+          <h2 id="review-title">Review</h2>
+        </div>
+        <p>Read-only summary of the in-memory draft. No request record exists yet.</p>
+      </div>
+
+      <div id="reviewSummary" class="review-grid"></div>
+
+      <details class="test-controls">
+        <summary>Prototype test control</summary>
+        <label class="check-row">
+          <input id="simulateUploadFailure" type="checkbox">
+          Simulate document upload failure on Submit
+        </label>
+        <p>Use this to verify that a retry reuses the same request ID instead of creating a duplicate.</p>
+      </details>
+
+      <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+
+      <div class="actions">
+        <button class="button button-secondary" type="button" data-go="documents">Back</button>
+        <button class="button button-primary" type="button" id="submitRequest">Submit request</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="confirmation" aria-labelledby="confirmation-title" hidden>
+      <div class="confirmation-card">
+        <span class="confirmation-icon" aria-hidden="true">✓</span>
+        <p class="eyebrow">Submission complete</p>
+        <h2 id="confirmation-title">Request ready</h2>
+        <p id="confirmationText"></p>
+        <div class="logic-note">
+          This is a front-end prototype only. It simulates the final request and document-upload sequence without contacting SharePoint or Power Automate.
+        </div>
+        <button class="button button-primary" type="button" id="newRequest">Create another request</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Intake2 prototype · No secrets · No API keys · No production data</p>
+  </footer>
+</body>
+</html>
