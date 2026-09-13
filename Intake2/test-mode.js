@@ -8,7 +8,9 @@
 
   const optionalize = (items) => {
     (items || []).forEach((item) => {
-      if (item && typeof item === 'object' && 'required' in item) item.required = false;
+      if (!item || typeof item !== 'object') return;
+      if ('required' in item) item.required = false;
+      if ('requiredWhen' in item) item.requiredWhen = null;
     });
   };
 
@@ -27,19 +29,6 @@
       optionalize(route.specialHire.confirmations);
     }
   });
-
-  try { R.isMainDocumentRequired = () => false; } catch (_) {}
-  try { R.getRequiredRouteItems = () => []; } catch (_) {}
-  try {
-    R.getReadiness = () => ({
-      requiredFields: 0,
-      completedFields: 0,
-      requiredDocuments: 0,
-      completedDocuments: 0,
-      missing: [],
-      ready: true
-    });
-  } catch (_) {}
 
   function dispatchChange(control) {
     if (!control) return;
@@ -69,10 +58,11 @@
 
   const cleanTestUI = () => {
     document.querySelectorAll('.required-mark').forEach((node) => node.remove());
+
     document.querySelectorAll('.requirement-tag.is-required').forEach((node) => {
       node.classList.remove('is-required');
       node.classList.add('is-optional');
-      node.textContent = 'Optional for testing';
+      if (node.textContent !== 'Optional for testing') node.textContent = 'Optional for testing';
     });
 
     document.querySelectorAll('.section-intro span').forEach((node) => {
@@ -82,13 +72,15 @@
     });
 
     const status = document.querySelector('#screenStatus');
-    if (status && /required/i.test(status.textContent)) status.textContent = 'Test mode';
+    if (status && /required/i.test(status.textContent) && status.textContent !== 'Test mode') {
+      status.textContent = 'Test mode';
+    }
 
     const badge = document.querySelector('#readinessBadge');
-    if (badge) badge.textContent = 'Test mode';
+    if (badge && badge.textContent !== 'Test mode') badge.textContent = 'Test mode';
 
     const missing = document.querySelector('#missingPreview');
-    if (missing) missing.hidden = true;
+    if (missing && !missing.hidden) missing.hidden = true;
   };
 
   document.addEventListener('DOMContentLoaded', () => {
