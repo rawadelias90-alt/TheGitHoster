@@ -3,227 +3,171 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Prototype of the New Hire Intake journey based on the documented Power Apps intake flow.">
-  <title>Intake2 | New Hire Intake Prototype</title>
+  <meta name="description" content="Intake2 guided new-hire employment visa and work permit intake prototype.">
+  <title>Intake2 | New Hire Visa & Work Permit Intake</title>
   <link rel="stylesheet" href="./styles.css">
+  <script src="./requirements.js" defer></script>
   <script src="./script.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+
   <header class="site-header">
-    <div class="brand-lockup" aria-label="Intake2">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <div>
-        <p class="eyebrow">New Hire Intake</p>
-        <h1>Intake2</h1>
+    <div class="header-inner">
+      <a class="brand-lockup" href="#" aria-label="Intake2 home" id="brandHome">
+        <span class="brand-symbol" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" role="img">
+            <path d="M5 7.5h8.5v6H5zM14.5 14.5H23v6h-8.5z" fill="currentColor" opacity=".22"/>
+            <path d="M8 20.5 20 8.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="20" cy="8.5" r="2.5" fill="currentColor"/>
+          </svg>
+        </span>
+        <span>
+          <strong>Intake2</strong>
+          <small>New Hire Mobility</small>
+        </span>
+      </a>
+      <div class="header-meta">
+        <span class="draft-pill"><span class="status-dot" aria-hidden="true"></span>Browser draft only</span>
+        <span class="prototype-badge">Prototype</span>
       </div>
     </div>
-    <p class="prototype-badge">Prototype</p>
   </header>
 
-  <main class="app-shell">
-    <nav class="progress" aria-label="Intake progress">
-      <ol>
-        <li data-progress="welcome" class="is-active"><span>1</span>Start</li>
-        <li data-progress="candidate"><span>2</span>Candidate</li>
-        <li data-progress="visa"><span>3</span>Visa</li>
-        <li data-progress="documents"><span>4</span>Documents</li>
-        <li data-progress="review"><span>5</span>Review</li>
-        <li data-progress="confirmation"><span>6</span>Done</li>
+  <nav class="progress-nav" id="progressNav" aria-label="Intake progress">
+    <div class="progress-track-wrap">
+      <ol class="progress-track">
+        <li data-step="welcome" class="is-active"><button type="button" data-progress-target="welcome"><span>1</span><em>Start</em></button></li>
+        <li data-step="candidate"><button type="button" data-progress-target="candidate"><span>2</span><em>Candidate</em></button></li>
+        <li data-step="mainDocuments"><button type="button" data-progress-target="mainDocuments"><span>3</span><em>Core docs</em></button></li>
+        <li data-step="service"><button type="button" data-progress-target="service"><span>4</span><em>Service</em></button></li>
+        <li data-step="route"><button type="button" data-progress-target="route"><span>5</span><em>Your route</em></button></li>
+        <li data-step="education"><button type="button" data-progress-target="education"><span>6</span><em>Education</em></button></li>
+        <li data-step="additional"><button type="button" data-progress-target="additional"><span>7</span><em>Additional</em></button></li>
+        <li data-step="review"><button type="button" data-progress-target="review"><span>8</span><em>Review</em></button></li>
+        <li data-step="confirmation"><button type="button" data-progress-target="confirmation"><span>9</span><em>Done</em></button></li>
       </ol>
-    </nav>
+      <div class="mobile-progress" aria-hidden="true"><span id="mobileProgressLabel">Start</span><span id="mobileProgressCount">1 / 9</span></div>
+    </div>
+  </nav>
 
-    <section class="screen is-active" data-screen="welcome" aria-labelledby="welcome-title">
-      <div class="hero-panel">
-        <p class="eyebrow">One guided journey</p>
-        <h2 id="welcome-title">Start a new hire request</h2>
-        <p>Complete candidate details, visa information, supporting documents, review the draft, then submit once.</p>
-        <div class="logic-note">
-          <strong>Prototype rule:</strong> nothing is persisted while you move between steps. The draft stays in browser memory until final Submit.
+  <main id="mainContent" class="site-main">
+    <section class="welcome-screen" id="welcomeScreen" aria-labelledby="welcomeTitle">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">UAE new-hire mobility intake</p>
+          <h1 id="welcomeTitle">One guided journey from candidate details to submission readiness.</h1>
+          <p class="hero-lead">Complete the information and documents needed for employment visa and work permit processing. Intake2 adapts the journey to the selected service route and highlights anything still missing.</p>
+          <div class="hero-actions">
+            <button class="button button-primary button-lg" type="button" id="startRequest">Start new request</button>
+            <p class="microcopy">Nothing is sent or stored outside this browser in this prototype.</p>
+          </div>
+          <div class="hero-trust-grid" aria-label="What to expect">
+            <div><strong>Guided</strong><span>Only relevant route steps appear.</span></div>
+            <div><strong>Clear</strong><span>Requirements and missing items stay visible.</span></div>
+            <div><strong>Reviewable</strong><span>Check everything before simulated Submit.</span></div>
+          </div>
         </div>
-        <button class="button button-primary" type="button" id="startRequest">Start new request</button>
+        <div class="hero-visual" aria-hidden="true">
+          <img src="./assets/mobility-hero.svg" alt="">
+        </div>
       </div>
     </section>
 
-    <section class="screen" data-screen="candidate" aria-labelledby="candidate-title" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Step 2 of 6</p>
-          <h2 id="candidate-title">Candidate details</h2>
+    <section class="workflow-shell" id="workflowShell" hidden aria-live="off">
+      <div class="workflow-grid">
+        <div class="workflow-main">
+          <header class="screen-heading">
+            <div>
+              <p class="eyebrow" id="screenEyebrow">Step 2 of 9</p>
+              <h1 id="screenTitle">Candidate Personal Information</h1>
+              <p id="screenDescription">Enter the candidate details required to determine the correct mobility route.</p>
+            </div>
+            <div class="screen-status" id="screenStatus" aria-live="polite"></div>
+          </header>
+
+          <div class="error-summary" id="errorSummary" role="alert" hidden></div>
+
+          <section class="form-card" aria-labelledby="screenTitle">
+            <div id="screenHost"></div>
+          </section>
+
+          <div class="workflow-actions" id="workflowActions">
+            <button class="button button-secondary" type="button" id="backButton">Back</button>
+            <div class="workflow-actions-right">
+              <button class="button button-secondary" type="button" id="saveProgressHint" disabled title="Prototype keeps the draft in browser memory only">Draft stays in browser</button>
+              <button class="button button-primary" type="button" id="nextButton">Continue</button>
+              <button class="button button-primary" type="button" id="submitRequest" hidden>Submit request</button>
+            </div>
+          </div>
         </div>
-        <p>Identity, mobilisation, contact and employment details.</p>
+
+        <aside class="readiness-panel" id="readinessPanel" aria-label="Submission readiness">
+          <div class="readiness-sticky">
+            <div class="readiness-heading">
+              <div>
+                <p class="eyebrow">Live readiness</p>
+                <h2>Request status</h2>
+              </div>
+              <span class="readiness-badge" id="readinessBadge">In progress</span>
+            </div>
+
+            <div class="readiness-score" aria-label="Completion progress">
+              <div class="readiness-ring" id="readinessRing" style="--progress:0"><span id="readinessPercent">0%</span></div>
+              <div>
+                <strong id="readinessSummary">Start with candidate information</strong>
+                <span id="readinessMissing">Requirements update as you progress.</span>
+              </div>
+            </div>
+
+            <div class="readiness-metrics">
+              <div><span id="fieldMetric">0 / 0</span><small>Required fields</small></div>
+              <div><span id="documentMetric">0 / 0</span><small>Required documents</small></div>
+            </div>
+
+            <div class="route-preview" id="routePreview">
+              <div class="route-preview-heading">
+                <svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg>
+                <strong>Your route</strong>
+              </div>
+              <p id="routePreviewText">Select a service type to see the applicable route.</p>
+            </div>
+
+            <div class="missing-preview" id="missingPreview" hidden>
+              <div class="missing-preview-heading"><strong>Next items to complete</strong><span id="missingCount"></span></div>
+              <ul id="missingList"></ul>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <form id="candidateForm" novalidate>
-        <div class="form-grid">
-          <label class="field field-wide">
-            <span>Candidate name *</span>
-            <input name="candidateName" type="text" autocomplete="name" required>
-          </label>
-          <label class="field">
-            <span>Nationality *</span>
-            <input name="nationality" type="text" required>
-          </label>
-          <label class="field">
-            <span>Mobilisation location</span>
-            <input name="mobilisationLocation" type="text">
-          </label>
-          <label class="field">
-            <span>Email *</span>
-            <input name="email" type="email" autocomplete="email" required>
-          </label>
-          <label class="field">
-            <span>Phone</span>
-            <input name="phone" type="tel" autocomplete="tel">
-          </label>
-          <label class="field">
-            <span>Employment start date *</span>
-            <input name="employmentDate" type="date" required>
-          </label>
-        </div>
-        <div class="actions">
-          <button class="button button-secondary" type="button" data-go="welcome">Back</button>
-          <button class="button button-primary" type="submit">Next: Visa details</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="screen" data-screen="visa" aria-labelledby="visa-title" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Step 3 of 6</p>
-          <h2 id="visa-title">Visa details</h2>
-        </div>
-        <p>The Special Hire branch appears only for Employment Visa &amp; Work Permit.</p>
-      </div>
-
-      <form id="visaForm" novalidate>
-        <div class="form-grid">
-          <label class="field field-wide">
-            <span>Service type *</span>
-            <select name="serviceType" id="serviceType" required>
-              <option value="">Select service</option>
-              <option value="Employment Visa & Work Permit">Employment Visa &amp; Work Permit</option>
-              <option value="Other service">Other / non-EV service</option>
-            </select>
-            <small>The second option is a neutral prototype path used only to demonstrate the non-EV branch.</small>
-          </label>
-          <label class="field">
-            <span>Country of birth *</span>
-            <input name="countryOfBirth" type="text" required>
-          </label>
-          <label class="field">
-            <span>UID</span>
-            <input name="uid" type="text" inputmode="numeric">
-          </label>
-          <label class="field">
-            <span>Mother's name</span>
-            <input name="mothersName" type="text">
-          </label>
-          <label class="field">
-            <span>Marital status *</span>
-            <select name="maritalStatus" required>
-              <option value="">Select status</option>
-              <option>Single</option>
-              <option>Married</option>
-              <option>Other</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Visa sponsorship location *</span>
-            <input name="sponsorshipLocation" type="text" required>
-          </label>
-
-          <label class="field field-wide branch-card" id="specialHireGroup" hidden>
-            <span>Special Hire Case *</span>
-            <select name="specialHireCase" id="specialHireCase" disabled>
-              <option value="">Select Yes or No</option>
-              <option value="Yes">Yes — Case A</option>
-              <option value="No">No — Case B</option>
-            </select>
-            <small>There is no Standard case. Case B is Special Hire Case = No.</small>
-          </label>
-
-          <label class="field field-wide branch-card" id="equivalencyGroup" hidden>
-            <span>Certificate of Equivalency *</span>
-            <input name="certificateOfEquivalency" id="certificateOfEquivalency" type="text" disabled>
-            <small>Shown only for Employment Visa &amp; Work Permit when Special Hire Case = No (Case B).</small>
-          </label>
-        </div>
-        <div class="actions">
-          <button class="button button-secondary" type="button" data-go="candidate">Back</button>
-          <button class="button button-primary" type="submit">Next: Documents</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="screen" data-screen="documents" aria-labelledby="documents-title" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Step 4 of 6</p>
-          <h2 id="documents-title">Supporting documents</h2>
-        </div>
-        <p>Stage one or more files. This prototype does not upload or store them.</p>
-      </div>
-
-      <div class="upload-card">
-        <label class="file-picker">
-          <span>Select documents</span>
-          <input id="documentInput" type="file" multiple>
-        </label>
-        <p class="helper">Files remain local to this browser session. No network upload occurs before or after Submit in this prototype.</p>
-        <ul id="documentList" class="file-list" aria-live="polite"></ul>
-      </div>
-
-      <div class="actions">
-        <button class="button button-secondary" type="button" data-go="visa">Back</button>
-        <button class="button button-primary" type="button" id="toReview">Review request</button>
-      </div>
-    </section>
-
-    <section class="screen" data-screen="review" aria-labelledby="review-title" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Step 5 of 6</p>
-          <h2 id="review-title">Review</h2>
-        </div>
-        <p>Read-only summary of the in-memory draft. No request record exists yet.</p>
-      </div>
-
-      <div id="reviewSummary" class="review-grid"></div>
-
-      <details class="test-controls">
-        <summary>Prototype test control</summary>
-        <label class="check-row">
-          <input id="simulateUploadFailure" type="checkbox">
-          Simulate document upload failure on Submit
-        </label>
-        <p>Use this to verify that a retry reuses the same request ID instead of creating a duplicate.</p>
+      <details class="prototype-tools" id="prototypeTestTools">
+        <summary>Prototype test tools</summary>
+        <label class="check-row"><input id="simulateUploadFailure" type="checkbox"> Simulate document upload failure on Submit</label>
+        <p>Used only to verify that a retry reuses the same simulated request ID instead of creating a duplicate.</p>
       </details>
-
-      <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
-
-      <div class="actions">
-        <button class="button button-secondary" type="button" data-go="documents">Back</button>
-        <button class="button button-primary" type="button" id="submitRequest">Submit request</button>
-      </div>
     </section>
 
-    <section class="screen" data-screen="confirmation" aria-labelledby="confirmation-title" hidden>
+    <section class="confirmation-screen" id="confirmationScreen" hidden aria-labelledby="confirmationTitle">
       <div class="confirmation-card">
-        <span class="confirmation-icon" aria-hidden="true">✓</span>
-        <p class="eyebrow">Submission complete</p>
-        <h2 id="confirmation-title">Request ready</h2>
-        <p id="confirmationText"></p>
-        <div class="logic-note">
-          This is a front-end prototype only. It simulates the final request and document-upload sequence without contacting SharePoint or Power Automate.
+        <div class="confirmation-mark" aria-hidden="true">
+          <svg class="icon"><use href="./assets/icon-sprite.svg#check"></use></svg>
         </div>
+        <p class="eyebrow">Submission complete</p>
+        <h1 id="confirmationTitle">Request ready</h1>
+        <p id="confirmationText"></p>
+        <div class="confirmation-note">This remains a front-end prototype. It does not contact SharePoint, Power Automate, email, or any production service.</div>
         <button class="button button-primary" type="button" id="newRequest">Create another request</button>
       </div>
     </section>
+
+    <div class="sr-only" id="routeLiveRegion" aria-live="polite"></div>
+    <div class="status-toast" id="statusMessage" role="status" aria-live="polite" hidden></div>
   </main>
 
   <footer class="site-footer">
-    <p>Intake2 prototype · No secrets · No API keys · No production data</p>
+    <div><strong>Intake2 prototype</strong><span>No secrets · No API keys · No production data</span></div>
+    <span>Browser-memory draft only</span>
   </footer>
 </body>
 </html>
