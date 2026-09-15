@@ -75,13 +75,22 @@
                 </label>
               </div>
 
+              <details class="runtime-connection">
+                <summary>Test connection setup</summary>
+                <label class="access-field runtime-url-field">
+                  <span>Power Automate validation URL</span>
+                  <input type="password" name="flowUrl" id="flowUrl" autocomplete="off" spellcheck="false" placeholder="Paste the generated HTTP POST URL for this test" required>
+                </label>
+                <p>This URL is used only for the current validation request. It is not saved in GitHub, localStorage, or sessionStorage.</p>
+              </details>
+
               <p class="access-error" id="accessError" role="alert" aria-live="polite"></p>
 
               <div class="hero-actions access-actions">
-                <button class="button button-primary button-lg" type="submit" id="startRequest">Continue <span class="button-arrow" aria-hidden="true">→</span></button>
+                <button class="button button-primary button-lg" type="submit" id="startRequest">Validate & continue <span class="button-arrow" aria-hidden="true">→</span></button>
               </div>
 
-              <p class="access-note">Prototype gate only for now. These details stay in browser memory; the Power Automate verification call will be connected in the next integration step.</p>
+              <p class="access-note">For this controlled test, access is checked by Power Automate before the intake journey opens.</p>
             </form>
           </div>
           <div class="hero-visual" aria-hidden="true">
@@ -173,7 +182,7 @@
         <p class="eyebrow">Submission complete</p>
         <h1 id="confirmationTitle">Request ready</h1>
         <p id="confirmationText"></p>
-        <div class="confirmation-note">This remains a front-end prototype. It does not contact SharePoint, Power Automate, email, or any production service.</div>
+        <div class="confirmation-note">This remains a front-end prototype. Final SharePoint submission is not connected yet.</div>
         <button class="button button-primary" type="button" id="newRequest">Create another request</button>
       </div>
     </section>
@@ -183,7 +192,7 @@
   </main>
 
   <footer class="site-footer">
-    <div><strong>Intake2 prototype</strong><span>No secrets · No API keys · No production data</span></div>
+    <div><strong>Intake2 prototype</strong><span>Controlled Power Automate access test · No endpoint stored in source</span></div>
   </footer>
 </body>
 </html>
