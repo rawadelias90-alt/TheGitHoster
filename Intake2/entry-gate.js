@@ -14,7 +14,8 @@
     email: '',
     employeeId: '',
     validated: false,
-    validationMode: 'locked'
+    validationMode: 'locked',
+    requestTitle: ''
   };
 
   function setError(message = '', target = '') {
@@ -35,7 +36,8 @@
       email: '',
       employeeId: '',
       validated: false,
-      validationMode: 'locked'
+      validationMode: 'locked',
+      requestTitle: ''
     };
     form.reset();
     const submissionUrlInput = document.querySelector('#submissionUrl');
@@ -66,6 +68,14 @@
     } catch {
       return {};
     }
+  }
+
+  function getOrCreateRequestTitle() {
+    if (!window.Intake2Access) return '';
+    if (!window.Intake2Access.requestTitle) {
+      window.Intake2Access.requestTitle = `INT-${Date.now().toString().slice(-8)}`;
+    }
+    return window.Intake2Access.requestTitle;
   }
 
   async function callPowerAutomate(flowUrl, email, employeeId) {
@@ -272,8 +282,7 @@
         return;
       }
 
-      const requestTitle = submitButton.dataset.requestTitle || `INT-${Date.now().toString().slice(-8)}`;
-      submitButton.dataset.requestTitle = requestTitle;
+      const requestTitle = getOrCreateRequestTitle();
       const originalLabel = submitButton.textContent;
       submitButton.disabled = true;
       submitButton.textContent = 'Submitting…';
@@ -294,7 +303,6 @@
 
         if (response.status === 200) {
           submissionUrlInput.value = '';
-          delete submitButton.dataset.requestTitle;
           showConfirmation(requestTitle, body);
           return;
         }
@@ -348,6 +356,7 @@
 
   window.Intake2AccessGate = {
     validateAccessEntry,
-    clearAccess
+    clearAccess,
+    getOrCreateRequestTitle
   };
 })();
