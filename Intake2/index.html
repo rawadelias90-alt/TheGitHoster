@@ -8,9 +8,11 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./approved-theme.css">
   <link rel="stylesheet" href="./aecom-theme.css">
+  <link rel="stylesheet" href="./entry-gate.css">
   <script src="./requirements.js" defer></script>
   <script src="./test-mode.js" defer></script>
   <script src="./script.js" defer></script>
+  <script src="./entry-gate.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to main content</a>
@@ -54,10 +56,33 @@
           <div class="hero-copy">
             <h1 id="welcomeTitle" class="sr-only">UAE New Hire intake</h1>
             <p class="hero-lead sr-only">Complete the information and documents needed for employment visa and work permit processing.</p>
-            <div class="hero-actions">
-              <button class="button button-primary button-lg" type="button" id="startRequest">Start new request <span class="button-arrow" aria-hidden="true">→</span></button>
-              <p class="microcopy sr-only">Nothing is sent or stored outside this browser in this prototype.</p>
-            </div>
+
+            <form class="access-entry" id="accessForm" novalidate>
+              <div class="access-entry-copy">
+                <p class="access-kicker">Mobilization team access</p>
+                <h2>Start a new request</h2>
+                <p>Enter your AECOM email and Employee ID before continuing to the intake journey.</p>
+              </div>
+
+              <div class="access-fields">
+                <label class="access-field">
+                  <span>AECOM email</span>
+                  <input type="email" name="accessEmail" id="accessEmail" autocomplete="email" placeholder="name@aecom.com" required>
+                </label>
+                <label class="access-field">
+                  <span>Employee ID</span>
+                  <input type="text" name="employeeId" id="employeeId" autocomplete="off" inputmode="text" required>
+                </label>
+              </div>
+
+              <p class="access-error" id="accessError" role="alert" aria-live="polite"></p>
+
+              <div class="hero-actions access-actions">
+                <button class="button button-primary button-lg" type="submit" id="startRequest">Continue <span class="button-arrow" aria-hidden="true">→</span></button>
+              </div>
+
+              <p class="access-note">Prototype gate only for now. These details stay in browser memory; the Power Automate verification call will be connected in the next integration step.</p>
+            </form>
           </div>
           <div class="hero-visual" aria-hidden="true">
             <img src="./assets/mobility-hero-user.webp?v=1" alt="">
