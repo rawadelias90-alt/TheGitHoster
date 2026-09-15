@@ -15,7 +15,7 @@ assert.match(html, /id="accessError"/, 'Access form must provide an accessible v
 assert.match(html, /id="startRequest"[^>]*type="submit"/, 'Start action must submit the access form');
 assert.match(gate, /window\.Intake2Access\s*=\s*\{/, 'Access state must remain browser-memory only');
 assert.match(gate, /function validateAccessEntry\(/, 'Entry gate must validate the two identity fields');
-assert.match(gate, /validated:\s*true/, 'Successful entry validation must unlock the journey');
+assert.match(gate, /Intake2Access\.validated\s*=\s*true/, 'Successful entry validation must unlock the journey');
 assert.match(gate, /validated:\s*false/, 'The access state must have a locked state');
 assert.match(gate, /data-progress-target/, 'Progress navigation must respect the access gate');
 assert.doesNotMatch(gate, /localStorage|sessionStorage/, 'Access identity must not be persisted in browser storage');
