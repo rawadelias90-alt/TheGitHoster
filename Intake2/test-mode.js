@@ -7,7 +7,8 @@
   window.INTAKE2_TEST_MODE = true;
 
   const documentUploadPilot = document.createElement('script');
-  documentUploadPilot.src = './document-upload-pilot.js';
+  const pageVersion = new URL(window.location.href).searchParams.get('v') || Date.now().toString();
+  documentUploadPilot.src = `./document-upload-pilot.js?v=${encodeURIComponent(pageVersion)}`;
   documentUploadPilot.defer = true;
   document.head.append(documentUploadPilot);
 
