@@ -19,6 +19,12 @@ assert.match(pilot, /fileName:\s*file\.name/, 'Upload payload must include origi
 assert.match(pilot, /fileContent:\s*fileContent/, 'Upload payload must include Base64 fileContent');
 assert.match(pilot, /response\.status\s*===\s*200/, 'HTTP 200 must be treated as upload success');
 assert.match(pilot, /response\.status\s*===\s*500|!response\.ok/, 'Upload failures must remain visible to the user');
+
+const successBlockMatch = pilot.match(/if \(response\.status === 200\) \{([\s\S]*?)\n\s*\}/);
+assert.ok(successBlockMatch, 'Upload success block must exist');
+assert.doesNotMatch(successBlockMatch[1], /urlInput\.value\s*=\s*['\"]['\"]/, 'Successful upload must keep the document upload URL for the current page session');
+assert.match(pilot, /if \(!event\.target\.closest\('#newRequest'\)\) return;[\s\S]*?urlInput\.value\s*=\s*['\"]['\"]/, 'Creating another request must clear the document upload URL');
+
 assert.doesNotMatch(pilot, /localStorage|sessionStorage/, 'Document upload URL must not be persisted');
 assert.doesNotMatch(pilot, /https:\/\/[^'\"\s]+environment\.api\.powerplatform\.com/, 'No Power Automate endpoint may be committed in source');
 
