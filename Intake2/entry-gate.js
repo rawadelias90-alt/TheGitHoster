@@ -38,6 +38,10 @@
       validationMode: 'locked'
     };
     form.reset();
+    const submissionUrlInput = document.querySelector('#submissionUrl');
+    const submissionError = document.querySelector('#submissionError');
+    if (submissionUrlInput) submissionUrlInput.value = '';
+    if (submissionError) submissionError.textContent = '';
     setError('');
   }
 
@@ -182,6 +186,138 @@
     startButton.click();
   }
 
+  function installSubmissionPilot() {
+    const prototypeTools = document.querySelector('#prototypeTestTools');
+    const submitButton = document.querySelector('#submitRequest');
+    const workflowShell = document.querySelector('#workflowShell');
+    const welcomeScreen = document.querySelector('#welcomeScreen');
+    const confirmationScreen = document.querySelector('#confirmationScreen');
+    const confirmationText = document.querySelector('#confirmationText');
+    const confirmationNote = document.querySelector('.confirmation-note');
+
+    if (!prototypeTools || !submitButton || !workflowShell || !welcomeScreen || !confirmationScreen || !confirmationText) return;
+
+    prototypeTools.insertAdjacentHTML('beforeend', `
+      <div class="submission-pilot-connection" id="submissionPilotConnection">
+        <label class="access-field runtime-url-field">
+          <span>Power Automate submission URL</span>
+          <input type="password" name="submissionUrl" id="submissionUrl" autocomplete="off" spellcheck="false" placeholder="Paste the Intake2 Submission Test HTTP URL">
+        </label>
+        <p>Used only for this pilot submission request. The URL is not retained after a successful test.</p>
+        <p class="access-error" id="submissionError" role="alert" aria-live="polite"></p>
+      </div>
+    `);
+
+    const submissionUrlInput = document.querySelector('#submissionUrl');
+    const submissionError = document.querySelector('#submissionError');
+    if (!submissionUrlInput || !submissionError) return;
+
+    function setSubmissionError(message = '') {
+      submissionError.textContent = message;
+      submissionUrlInput.removeAttribute('aria-invalid');
+      if (message) submissionUrlInput.setAttribute('aria-invalid', 'true');
+    }
+
+    function showConfirmation(requestTitle, body) {
+      const itemId = body && body.itemId ? String(body.itemId) : '';
+      welcomeScreen.hidden = true;
+      workflowShell.hidden = true;
+      confirmationScreen.hidden = false;
+      confirmationText.textContent = itemId
+        ? `SharePoint item ${itemId} created successfully for request ${requestTitle}.`
+        : `SharePoint item created successfully for request ${requestTitle}.`;
+      if (confirmationNote) confirmationNote.textContent = 'Pilot submission reached SharePoint through Power Automate successfully.';
+
+      const progressItems = Array.from(document.querySelectorAll('#progressNav [data-step]'));
+      progressItems.forEach((item) => {
+        const isDone = item.dataset.step === 'confirmation';
+        item.classList.toggle('is-active', isDone);
+        item.classList.toggle('is-complete', !isDone);
+        const button = item.querySelector('button');
+        if (isDone) button?.setAttribute('aria-current', 'step');
+        else button?.removeAttribute('aria-current');
+      });
+
+      const mobileLabel = document.querySelector('#mobileProgressLabel');
+      const mobileCount = document.querySelector('#mobileProgressCount');
+      if (mobileLabel) mobileLabel.textContent = 'Done';
+      if (mobileCount) mobileCount.textContent = '9 / 9';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function submitToPowerAutomate(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      const submissionUrl = submissionUrlInput.value.trim();
+      setSubmissionError('');
+
+      if (!window.Intake2Access?.validated || !window.Intake2Access?.email) {
+        setSubmissionError('Requester access is not validated. Return to Start and validate again.');
+        return;
+      }
+
+      if (!submissionUrl) {
+        prototypeTools.open = true;
+        setSubmissionError('Paste the Intake2 Submission Test URL before submitting.');
+        submissionUrlInput.focus();
+        prototypeTools.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      if (!validHttpsUrl(submissionUrl)) {
+        prototypeTools.open = true;
+        setSubmissionError('Enter a valid HTTPS Power Automate submission URL.');
+        submissionUrlInput.focus();
+        return;
+      }
+
+      const requestTitle = submitButton.dataset.requestTitle || `INT-${Date.now().toString().slice(-8)}`;
+      submitButton.dataset.requestTitle = requestTitle;
+      const originalLabel = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting…';
+
+      try {
+        const response = await fetch(submissionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: window.Intake2Access?.email || '',
+            requestTitle: requestTitle
+          })
+        });
+
+        const body = await readResponseBody(response);
+
+        if (response.status === 200) {
+          submissionUrlInput.value = '';
+          delete submitButton.dataset.requestTitle;
+          showConfirmation(requestTitle, body);
+          return;
+        }
+
+        if (response.status === 500 || !response.ok) {
+          setSubmissionError(body.message || `Submission failed with HTTP ${response.status}.`);
+          return;
+        }
+
+        setSubmissionError(body.message || `Unexpected Power Automate response: HTTP ${response.status}.`);
+      } catch (error) {
+        console.error('Power Automate submission request failed.');
+        setSubmissionError('Unable to reach the submission flow. Check the Submission URL and try again.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalLabel;
+      }
+    }
+
+    submitButton.addEventListener('click', submitToPowerAutomate, true);
+    submissionUrlInput.addEventListener('input', () => setSubmissionError(''));
+  }
+
   startButton.addEventListener('click', handleStartClick, true);
   form.addEventListener('submit', (event) => event.preventDefault());
 
@@ -207,6 +343,8 @@
       document.querySelector('#brandHome')?.click();
     }
   }, true);
+
+  installSubmissionPilot();
 
   window.Intake2AccessGate = {
     validateAccessEntry,
