@@ -130,7 +130,6 @@
         if (response.status === 200) {
           const storedFileName = body.storedFileName || `${requestTitle}__${file.name}`;
           setResult(`Upload successful: ${storedFileName}`);
-          urlInput.value = '';
           fileInput.value = '';
           pendingRequestTitle = '';
           return;
