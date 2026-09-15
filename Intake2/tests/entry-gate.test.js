@@ -14,7 +14,7 @@ assert.match(html, /name="employeeId"/, 'Access form must collect Employee ID');
 assert.match(html, /id="flowUrl"/, 'Test gate must accept the Power Automate URL at runtime');
 assert.match(html, /type="password"[^>]*id="flowUrl"|id="flowUrl"[^>]*type="password"/, 'Flow URL must be visually protected while entered');
 assert.match(html, /id="accessError"/, 'Access form must provide an accessible validation message');
-assert.match(html, /id="startRequest"[^>]*type="submit"/, 'Start action must submit the access form');
+assert.match(html, /type="submit"[^>]*id="startRequest"|id="startRequest"[^>]*type="submit"/, 'Start action must submit the access form');
 
 assert.match(gate, /window\.Intake2Access\s*=\s*\{/, 'Access state must remain browser-memory only');
 assert.match(gate, /function validateAccessEntry\(/, 'Entry gate must validate the identity fields');
