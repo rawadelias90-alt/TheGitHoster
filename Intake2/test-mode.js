@@ -6,6 +6,11 @@
 
   window.INTAKE2_TEST_MODE = true;
 
+  const documentUploadPilot = document.createElement('script');
+  documentUploadPilot.src = './document-upload-pilot.js';
+  documentUploadPilot.defer = true;
+  document.head.append(documentUploadPilot);
+
   async function loadInlineHero() {
     const heroImage = document.querySelector('.hero-visual img');
     if (!heroImage) return;
