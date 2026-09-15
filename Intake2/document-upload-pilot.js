@@ -64,7 +64,6 @@
     if (!urlInput || !fileInput || !uploadButton || !resultNode) return;
 
     const maxBytes = 2 * 1024 * 1024;
-    let pendingRequestTitle = '';
 
     function setResult(message = '', isError = false) {
       resultNode.textContent = message;
@@ -105,8 +104,12 @@
         return;
       }
 
-      const requestTitle = pendingRequestTitle || `DOC-${Date.now().toString().slice(-8)}`;
-      pendingRequestTitle = requestTitle;
+      const requestTitle = window.Intake2AccessGate?.getOrCreateRequestTitle?.();
+      if (!requestTitle) {
+        setResult('Unable to create the shared Intake2 request ID. Return to Start and validate again.', true);
+        return;
+      }
+
       const originalLabel = uploadButton.textContent;
       uploadButton.disabled = true;
       uploadButton.textContent = 'Uploading…';
@@ -131,7 +134,6 @@
           const storedFileName = body.storedFileName || `${requestTitle}__${file.name}`;
           setResult(`Upload successful: ${storedFileName}`);
           fileInput.value = '';
-          pendingRequestTitle = '';
           return;
         }
 
@@ -152,16 +154,12 @@
 
     uploadButton.addEventListener('click', uploadTestDocument);
     urlInput.addEventListener('input', () => setResult(''));
-    fileInput.addEventListener('change', () => {
-      pendingRequestTitle = '';
-      setResult('');
-    });
+    fileInput.addEventListener('change', () => setResult(''));
 
     document.addEventListener('click', (event) => {
       if (!event.target.closest('#newRequest')) return;
       urlInput.value = '';
       fileInput.value = '';
-      pendingRequestTitle = '';
       setResult('');
     }, true);
   }
