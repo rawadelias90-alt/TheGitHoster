@@ -1,73 +1,87 @@
 const assert = require('node:assert/strict');
 const R = require('../requirements.js');
+const P = require('../production-rules.js');
 
-const expectedServices = [
+assert.equal(R.sourceVersion, P.version);
+assert.equal(R.productionRules, P);
+assert.deepEqual(R.serviceTypes.map((item) => item.label), [
   'Employment Visa & Work Permit',
   'Work Permit for Relative Visa Holders',
   'Work Permit for Golden Visa Holder',
   'Work Permit for Emirati National',
-  'Work Permit for GCC National',
-  'Work Permit for Diplomatic Passport Holder'
-];
-
-assert.deepEqual(R.serviceTypes.map((item) => item.label), expectedServices, 'six source service types must be preserved exactly');
-assert.equal(R.candidateFields.length, 13, '12 source candidate fields plus retained Employment Start Date');
-assert.equal(R.candidateFields.find((item) => item.id === 'candidateFullName').required, true);
-assert.equal(R.candidateFields.find((item) => item.id === 'uid').required, false);
-assert.equal(R.candidateFields.find((item) => item.id === 'religion').options.length, 19, 'all source religion choices must be retained');
-
-assert.equal(R.mainDocuments.some((item) => item.id === 'policeClearanceCertificate'), true, 'PCC from branching schema must be retained');
-assert.equal(R.isMainDocumentRequired('externalCoverPassport', { sponsorshipLocation: 'AECOM Middle East Limited – Dubai' }), true);
-assert.equal(R.isMainDocumentRequired('externalCoverPassport', { sponsorshipLocation: 'AECOM Middle East Limited – DWC' }), true);
-assert.equal(R.isMainDocumentRequired('externalCoverPassport', { sponsorshipLocation: 'AECOM Middle East Limited – Abu Dhabi' }), false);
-assert.equal(R.isMainDocumentRequired('externalCoverPassport', { sponsorshipLocation: 'AECOM Middle East Limited – Al Ain' }), false);
-
-assert.deepEqual(R.getRoute('relativeVisa').documents.map((item) => item.id), [
-  'sponsorPassportCopy',
-  'sponsorResidenceVisa',
-  'sponsorEmiratesId',
-  'sponsorNocLetter'
+  'Work Permit for GCC National'
 ]);
-assert.equal(R.getRoute('goldenVisa').documents.length, 1);
-assert.equal(R.getRoute('emiratiNational').documents.find((item) => item.id === 'familyBook').required, true);
-assert.equal(R.getRoute('gccNational').documents.find((item) => item.id === 'familyBook').required, false);
-assert.equal(R.getRoute('diplomaticPassport').documents.find((item) => item.id === 'embassyApproval').required, false);
+assert.equal(R.getRoute('diplomaticPassport'), null);
 
-assert.equal(R.getRoute('employmentVisa').confirmQuestion, 'STOP & CONFIRM – Does this request fall under CASE A or CASE B?');
-assert.deepEqual(R.getRoute('employmentVisa').confirmOptions, ['Yes', 'No']);
-assert.equal(R.getRoute('employmentVisa').specialHire.confirmations.length, 2);
+assert.equal(R.candidateFields.find((item) => item.id === 'candidateFullName').required, true);
+assert.equal(R.candidateFields.find((item) => item.id === 'expectedJoiningDate').required, true);
+assert.equal(R.candidateFields.find((item) => item.id === 'skilledStatus').required, true);
+assert.equal(R.candidateFields.find((item) => item.id === 'unifiedNumber').required, false);
 
-assert.equal(R.educationFields.find((item) => item.id === 'equivalencyAvailable').required, true);
-assert.equal(R.educationDocuments.find((item) => item.id === 'educationDetailsForm').required, true);
-assert.equal(R.educationDocuments.find((item) => item.id === 'certificateOfEquivalency').required, true);
-assert.equal(R.additionalDocuments[0].required, false);
-
-for (const service of R.serviceTypes) {
-  const route = R.getRoute(service.routeId);
-  assert.ok(route, `route ${service.routeId} must exist`);
-  assert.equal(route.nextStage, 'education', `${service.routeId} must continue to education/equivalency`);
-}
-
-const candidate = Object.fromEntries(R.candidateFields.filter((field) => field.required).map((field) => [field.id, 'x']));
-candidate.sponsorshipLocation = 'AECOM Middle East Limited – Abu Dhabi';
-
-const readyEmployment = R.getReadiness({
-  candidate,
-  mainDocuments: Object.fromEntries(R.mainDocuments.filter((doc) => R.isMainDocumentRequired(doc.id, candidate)).map((doc) => [doc.id, [{ name: 'file.pdf' }]])),
-  service: { serviceType: 'Employment Visa & Work Permit', routeId: 'employmentVisa', caseConfirmation: 'Yes' },
-  route: {
-    homeCountryNationalId: [{ name: 'id.pdf' }],
-    medicalHomeCountryConfirmed: 'Yes',
-    passportEmbassyConfirmed: 'Yes'
+const baseDraft = {
+  candidate: {
+    candidateFullName: 'Test Candidate',
+    nationality: 'Jordan',
+    countryOfBirth: 'Jordan',
+    personalEmail: 'candidate@example.com',
+    contactNumber: '+971500000000',
+    sponsorshipLocation: 'AECOM Dubai',
+    skilledStatus: 'Unskilled',
+    expectedJoiningDate: '2026-10-01'
   },
-  education: {
-    equivalencyAvailable: 'Yes',
-    educationDetailsForm: [{ name: 'education.docx' }],
-    certificateOfEquivalency: [{ name: 'equiv.pdf' }]
+  mainDocuments: {
+    passportCopy: [{ name: 'passport.pdf' }],
+    candidatePhoto: [{ name: 'photo.jpg' }],
+    signedOffer: [{ name: 'offer.pdf' }]
   },
-  additionalDocuments: []
-});
-assert.equal(readyEmployment.missing.length, 0, 'fully populated Employment route should be ready');
-assert.equal(readyEmployment.ready, true);
+  service: {
+    serviceType: 'Employment Visa & Work Permit',
+    routeId: 'employmentVisa',
+    clientApprovalConfirmed: 'Yes',
+    mobilizingFrom: 'Local Hire',
+    intake1Completed: 'Yes'
+  },
+  route: {},
+  education: {},
+  additionalDocuments: {}
+};
+
+assert.equal(R.getOnboardingPath(baseDraft).id, 'EVW-MNL-LOCAL');
+assert.equal(R.isSpecialHireApplicable(baseDraft), false);
+assert.equal(R.getReadiness(baseDraft).ready, true, 'complete unskilled Mainland Local Employment Visa request should be ready');
+
+const specialDraft = structuredClone(baseDraft);
+specialDraft.candidate.nationality = 'Egyptian';
+specialDraft.candidate.sponsorshipLocation = 'AECOM Abu Dhabi';
+specialDraft.service.mobilizingFrom = 'Overseas Hire';
+specialDraft.route.homeCountryNationalId = [{ name: 'national-id.pdf' }];
+assert.equal(R.isSpecialHireApplicable(specialDraft), true);
+assert.equal(R.getOnboardingPath(specialDraft).id, 'EVW-MNL-OVERSEAS-SH');
+assert.equal(R.getReadiness(specialDraft).ready, true);
+
+delete specialDraft.route.homeCountryNationalId;
+const specialMissing = R.getReadiness(specialDraft);
+assert.equal(specialMissing.ready, false);
+assert.ok(specialMissing.missing.some((item) => item.id === 'homeCountryNationalId'));
+
+const skilledDraft = structuredClone(baseDraft);
+skilledDraft.candidate.skilledStatus = 'Skilled';
+skilledDraft.mainDocuments.educationCertificate = [{ name: 'education.pdf' }];
+skilledDraft.education.equivalencyAvailable = 'No';
+skilledDraft.education.awardOrEducationDetailsDocument = [{ name: 'award.pdf' }];
+assert.equal(R.getReadiness(skilledDraft).ready, true, 'Skilled candidate with the No-equivalency document branch should be ready');
+
+const relativeDraft = structuredClone(baseDraft);
+relativeDraft.service = {
+  serviceType: 'Work Permit for Relative Visa Holders',
+  routeId: 'relativeVisa',
+  clientApprovalConfirmed: 'Yes',
+  intake1Completed: 'Yes'
+};
+assert.equal(R.getOnboardingPath(relativeDraft).id, 'WP-MNL-RELATIVE');
+assert.equal(R.getReadiness(relativeDraft).ready, true, 'Relative Visa sponsor documents remain conditional/where applicable');
+
+assert.equal(R.fileRules.maxSizeMB, 10);
+assert.deepEqual(R.fileRules.allowedExtensions, ['pdf', 'jpg', 'jpeg', 'png']);
 
 console.log('requirements tests passed');
