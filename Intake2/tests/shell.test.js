@@ -14,11 +14,11 @@ assert.match(html, /id="routeLiveRegion"/);
 assert.match(html, /id="prototypeTestTools"/);
 assert.match(html, /id="submitRequest"/);
 assert.match(html, /data-step="candidate"/);
-assert.match(html, /data-step="mainDocuments"/);
-assert.match(html, /data-step="service"/);
-assert.match(html, /data-step="route"/);
-assert.match(html, /data-step="education"/);
-assert.match(html, /data-step="additional"/);
+assert.match(html, /data-step="documents"/);
+assert.match(html, /data-step="servicePath"/);
+assert.match(html, /data-step="conditionalRequirements"/);
 assert.match(html, /data-step="review"/);
+assert.match(html, /data-step="confirmation"/);
+assert.doesNotMatch(html, /data-step="mainDocuments"|data-step="service"|data-step="route"|data-step="education"|data-step="additional"/);
 
 console.log('shell tests passed');
