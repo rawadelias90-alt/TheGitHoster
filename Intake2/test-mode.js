@@ -15,8 +15,6 @@
   async function loadInlineHero() {
     const heroImage = document.querySelector('.hero-visual img');
     if (!heroImage) return;
-
-    // Suppress the known-broken binary source while the verified text chunks load.
     heroImage.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
     heroImage.removeAttribute('srcset');
 
@@ -70,16 +68,13 @@
     const host = document.querySelector('#screenHost');
     if (!host) return;
 
-    if (activeStep === 'service' && !host.querySelector('input[name="serviceType"]:checked')) {
+    if (activeStep === 'servicePath' && !host.querySelector('input[name="serviceType"]:checked')) {
       dispatchChange(host.querySelector('input[name="serviceType"]'));
     }
 
-    if (activeStep === 'route' && !host.querySelector('input[name="caseConfirmation"]:checked')) {
-      dispatchChange(host.querySelector('input[name="caseConfirmation"]'));
-    }
-
-    if (activeStep === 'education' && !host.querySelector('input[name="equivalencyAvailable"]:checked')) {
-      dispatchChange(host.querySelector('input[name="equivalencyAvailable"]'));
+    if (activeStep === 'conditionalRequirements') {
+      if (!host.querySelector('input[name="caseConfirmation"]:checked')) dispatchChange(host.querySelector('input[name="caseConfirmation"]'));
+      if (!host.querySelector('input[name="equivalencyAvailable"]:checked')) dispatchChange(host.querySelector('input[name="equivalencyAvailable"]'));
     }
   }, true);
 
@@ -93,15 +88,11 @@
     });
 
     document.querySelectorAll('.section-intro span').forEach((node) => {
-      if (node.textContent.trim() === 'Fields marked * are required.') {
-        node.textContent = 'All fields are optional in prototype test mode.';
-      }
+      if (node.textContent.trim() === 'Fields marked * are required.') node.textContent = 'All fields are optional in prototype test mode.';
     });
 
     const status = document.querySelector('#screenStatus');
-    if (status && /required/i.test(status.textContent) && status.textContent !== 'Test mode') {
-      status.textContent = 'Test mode';
-    }
+    if (status && /required/i.test(status.textContent) && status.textContent !== 'Test mode') status.textContent = 'Test mode';
 
     const badge = document.querySelector('#readinessBadge');
     if (badge && badge.textContent !== 'Test mode') badge.textContent = 'Test mode';
