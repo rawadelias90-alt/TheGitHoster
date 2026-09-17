@@ -13,5 +13,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run Stage 4 data model contract
+      - name: Run Stage 4 contract
         run: node Intake2/tests/stage4-sharepoint-data-model.test.js
+      - name: Run production-rule regression checks
+        run: |
+          node Intake2/tests/production-rules.test.js
+          node Intake2/tests/production-rules-source-sync.test.js
+          node Intake2/tests/stage3-production-runtime.test.js
+      - name: Check Stage 4 JavaScript syntax
+        run: |
+          node --check Intake2/sharepoint-data-model.js
+          node --check Intake2/sharepoint-provisioning.js
+          node --check Intake2/production-rules.js
+          node --check Intake2/requirements.js
