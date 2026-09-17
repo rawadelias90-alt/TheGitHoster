@@ -14,6 +14,11 @@ layout: null
 {%- assign retained3 = old3 | split: '<div class="pillar-system">' | first -%}
 {%- capture new3 -%}{{- retained3 | replace: 'A connected employee experience', 'Fursa - Developing Emirati Talent' | replace: 'تجربة مترابطة للموظف', 'فرصة - تطوير المواهب الإماراتية' -}}      </div>
     </section>{%- endcapture -%}
+{%- assign with3 = full | replace: old3, new3 -%}
+{%- assign open6 = '<section class="slide" id="slide-6"' -%}
+{%- assign body6 = with3 | split: open6 | last | split: '</section>' | first -%}
+{%- assign old6 = open6 | append: body6 | append: '</section>' -%}
+{%- capture new6 -%}{{- old6 | replace: 'Emirati work permit cancellations', 'Emirati work permit cancellations since the beginning of 2026' | replace: 'إلغاءات تصاريح عمل الإماراتيين', 'إلغاءات تصاريح عمل الإماراتيين منذ بداية عام 2026' -}}{%- endcapture -%}
 {%- capture head_end -%}
 <style id="slide3-fursa-description">
 #slide-3 .section-heading--row { display: block; margin-bottom: 0; }
@@ -27,4 +32,4 @@ layout: null
 }
 </style>
 </head>{%- endcapture -%}
-{{- full | replace: old3, new3 | replace: '</head>', head_end -}}
+{{- with3 | replace: old6, new6 | replace: '</head>', head_end -}}
