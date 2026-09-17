@@ -1,7 +1,7 @@
 import { ENTITIES, SERVICE_TYPES, NATIONALITIES, resolveCase, getQuestionSequence, browseCases } from "./services.js";
 
 const app = document.getElementById("app");
-const COVER_LOGO = "./assets/aecom-logo.webp";
+const COVER_LOGO = "./assets/aecom-logo.png";
 
 const state = {
   mode: "welcome",
@@ -208,15 +208,15 @@ function renderResult(result) {
           </div>
           <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
           <div class="summary-grid">
-            <section class="summary-item">
+            <section class="summary-item" tabindex="0">
               <h2>Before Intake 2</h2>
               <p>${escapeHtml(result.beforeIntake2)}</p>
             </section>
-            <section class="summary-item">
+            <section class="summary-item" tabindex="0">
               <h2>GRO route</h2>
               <p>${escapeHtml(result.next)}</p>
             </section>
-            <section class="summary-item">
+            <section class="summary-item" tabindex="0">
               <h2>Joining</h2>
               <p>${escapeHtml(result.joining)}</p>
             </section>
