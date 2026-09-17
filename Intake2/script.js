@@ -6,11 +6,11 @@
 
   const steps = ['welcome', 'candidate', 'documents', 'servicePath', 'conditionalRequirements', 'review', 'confirmation'];
   const stepMeta = {
-    candidate: { eyebrow: 'Step 2 of 7', title: 'Candidate Information', description: 'Enter the candidate information used to determine the applicable onboarding path.' },
-    documents: { eyebrow: 'Step 3 of 7', title: 'Documents', description: 'Stage the baseline documents required for the request.' },
-    servicePath: { eyebrow: 'Step 4 of 7', title: 'Service & Onboarding Path', description: 'Select the service. Intake2 will show the applicable onboarding path and requirements.' },
-    conditionalRequirements: { eyebrow: 'Step 5 of 7', title: 'Conditional Requirements', description: 'Complete only the additional requirements that apply to this request.' },
-    review: { eyebrow: 'Step 6 of 7', title: 'Review & Submit', description: 'Check the request, resolve missing items, and submit when ready.' }
+    candidate: { eyebrow: 'Step 2 of 7', title: 'Candidate Information', description: 'Confirm the candidate information required to determine the applicable onboarding path.' },
+    documents: { eyebrow: 'Step 3 of 7', title: 'Documents', description: 'Add the common documents and any conditional documents that already apply.' },
+    servicePath: { eyebrow: 'Step 4 of 7', title: 'Service & Onboarding Path', description: 'Select the service and confirm the preconditions required before Intake 2.' },
+    conditionalRequirements: { eyebrow: 'Step 5 of 7', title: 'Conditional Requirements', description: 'Complete only the additional requirements that apply to this candidate.' },
+    review: { eyebrow: 'Step 6 of 7', title: 'Review & Submit', description: 'Check the request, resolve any missing required items, and submit when ready.' }
   };
 
   const state = {
@@ -56,7 +56,13 @@
     return {
       candidate: {},
       mainDocuments: {},
-      service: { serviceType: '', routeId: '', caseConfirmation: '' },
+      service: {
+        serviceType: '',
+        routeId: '',
+        clientApprovalConfirmed: '',
+        mobilizingFrom: '',
+        intake1Completed: ''
+      },
       route: {},
       education: {},
       additionalDocuments: {},
@@ -79,15 +85,16 @@
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  function acceptFor(documentRule) {
-    const map = {
-      Image: 'image/*', PDF: '.pdf', Word: '.doc,.docx', Excel: '.xls,.xlsx', PPT: '.ppt,.pptx', Video: 'video/*', Audio: 'audio/*'
-    };
-    return (documentRule.allowedTypes || []).map((type) => map[type]).filter(Boolean).join(',');
+  function acceptFor(rule) {
+    return (rule.allowedExtensions || []).map((ext) => `.${ext}`).join(',');
   }
 
   function currentRoute() {
     return R.getRoute(state.draft.service.routeId || R.getRouteIdForService(state.draft.service.serviceType));
+  }
+
+  function currentPath() {
+    return R.getOnboardingPath(state.draft);
   }
 
   function setStatus(message = '', type = '') {
@@ -137,7 +144,7 @@
   }
 
   function renderField(field, section) {
-    const value = state.draft[section][field.id] || '';
+    const value = state.draft[section]?.[field.id] || '';
     const required = field.required ? '<span class="required-mark" aria-hidden="true">*</span>' : '';
     const requiredText = field.required ? ' <span class="sr-only">required</span>' : '';
     const helper = field.helper ? `<p class="field-helper" id="help-${field.id}">${escapeHtml(field.helper)}</p>` : '';
@@ -155,16 +162,19 @@
     return `<label class="field-group"><span>${escapeHtml(field.label)} ${required}${requiredText}</span>${helper}<input name="${field.id}" data-section="${section}" type="${field.type}" value="${escapeHtml(value)}" ${field.required ? 'required' : ''} autocomplete="${autocomplete}" aria-describedby="${describedBy}"><p class="field-error" id="error-${field.id}" aria-live="polite"></p></label>`;
   }
 
-  function renderDocumentCard(rule, section, requiredOverride) {
-    const required = requiredOverride !== undefined ? requiredOverride : Boolean(rule.required);
-    const files = state.draft[section][rule.id] || [];
+  function renderDocumentCard(rule, section) {
+    const files = state.draft[section]?.[rule.id] || [];
     const guidance = [];
-    if (rule.maxFiles) guidance.push(`Up to ${rule.maxFiles} file${rule.maxFiles === 1 ? '' : 's'}`);
-    if (rule.maxSizeGB) guidance.push(`${rule.maxSizeGB}GB max per file`);
-    if (rule.allowedTypes && rule.allowedTypes.length) guidance.push(rule.allowedTypes.join(', '));
+    if (rule.allowMultiple) guidance.push('Multiple files allowed');
+    else guidance.push('One file');
+    if (rule.maxSizeMB) guidance.push(`${rule.maxSizeMB} MB max per file`);
+    if (rule.allowedExtensions?.length) guidance.push(rule.allowedExtensions.map((ext) => ext.toUpperCase()).join(', '));
     const accept = acceptFor(rule);
-    const fileList = files.length ? `<div class="staged-files">${files.map((file, index) => `<span class="file-chip"><svg class="icon"><use href="./assets/icon-sprite.svg#document"></use></svg><span>${escapeHtml(file.name)} <small>${formatFileSize(file.size)}</small></span><button type="button" class="icon-button" data-remove-file="${rule.id}" data-section="${section}" data-index="${index}" aria-label="Remove ${escapeHtml(file.name)}">×</button></span>`).join('')}</div>` : '<p class="empty-file-state">No file staged yet.</p>';
-    return `<article class="document-card ${files.length ? 'has-files' : ''}" data-document-id="${rule.id}"><div class="document-card-top"><div class="document-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#upload"></use></svg></div><div class="document-copy"><div class="document-title-row"><h3>${escapeHtml(rule.label)}</h3><span class="requirement-tag ${required ? 'is-required' : 'is-optional'}">${required ? 'Required' : 'If applicable'}</span></div>${rule.helper ? `<p>${escapeHtml(rule.helper)}</p>` : ''}${guidance.length ? `<p class="file-guidance">${escapeHtml(guidance.join(' · '))}</p>` : '<p class="file-guidance">File guidance is not specified in the supplied source.</p>'}</div></div>${fileList}<label class="upload-button"><span>${files.length ? 'Add or replace file' : 'Choose file'}</span><input type="file" name="${rule.id}" data-file-input="${rule.id}" data-section="${section}" ${accept ? `accept="${accept}"` : ''} ${rule.maxFiles !== 1 ? 'multiple' : ''}></label><p class="field-error" id="error-${rule.id}" aria-live="polite"></p></article>`;
+    const fileList = files.length
+      ? `<div class="staged-files">${files.map((file, index) => `<span class="file-chip"><svg class="icon"><use href="./assets/icon-sprite.svg#document"></use></svg><span>${escapeHtml(file.name)} <small>${formatFileSize(file.size)}</small></span><button type="button" class="icon-button" data-remove-file="${rule.id}" data-section="${section}" data-index="${index}" aria-label="Remove ${escapeHtml(file.name)}">×</button></span>`).join('')}</div>`
+      : '<p class="empty-file-state">No file staged yet.</p>';
+
+    return `<article class="document-card ${files.length ? 'has-files' : ''}" data-document-id="${rule.id}"><div class="document-card-top"><div class="document-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#upload"></use></svg></div><div class="document-copy"><div class="document-title-row"><h3>${escapeHtml(rule.label)}</h3><span class="requirement-tag ${rule.required ? 'is-required' : 'is-optional'}">${rule.required ? 'Required' : 'If applicable'}</span></div>${rule.helper ? `<p>${escapeHtml(rule.helper)}</p>` : ''}<p class="file-guidance">${escapeHtml(guidance.join(' · '))}</p></div></div>${fileList}<label class="upload-button"><span>${files.length ? 'Replace or add file' : 'Choose file'}</span><input type="file" name="${rule.id}" data-file-input="${rule.id}" data-section="${section}" ${accept ? `accept="${accept}"` : ''} ${rule.allowMultiple ? 'multiple' : ''}></label><p class="field-error" id="error-${rule.id}" aria-live="polite"></p></article>`;
   }
 
   function renderCandidate() {
@@ -173,43 +183,54 @@
   }
 
   function renderDocuments() {
-    const location = state.draft.candidate.sponsorshipLocation;
-    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#info"></use></svg><div><strong>Core documents</strong><p>Stage the documents used across the selected service. Conditional requirements will appear later.</p></div></div><div class="document-grid">${R.mainDocuments.map((rule) => renderDocumentCard(rule, 'mainDocuments', R.isMainDocumentRequired(rule.id, state.draft.candidate))).join('')}</div>`;
-    const count = R.mainDocuments.filter((rule) => R.isMainDocumentRequired(rule.id, state.draft.candidate)).length;
-    setScreenStatus(`${count} required document${count === 1 ? '' : 's'}${location ? ` for ${shortLocation(location)}` : ''}`);
+    const documents = R.getCoreDocuments(state.draft);
+    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#info"></use></svg><div><strong>Core documents</strong><p>Common documents are required for every request. Other items appear only when relevant to the candidate information already entered.</p></div></div><div class="document-grid">${documents.map((rule) => renderDocumentCard(rule, 'mainDocuments')).join('')}</div>`;
+    const requiredCount = documents.filter((rule) => rule.required).length;
+    setScreenStatus(`${requiredCount} required document${requiredCount === 1 ? '' : 's'}`);
   }
 
   function serviceSelectionMarkup() {
     const selected = state.draft.service.serviceType;
-    return `<div class="section-intro"><div class="section-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></div><div><strong>Choose a service</strong><span>Your selection determines the onboarding path and next requirements.</span></div></div><fieldset class="field-group field-group-wide"><legend>Select Service Type <span class="required-mark" aria-hidden="true">*</span><span class="sr-only">required</span></legend><div class="service-grid">${R.serviceTypes.map((service) => `<label class="service-card"><input type="radio" name="serviceType" data-section="service" value="${escapeHtml(service.value)}" data-route-id="${service.routeId}" ${selected === service.value ? 'checked' : ''}><span class="service-card-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></span><span><strong>${escapeHtml(service.label)}</strong><small>${pathSummary(service.routeId)}</small></span><span class="service-radio" aria-hidden="true"></span></label>`).join('')}</div><p class="field-error" id="error-serviceType" aria-live="polite"></p></fieldset>`;
+    return `<div class="section-intro"><div class="section-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></div><div><strong>Choose a service</strong><span>The service, entity and hire status determine the onboarding path.</span></div></div><fieldset class="field-group field-group-wide"><legend>Select Service Type <span class="required-mark" aria-hidden="true">*</span><span class="sr-only">required</span></legend><div class="service-grid">${R.serviceTypes.map((service) => `<label class="service-card"><input type="radio" name="serviceType" data-section="service" value="${escapeHtml(service.value)}" data-route-id="${service.routeId}" ${selected === service.value ? 'checked' : ''}><span class="service-card-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></span><span><strong>${escapeHtml(service.label)}</strong><small>${escapeHtml(serviceSummary(service.routeId))}</small></span><span class="service-radio" aria-hidden="true"></span></label>`).join('')}</div><p class="field-error" id="error-serviceType" aria-live="polite"></p></fieldset>`;
+  }
+
+  function servicePreconditionsMarkup() {
+    if (!state.draft.service.serviceType) return '';
+    const fields = R.getServicePathFields(state.draft);
+    return `<div class="subsection-heading"><span>Before Intake 2</span><h2>Confirm readiness</h2></div><div class="form-grid">${fields.map((field) => renderField(field, 'service')).join('')}</div>`;
   }
 
   function renderServicePath() {
+    const path = currentPath();
     const route = currentRoute();
-    const pathPreview = route ? `<div class="route-banner"><div class="route-banner-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#passport"></use></svg></div><div><p class="eyebrow">Onboarding path</p><h2>${escapeHtml(route.title)}</h2><p>${escapeHtml(pathSummary(route.id))}</p></div></div>` : '<div class="empty-state"><strong>Your onboarding path will appear here.</strong><p>Select a service to continue.</p></div>';
-    dom.screenHost.innerHTML = `${serviceSelectionMarkup()}${pathPreview}`;
-    setScreenStatus(route ? route.title : 'Selection required');
+    const specialHire = R.isSpecialHireApplicable(state.draft);
+    let pathPreview = '<div class="empty-state"><strong>Your onboarding path will appear here.</strong><p>Select the service and complete the required service details.</p></div>';
+
+    if (path) {
+      pathPreview = `<div class="route-banner"><div class="route-banner-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#passport"></use></svg></div><div><p class="eyebrow">Onboarding path</p><h2>${escapeHtml(path.label)}</h2><p>${path.intake1Required ? 'Intake 1 applies to this path.' : 'No Intake 1 is required for this path.'}${specialHire ? ' Special Hire requirements apply.' : ''}</p></div></div>`;
+    } else if (route) {
+      pathPreview = '<div class="empty-state"><strong>Complete the service details.</strong><p>The final onboarding path will appear once the required information is available.</p></div>';
+    }
+
+    dom.screenHost.innerHTML = `${serviceSelectionMarkup()}${servicePreconditionsMarkup()}${pathPreview}`;
+    setScreenStatus(path ? path.label : route ? 'Complete service details' : 'Selection required');
   }
 
-  function renderEmploymentPathRequirements(route) {
-    const answer = state.draft.service.caseConfirmation || '';
-    return `<div class="important-note"><div class="important-note-heading"><svg class="icon"><use href="./assets/icon-sprite.svg#warning"></use></svg><div><span>Important note</span><strong>Check whether the request falls under the source Case A or Case B criteria.</strong></div></div><p>${escapeHtml(route.importantNote.intro)}</p><div class="case-grid"><div><span class="case-label">Case A</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseA.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseA.hiredUnder.join(' · '))}</p></div><div><span class="case-label">Case B</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseB.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseB.hiredUnder.join(' · '))}</p></div></div></div><fieldset class="field-group field-group-wide stop-confirm"><legend>${escapeHtml(route.confirmQuestion)} <span class="required-mark" aria-hidden="true">*</span></legend><div class="choice-grid choice-grid-compact">${route.confirmOptions.map((option) => `<label class="choice-card"><input type="radio" name="caseConfirmation" data-section="service" value="${option}" ${answer === option ? 'checked' : ''}><span><strong>${option}</strong></span></label>`).join('')}</div><p class="field-error" id="error-caseConfirmation" aria-live="polite"></p></fieldset><div class="subsection-heading"><span>Special Hire Case</span><h2>Required confirmations and identification</h2></div><div class="document-grid">${route.specialHire.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div><div class="confirmation-list">${route.specialHire.confirmations.map((field) => renderConfirmationField(field)).join('')}</div>`;
-  }
-
-  function renderConfirmationField(field) {
-    const value = state.draft.route[field.id] || '';
-    return `<fieldset class="confirmation-item"><legend>${escapeHtml(field.label)} <span class="required-mark" aria-hidden="true">*</span></legend><label class="confirmation-choice"><input type="radio" name="${field.id}" data-section="route" value="Yes" ${value === 'Yes' ? 'checked' : ''}><span><svg class="icon"><use href="./assets/icon-sprite.svg#check"></use></svg>Yes, confirmed</span></label><p class="field-error" id="error-${field.id}" aria-live="polite"></p></fieldset>`;
-  }
-
-  function pathRequirementsMarkup() {
-    const route = currentRoute();
-    if (!route) return '<div class="empty-state"><strong>No service selected.</strong><p>Return to Service & Path and select the applicable service.</p></div>';
-    if (route.id === 'employmentVisa') return renderEmploymentPathRequirements(route);
-    return `<div class="subsection-heading"><span>Onboarding path</span><h2>${escapeHtml(route.title)}</h2></div><div class="document-grid">${route.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div>`;
+  function routeRequirementsMarkup() {
+    const routeDocs = R.getRouteDocuments(state.draft);
+    if (!routeDocs.length) {
+      return '<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#check"></use></svg><div><strong>No additional path document required</strong><p>No additional service-specific Intake 2 document is required for this onboarding path.</p></div></div>';
+    }
+    const specialHire = R.isSpecialHireApplicable(state.draft);
+    const title = specialHire ? 'Special Hire document' : 'Onboarding path documents';
+    return `<div class="subsection-heading"><span>Onboarding path</span><h2>${escapeHtml(title)}</h2></div><div class="document-grid">${routeDocs.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div>`;
   }
 
   function educationRequirementsMarkup() {
-    return `<div class="subsection-heading"><span>Education</span><h2>Education & equivalency</h2></div><div class="form-grid education-field">${R.educationFields.map((field) => renderField(field, 'education')).join('')}</div><div class="document-grid">${R.educationDocuments.map((rule) => renderDocumentCard(rule, 'education')).join('')}</div>`;
+    if (!R.isEducationApplicable(state.draft)) return '';
+    const field = R.educationFields[0];
+    const documents = R.getEducationDocuments(state.draft);
+    return `<div class="subsection-heading"><span>Education</span><h2>Education verification / equivalency</h2></div><div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#education"></use></svg><div><strong>Education document check</strong><p>The Education Certificate is handled in Documents. Confirm whether verification or equivalency is available so Intake2 can request the correct supporting document.</p></div></div><div class="form-grid education-field">${renderField(field, 'education')}</div>${documents.length ? `<div class="document-grid">${documents.map((rule) => renderDocumentCard(rule, 'education')).join('')}</div>` : ''}`;
   }
 
   function additionalDocumentsMarkup() {
@@ -217,15 +238,14 @@
   }
 
   function renderConditionalRequirements() {
-    const route = currentRoute();
-    if (!route) {
-      dom.screenHost.innerHTML = '<div class="empty-state"><strong>No service selected.</strong><p>Return to Service & Path and select a service before continuing.</p></div>';
-      setScreenStatus('Service selection required');
+    if (!state.draft.service.serviceType || !currentPath()) {
+      dom.screenHost.innerHTML = '<div class="empty-state"><strong>Onboarding path not ready.</strong><p>Return to Service & Path and complete the required service details first.</p></div>';
+      setScreenStatus('Complete Service & Path first');
       return;
     }
-    dom.screenHost.innerHTML = `${pathRequirementsMarkup()}${educationRequirementsMarkup()}${additionalDocumentsMarkup()}`;
-    const routeCount = R.getRequiredRouteItems(route.id).length;
-    setScreenStatus(`${routeCount} path item${routeCount === 1 ? '' : 's'} · education and optional supporting documents`);
+    dom.screenHost.innerHTML = `${routeRequirementsMarkup()}${educationRequirementsMarkup()}${additionalDocumentsMarkup()}`;
+    const requiredCount = R.getConditionalDocuments(state.draft).filter((rule) => rule.required).length;
+    setScreenStatus(requiredCount ? `${requiredCount} required conditional document${requiredCount === 1 ? '' : 's'}` : 'No required conditional documents');
   }
 
   function reviewValue(value) {
@@ -243,15 +263,19 @@
 
   function renderReview() {
     const readiness = R.getReadiness(state.draft);
-    const route = currentRoute();
+    const path = currentPath();
     const candidateRows = R.candidateFields.map((field) => [field.label, state.draft.candidate[field.id]]);
-    const mainRows = R.mainDocuments.map((rule) => [rule.label, state.draft.mainDocuments[rule.id] || []]);
-    const serviceRows = [['Service Type', state.draft.service.serviceType], ['Onboarding Path', route ? route.title : 'Not selected']];
-    if (route && route.id === 'employmentVisa') serviceRows.push([route.confirmQuestion, state.draft.service.caseConfirmation]);
-    const routeRules = route ? (route.id === 'employmentVisa' ? [...route.specialHire.documents, ...route.specialHire.confirmations] : route.documents) : [];
+    const coreDocs = R.getCoreDocuments(state.draft);
+    const documentRows = coreDocs.map((rule) => [rule.label, state.draft.mainDocuments[rule.id] || []]);
+    const serviceRows = [
+      ['Service Type', state.draft.service.serviceType],
+      ['Onboarding Path', path ? path.label : 'Not determined'],
+      ...R.getServicePathFields(state.draft).map((field) => [field.label, state.draft.service[field.id]])
+    ];
     const conditionalRows = [
-      ...routeRules.map((rule) => [rule.label, state.draft.route[rule.id]]),
-      ...[...R.educationFields, ...R.educationDocuments].map((rule) => [rule.label, state.draft.education[rule.id]]),
+      ...R.getRouteDocuments(state.draft).map((rule) => [rule.label, state.draft.route[rule.id] || []]),
+      ...(R.isEducationApplicable(state.draft) ? [[R.educationFields[0].label, state.draft.education.equivalencyAvailable]] : []),
+      ...R.getEducationDocuments(state.draft).map((rule) => [rule.label, state.draft.education[rule.id] || []]),
       ...R.additionalDocuments.map((rule) => [rule.label, state.draft.additionalDocuments[rule.id] || []])
     ];
 
@@ -260,7 +284,7 @@
     const missingService = sectionMissing('service');
     const missingConditional = sectionMissing('route') + sectionMissing('education');
 
-    dom.screenHost.innerHTML = `<div class="review-hero ${readiness.ready ? 'is-ready' : ''}"><div><p class="eyebrow">Submission readiness</p><h2>${readiness.ready ? 'Ready to submit' : 'Action required before Submit'}</h2><p>${readiness.ready ? 'All required fields and documents for this onboarding path are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} still need attention.`}</p></div><div class="review-score"><strong>${calculatePercent(readiness)}%</strong><span>complete</span></div></div><div class="review-grid">${reviewSection('Candidate Information', 'candidate', candidateRows, { complete: missingCandidate === 0, missing: missingCandidate })}${reviewSection('Documents', 'documents', mainRows, { complete: missingMain === 0, missing: missingMain })}${reviewSection('Service & Onboarding Path', 'servicePath', serviceRows, { complete: missingService === 0, missing: missingService })}${reviewSection('Conditional Requirements', 'conditionalRequirements', conditionalRows, { complete: missingConditional === 0, missing: missingConditional })}</div>`;
+    dom.screenHost.innerHTML = `<div class="review-hero ${readiness.ready ? 'is-ready' : ''}"><div><p class="eyebrow">Submission readiness</p><h2>${readiness.ready ? 'Ready to submit' : 'Action required before Submit'}</h2><p>${readiness.ready ? 'All required fields and documents for this onboarding path are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} still need attention.`}</p></div><div class="review-score"><strong>${calculatePercent(readiness)}%</strong><span>complete</span></div></div><div class="review-grid">${reviewSection('Candidate Information', 'candidate', candidateRows, { complete: missingCandidate === 0, missing: missingCandidate })}${reviewSection('Documents', 'documents', documentRows, { complete: missingMain === 0, missing: missingMain })}${reviewSection('Service & Onboarding Path', 'servicePath', serviceRows, { complete: missingService === 0, missing: missingService })}${reviewSection('Conditional Requirements', 'conditionalRequirements', conditionalRows, { complete: missingConditional === 0, missing: missingConditional })}</div>`;
     setScreenStatus(readiness.ready ? 'Ready to submit' : `${readiness.missing.length} missing required item${readiness.missing.length === 1 ? '' : 's'}`);
   }
 
@@ -285,20 +309,14 @@
     dom.screenHost.querySelectorAll('[data-edit-step]').forEach((button) => button.addEventListener('click', () => goToStep(button.dataset.editStep, { force: true })));
   }
 
-  function sectionForCurrentStep() {
-    if (state.currentStep === 'candidate') return 'candidate';
-    if (state.currentStep === 'documents') return 'mainDocuments';
-    if (state.currentStep === 'servicePath') return 'service';
-    return '';
-  }
-
   function handleControlChange(event) {
     clearValidation();
     const control = event.target;
     const name = control.name;
-    if (!name) return;
+    const section = control.dataset.section;
+    if (!name || !section) return;
 
-    if (state.currentStep === 'servicePath' && name === 'serviceType') {
+    if (section === 'service' && name === 'serviceType') {
       const newService = control.value;
       const newRouteId = R.getRouteIdForService(newService);
       const previousRouteId = state.draft.service.routeId;
@@ -310,29 +328,43 @@
           return;
         }
       }
-      if (previousRouteId !== newRouteId) state.draft.route = {};
+      if (previousRouteId !== newRouteId) {
+        state.draft.route = {};
+        state.draft.education = {};
+        state.draft.service.mobilizingFrom = '';
+        state.draft.service.intake1Completed = '';
+      }
       state.draft.service.serviceType = newService;
       state.draft.service.routeId = newRouteId;
-      state.draft.service.caseConfirmation = '';
-      const route = R.getRoute(newRouteId);
-      dom.routeLiveRegion.textContent = route ? `${route.title} selected. Onboarding path requirements updated.` : 'Service selection cleared.';
       renderServicePath();
       bindDynamicEvents();
       updateReadiness();
       return;
     }
 
-    const section = control.dataset.section || sectionForCurrentStep();
-    if (!section) return;
-    if (name === 'caseConfirmation') state.draft.service.caseConfirmation = control.value;
-    else state.draft[section][name] = control.value;
-    updateReadiness();
+    state.draft[section][name] = control.value;
 
-    if (state.currentStep === 'candidate' && name === 'sponsorshipLocation') setScreenStatus(`${R.mainDocuments.filter((rule) => R.isMainDocumentRequired(rule.id, state.draft.candidate)).length} core documents will be required`);
+    if (section === 'service') {
+      if (name === 'mobilizingFrom') state.draft.service.intake1Completed = '';
+      renderServicePath();
+      bindDynamicEvents();
+    } else if (section === 'education' && name === 'equivalencyAvailable') {
+      state.draft.education.certificateOfEquivalencyOrEducationalVerification = [];
+      state.draft.education.awardOrEducationDetailsDocument = [];
+      renderConditionalRequirements();
+      bindDynamicEvents();
+    }
+
+    updateReadiness();
   }
 
   function routeHasData() {
-    return Object.values(state.draft.route).some(hasValue);
+    return Object.values(state.draft.route).some(hasValue) || Object.values(state.draft.education).some(hasValue);
+  }
+
+  function fileExtension(fileName) {
+    const match = String(fileName || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+    return match ? match[1] : '';
   }
 
   function handleFileChange(event) {
@@ -345,11 +377,16 @@
     if (!rule) return;
 
     const errors = [];
-    if (rule.maxFiles && files.length > rule.maxFiles) errors.push(`Choose no more than ${rule.maxFiles} file${rule.maxFiles === 1 ? '' : 's'} for ${rule.label}.`);
-    if (rule.maxSizeGB) {
-      const maxBytes = rule.maxSizeGB * 1024 * 1024 * 1024;
-      if (files.some((file) => file.size > maxBytes)) errors.push(`Each file for ${rule.label} must be ${rule.maxSizeGB}GB or smaller.`);
+    if (!rule.allowMultiple && files.length > 1) errors.push(`${rule.label} accepts one file only.`);
+    if (rule.maxSizeMB) {
+      const maxBytes = rule.maxSizeMB * 1024 * 1024;
+      if (files.some((file) => file.size > maxBytes)) errors.push(`Each file for ${rule.label} must be ${rule.maxSizeMB} MB or smaller.`);
     }
+    if (rule.allowedExtensions?.length) {
+      const allowed = new Set(rule.allowedExtensions.map((ext) => ext.toLowerCase()));
+      if (files.some((file) => !allowed.has(fileExtension(file.name)))) errors.push(`${rule.label} accepts only ${rule.allowedExtensions.map((ext) => ext.toUpperCase()).join(', ')} files.`);
+    }
+
     if (errors.length) {
       showErrorSummary(errors.map((message) => ({ id, message })));
       input.value = '';
@@ -357,8 +394,8 @@
     }
 
     const metadata = files.map((file) => ({ name: file.name, size: file.size, type: file.type, lastModified: file.lastModified }));
-    if (rule.maxFiles === 1) state.draft[section][id] = metadata.slice(0, 1);
-    else state.draft[section][id] = [...(state.draft[section][id] || []), ...metadata].slice(0, rule.maxFiles || undefined);
+    if (rule.allowMultiple) state.draft[section][id] = [...(state.draft[section][id] || []), ...metadata];
+    else state.draft[section][id] = metadata.slice(0, 1);
     renderCurrentStep();
     setStatus(`${files.length} file${files.length === 1 ? '' : 's'} staged for ${rule.label}.`, 'success');
   }
@@ -375,66 +412,35 @@
   }
 
   function findDocumentRule(id) {
-    const route = currentRoute();
-    const all = [...R.mainDocuments, ...R.educationDocuments, ...R.additionalDocuments];
-    if (route) {
-      if (route.id === 'employmentVisa') all.push(...route.specialHire.documents);
-      else all.push(...route.documents);
-    }
+    const all = [
+      ...R.getCoreDocuments(state.draft),
+      ...R.getRouteDocuments(state.draft),
+      ...R.getEducationDocuments(state.draft),
+      ...R.additionalDocuments
+    ];
     return all.find((rule) => rule.id === id) || null;
   }
 
-  function validateCandidate(errors) {
-    R.candidateFields.filter((field) => field.required).forEach((field) => {
-      const value = state.draft.candidate[field.id];
-      if (!hasValue(value)) errors.push({ id: field.id, message: `${field.label} is required.` });
-      else if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(String(value))) errors.push({ id: field.id, message: 'Enter a valid personal email address.' });
-    });
-  }
+  function errorsForCurrentStep() {
+    const readiness = R.getReadiness(state.draft);
+    const sections = {
+      candidate: ['candidate'],
+      documents: ['mainDocuments'],
+      servicePath: ['service'],
+      conditionalRequirements: ['route', 'education']
+    }[state.currentStep] || [];
 
-  function validateDocuments(errors) {
-    R.mainDocuments.forEach((rule) => {
-      if (R.isMainDocumentRequired(rule.id, state.draft.candidate) && !hasValue(state.draft.mainDocuments[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-    });
-  }
-
-  function validateServicePath(errors) {
-    if (!hasValue(state.draft.service.serviceType)) errors.push({ id: 'serviceType', message: 'Select Service Type is required.' });
-  }
-
-  function validateConditionalRequirements(errors) {
-    const route = currentRoute();
-    if (!route) {
-      errors.push({ id: 'serviceType', message: 'Select a service before continuing.' });
-      return;
-    }
-    if (route.id === 'employmentVisa') {
-      if (!hasValue(state.draft.service.caseConfirmation)) errors.push({ id: 'caseConfirmation', message: 'Complete the Special Hire check.' });
-      route.specialHire.documents.filter((rule) => rule.required).forEach((rule) => {
-        if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-      });
-      route.specialHire.confirmations.filter((field) => field.required).forEach((field) => {
-        if (state.draft.route[field.id] !== 'Yes') errors.push({ id: field.id, message: 'Confirmation is required.' });
-      });
-    } else {
-      route.documents.filter((rule) => rule.required).forEach((rule) => {
-        if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-      });
-    }
-
-    const equivalencyField = R.educationFields.find((field) => field.id === 'equivalencyAvailable');
-    if (equivalencyField?.required && !hasValue(state.draft.education.equivalencyAvailable)) errors.push({ id: 'equivalencyAvailable', message: 'Confirm whether Certificate of Equivalency is available.' });
-    R.educationDocuments.filter((rule) => rule.required).forEach((rule) => {
-      if (!hasValue(state.draft.education[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-    });
+    return readiness.missing
+      .filter((item) => sections.includes(item.section))
+      .map((item) => ({ id: item.id, message: `${item.label} is required.` }));
   }
 
   function validateCurrentStep() {
-    const errors = [];
-    if (state.currentStep === 'candidate') validateCandidate(errors);
-    else if (state.currentStep === 'documents') validateDocuments(errors);
-    else if (state.currentStep === 'servicePath') validateServicePath(errors);
-    else if (state.currentStep === 'conditionalRequirements') validateConditionalRequirements(errors);
+    if (window.INTAKE2_TEST_MODE) {
+      showErrorSummary([]);
+      return true;
+    }
+    const errors = errorsForCurrentStep();
     showErrorSummary(errors);
     return errors.length === 0;
   }
@@ -511,15 +517,15 @@
     dom.readinessPercent.textContent = `${percent}%`;
     dom.fieldMetric.textContent = `${readiness.completedFields} / ${readiness.requiredFields}`;
     dom.documentMetric.textContent = `${readiness.completedDocuments} / ${readiness.requiredDocuments}`;
-    dom.readinessBadge.textContent = readiness.ready ? 'Ready' : 'In progress';
-    dom.readinessBadge.classList.toggle('is-ready', readiness.ready);
+    dom.readinessBadge.textContent = window.INTAKE2_TEST_MODE ? 'Test mode' : readiness.ready ? 'Ready' : 'In progress';
+    dom.readinessBadge.classList.toggle('is-ready', readiness.ready && !window.INTAKE2_TEST_MODE);
     dom.readinessSummary.textContent = readiness.ready ? 'Ready to submit' : 'Request in progress';
     dom.readinessMissing.textContent = readiness.ready ? 'All required items are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} remaining.`;
 
-    const route = currentRoute();
-    dom.routePreviewText.textContent = route ? `${route.title}. Next: ${pathSummary(route.id)}` : 'Select a service type to see the applicable onboarding path.';
+    const path = readiness.path || currentPath();
+    dom.routePreviewText.textContent = path ? path.label : 'Complete Service & Path to see the applicable onboarding path.';
 
-    if (readiness.missing.length) {
+    if (readiness.missing.length && !window.INTAKE2_TEST_MODE) {
       dom.missingPreview.hidden = false;
       dom.missingCount.textContent = String(readiness.missing.length);
       dom.missingList.innerHTML = readiness.missing.slice(0, 4).map((item) => `<li>${escapeHtml(item.label)}</li>`).join('');
@@ -528,39 +534,35 @@
       dom.missingList.innerHTML = '';
     }
 
-    dom.submitRequest.disabled = state.isSubmitting || !readiness.ready;
+    dom.submitRequest.disabled = state.isSubmitting || (!readiness.ready && !window.INTAKE2_TEST_MODE);
   }
 
-  function shortLocation(location) {
-    return location.replace('AECOM Middle East Limited – ', '');
-  }
-
-  function pathSummary(routeId) {
+  function serviceSummary(routeId) {
     const summaries = {
-      employmentVisa: 'Special Hire check where applicable, followed by education/equivalency requirements.',
-      relativeVisa: 'Sponsor documents and education/equivalency requirements.',
-      goldenVisa: 'Existing-residency and education/equivalency requirements.',
-      emiratiNational: 'Emirati-specific identification and education/equivalency requirements.',
-      gccNational: 'GCC identification and education/equivalency requirements.',
-      diplomaticPassport: 'Sponsor and Embassy requirements, followed by education/equivalency.'
+      employmentVisa: 'AECOM-sponsored Employment Visa and Work Permit.',
+      relativeVisa: 'Work Permit for a candidate with Relative / Family Visa.',
+      goldenVisa: 'Work Permit for a candidate with Golden Visa.',
+      emiratiNational: 'Work Permit route for an Emirati National.',
+      gccNational: 'Work Permit route for a GCC National.'
     };
-    return summaries[routeId] || 'Applicable requirements will appear after selection.';
+    return summaries[routeId] || 'Applicable requirements appear after selection.';
   }
 
   function createPrototypeRequest() {
     const suffix = Date.now().toString().slice(-8);
     return {
-      id: `INT-${suffix}`,
+      id: `REQ-${suffix}`,
       createdAt: new Date().toISOString(),
       candidateName: state.draft.candidate.candidateFullName || '',
-      serviceType: state.draft.service.serviceType || ''
+      serviceType: state.draft.service.serviceType || '',
+      pathId: currentPath()?.id || ''
     };
   }
 
   async function handleSubmit() {
     if (state.isSubmitting) return setStatus('Please wait. A submission is already in progress.', 'error');
     const readiness = R.getReadiness(state.draft);
-    if (!readiness.ready) {
+    if (!readiness.ready && !window.INTAKE2_TEST_MODE) {
       setStatus('The request still has required items to complete.', 'error');
       renderReview();
       updateReadiness();
@@ -573,7 +575,7 @@
     if (!state.draft.submittedRequest) state.draft.submittedRequest = createPrototypeRequest();
     await new Promise((resolve) => window.setTimeout(resolve, 550));
 
-    if (dom.simulateUploadFailure.checked) {
+    if (dom.simulateUploadFailure?.checked) {
       state.isSubmitting = false;
       dom.submitRequest.textContent = 'Retry submission';
       setStatus(`Upload failed in prototype test mode. Retry will reuse request ${state.draft.submittedRequest.id}.`, 'error');
@@ -583,7 +585,7 @@
 
     state.isSubmitting = false;
     dom.submitRequest.textContent = 'Submit request';
-    dom.confirmationText.textContent = `Prototype request ${state.draft.submittedRequest.id} completed using the guarded submit sequence. The same request ID would be reused if a document upload needed to be retried.`;
+    dom.confirmationText.textContent = `Prototype request ${state.draft.submittedRequest.id} completed using the guarded submit sequence.`;
     setStatus('Prototype submission complete.', 'success');
     goToStep('confirmation', { force: true });
   }
@@ -592,7 +594,7 @@
     state.draft = createEmptyDraft();
     state.isSubmitting = false;
     state.maxVisited = 1;
-    dom.simulateUploadFailure.checked = false;
+    if (dom.simulateUploadFailure) dom.simulateUploadFailure.checked = false;
     setStatus();
     goToStep('candidate', { force: true });
   }
