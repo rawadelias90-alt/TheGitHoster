@@ -3,10 +3,36 @@ import { ENTITIES, SERVICE_TYPES, NATIONALITIES, resolveCase, getQuestionSequenc
 const app = document.getElementById("app");
 const COVER_LOGO = "./assets/aecom-logo.png";
 
+function ensureProgressiveStyles() {
+  if (document.getElementById("progressive-guided-styles")) return;
+  const style = document.createElement("style");
+  style.id = "progressive-guided-styles";
+  style.textContent = `
+    .progressive-screen { max-width: 900px; min-height: calc(100vh - 220px); margin: 0 auto; padding-top: 5vh; }
+    .progressive-form { margin-top: 34px; display: grid; gap: 14px; }
+    .progressive-question { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 18px; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); animation: screen-in .18s ease both; }
+    .progressive-question[hidden] { display: none !important; }
+    .progressive-question__number { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--green-dark); font-size: .68rem; font-weight: 800; }
+    .progressive-question__body { min-width: 0; }
+    .progressive-question__prompt { margin: 0 0 12px; font-size: 1.08rem; font-weight: 650; letter-spacing: -.015em; }
+    .progressive-question__help { margin: 10px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+    .progressive-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .guided-view-button[hidden] { display: none !important; }
+    @media (max-width: 600px) {
+      .progressive-screen { padding-top: 3vh; }
+      .progressive-question { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
+      .progressive-actions { flex-direction: column-reverse; }
+      .progressive-actions button { width: 100%; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+ensureProgressiveStyles();
+
 const state = {
   mode: "welcome",
   answers: { entity: "", service: "", hireStatus: "", nationality: "", residency: "", category: "" },
-  questionIndex: 0,
   result: null,
   browseEntity: "all",
   browseService: "all",
@@ -80,7 +106,6 @@ function setMode(mode) {
 
 function resetAnswers() {
   Object.keys(state.answers).forEach(key => state.answers[key] = "");
-  state.questionIndex = 0;
   state.result = null;
 }
 
@@ -120,38 +145,50 @@ function currentSequence() {
 }
 
 function renderQuestion() {
-  const sequence = currentSequence();
-  state.questionIndex = Math.max(0, Math.min(state.questionIndex, sequence.length - 1));
-  const key = sequence[state.questionIndex];
-  const question = QUESTIONS[key];
-  const value = state.answers[key] || "";
-  const progress = Math.round(((state.questionIndex + 1) / sequence.length) * 100);
-  const finalKnownQuestion = key === "nationality" || key === "residency" || key === "category" || (key === "hireStatus" && value === "local");
-  const nextLabel = finalKnownQuestion ? "View service" : "Continue";
-
+  const questionKeys = ["entity", "service", "hireStatus", "nationality", "residency", "category"];
   app.innerHTML = `
-    <section class="screen question-screen">
-      <div class="progress-row">
-        <span>Question ${state.questionIndex + 1} of ${sequence.length}</span>
-        <div class="progress-track" aria-hidden="true"><span style="width:${progress}%"></span></div>
-      </div>
+    <section class="screen question-screen progressive-screen">
       <p class="eyebrow">Guided journey</p>
-      <h1 class="question-title" data-screen-heading tabindex="-1">${escapeHtml(question.title)}</h1>
-      <p class="question-help">${escapeHtml(question.help)}</p>
-      <div class="question-field">
-        <label class="question-label" for="questionSelect">${escapeHtml(question.label)}</label>
-        <div class="select-wrap">
-          <select id="questionSelect" data-question="${key}">
-            <option value="">${escapeHtml(question.placeholder)}</option>
-            ${question.options.map(option => `<option value="${escapeHtml(option.value)}" ${value === option.value ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
-          </select>
-        </div>
-        <div class="question-actions">
-          <button class="back-button" type="button" data-action="question-back">${state.questionIndex === 0 ? "Back to start" : "Back"}</button>
-          <button class="primary-button" type="button" data-action="question-next" ${value ? "" : "disabled"}>${nextLabel}</button>
+      <h1 class="question-title" data-screen-heading tabindex="-1">Find the right onboarding route</h1>
+      <p class="question-help">Choose the confirmed case details below. Only questions relevant to the selected route will appear.</p>
+      <div class="progressive-form" id="progressiveForm">
+        ${questionKeys.map((key, index) => {
+          const question = QUESTIONS[key];
+          return `
+            <div class="progressive-question" data-question-row="${key}" ${key === "entity" ? "" : "hidden"}>
+              <div class="progressive-question__number">${String(index + 1).padStart(2, "0")}</div>
+              <div class="progressive-question__body">
+                <label class="question-label" for="question-${key}">${escapeHtml(question.label)}</label>
+                <p class="progressive-question__prompt">${escapeHtml(question.title)}</p>
+                <div class="select-wrap">
+                  <select id="question-${key}" data-question="${key}">
+                    <option value="">${escapeHtml(question.placeholder)}</option>
+                    ${question.options.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("")}
+                  </select>
+                </div>
+                <p class="progressive-question__help">${escapeHtml(question.help)}</p>
+              </div>
+            </div>`;
+        }).join("")}
+        <div class="progressive-actions">
+          <button class="back-button" type="button" data-action="home">Back to start</button>
+          <button class="primary-button guided-view-button" type="button" data-action="guided-view-service" hidden>View service</button>
         </div>
       </div>
     </section>`;
+  syncGuidedQuestions();
+}
+
+function syncGuidedQuestions() {
+  const visible = new Set(currentSequence());
+  app.querySelectorAll("[data-question-row]").forEach(row => {
+    const key = row.dataset.questionRow;
+    row.hidden = !visible.has(key);
+    const select = row.querySelector("select[data-question]");
+    if (select && select.value !== (state.answers[key] || "")) select.value = state.answers[key] || "";
+  });
+  const viewButton = app.querySelector(".guided-view-button");
+  if (viewButton) viewButton.hidden = !resolveCase(state.answers);
 }
 
 function renderJourney(result) {
@@ -359,45 +396,17 @@ function render() {
   else if (state.mode === "browse") renderCatalogue();
 }
 
-function questionNext() {
-  const sequence = currentSequence();
-  const key = sequence[state.questionIndex];
-  if (!state.answers[key]) return;
-  const refreshed = currentSequence();
-  const currentKeyIndex = refreshed.indexOf(key);
-  if (currentKeyIndex < refreshed.length - 1) {
-    state.questionIndex = currentKeyIndex + 1;
-    render();
-    focusHeading();
-    return;
-  }
-  const result = resolveCase(state.answers);
-  if (!result) return;
-  state.result = result;
-  state.mode = "result";
-  render();
-  focusHeading();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function questionBack() {
-  if (state.questionIndex === 0) { setMode("welcome"); return; }
-  state.questionIndex -= 1;
-  render();
-  focusHeading();
-}
-
 function findBrowseCase(serviceId, entity) {
   return browseCases(entity, "all").find(item => item.serviceId === serviceId && item.entity === entity) ?? null;
 }
 
 app.addEventListener("change", event => {
-  if (event.target.id === "questionSelect") {
+  if (event.target.matches("select[data-question]")) {
     const key = event.target.dataset.question;
     state.answers[key] = event.target.value;
     clearDownstream(key);
-    render();
-    document.getElementById("questionSelect")?.focus();
+    syncGuidedQuestions();
+    return;
   }
   if (event.target.id === "browseEntity") { state.browseEntity = event.target.value; render(); }
   if (event.target.id === "browseService") { state.browseService = event.target.value; render(); }
@@ -414,7 +423,6 @@ document.addEventListener("click", event => {
   } else if (action === "start") {
     if (state.mode === "browse" || state.mode === "welcome") resetAnswers();
     state.mode = "guided";
-    state.questionIndex = 0;
     render();
     focusHeading();
   } else if (action === "browse") {
@@ -422,13 +430,16 @@ document.addEventListener("click", event => {
     render();
     focusHeading();
     window.scrollTo({ top: 0, behavior: "smooth" });
-  } else if (action === "question-next") {
-    questionNext();
-  } else if (action === "question-back") {
-    questionBack();
+  } else if (action === "guided-view-service") {
+    const result = resolveCase(state.answers);
+    if (!result) return;
+    state.result = result;
+    state.mode = "result";
+    render();
+    focusHeading();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (action === "edit") {
     state.mode = "guided";
-    state.questionIndex = Math.max(0, currentSequence().length - 1);
     render();
     focusHeading();
   } else if (action === "restart") {
