@@ -4,14 +4,6 @@
   const R = window.IntakeRequirements;
   if (!R) return;
 
-  window.INTAKE2_TEST_MODE = true;
-
-  const documentUploadPilot = document.createElement('script');
-  const pageVersion = new URL(window.location.href).searchParams.get('v') || Date.now().toString();
-  documentUploadPilot.src = `./document-upload-pilot.js?v=${encodeURIComponent(pageVersion)}`;
-  documentUploadPilot.defer = true;
-  document.head.append(documentUploadPilot);
-
   async function loadInlineHero() {
     const heroImage = document.querySelector('.hero-visual img');
     if (!heroImage) return;
@@ -31,11 +23,21 @@
 
   loadInlineHero();
 
+  const explicitTestMode = new URL(window.location.href).searchParams.get('test') === '1';
+  if (!explicitTestMode) return;
+
+  window.INTAKE2_TEST_MODE = true;
+
+  const documentUploadPilot = document.createElement('script');
+  const pageVersion = new URL(window.location.href).searchParams.get('v') || Date.now().toString();
+  documentUploadPilot.src = `./document-upload-pilot.js?v=${encodeURIComponent(pageVersion)}`;
+  documentUploadPilot.defer = true;
+  document.head.append(documentUploadPilot);
+
   const optionalize = (items) => {
     (items || []).forEach((item) => {
       if (!item || typeof item !== 'object') return;
       if ('required' in item) item.required = false;
-      if ('requiredWhen' in item) item.requiredWhen = null;
     });
   };
 
@@ -72,9 +74,14 @@
       dispatchChange(host.querySelector('input[name="serviceType"]'));
     }
 
-    if (activeStep === 'conditionalRequirements') {
-      if (!host.querySelector('input[name="caseConfirmation"]:checked')) dispatchChange(host.querySelector('input[name="caseConfirmation"]'));
-      if (!host.querySelector('input[name="equivalencyAvailable"]:checked')) dispatchChange(host.querySelector('input[name="equivalencyAvailable"]'));
+    if (activeStep === 'servicePath') {
+      if (!host.querySelector('input[name="clientApprovalConfirmed"]:checked')) dispatchChange(host.querySelector('input[name="clientApprovalConfirmed"]'));
+      if (host.querySelector('input[name="mobilizingFrom"]') && !host.querySelector('input[name="mobilizingFrom"]:checked')) dispatchChange(host.querySelector('input[name="mobilizingFrom"]'));
+      if (host.querySelector('input[name="intake1Completed"]') && !host.querySelector('input[name="intake1Completed"]:checked')) dispatchChange(host.querySelector('input[name="intake1Completed"]'));
+    }
+
+    if (activeStep === 'conditionalRequirements' && host.querySelector('input[name="equivalencyAvailable"]') && !host.querySelector('input[name="equivalencyAvailable"]:checked')) {
+      dispatchChange(host.querySelector('input[name="equivalencyAvailable"]'));
     }
   }, true);
 
