@@ -4,15 +4,13 @@
   const R = window.IntakeRequirements;
   if (!R) throw new Error('IntakeRequirements failed to load.');
 
-  const steps = ['welcome', 'candidate', 'mainDocuments', 'service', 'route', 'education', 'additional', 'review', 'confirmation'];
+  const steps = ['welcome', 'candidate', 'documents', 'servicePath', 'conditionalRequirements', 'review', 'confirmation'];
   const stepMeta = {
-    candidate: { eyebrow: 'Step 2 of 9', title: 'Candidate Personal Information', description: 'Enter the candidate information used across the new-hire mobility request.' },
-    mainDocuments: { eyebrow: 'Step 3 of 9', title: 'The Main Required Documents', description: 'Stage the baseline documents used as the primary reference across the applicable GRO workflow.' },
-    service: { eyebrow: 'Step 4 of 9', title: 'Select Service Type', description: 'Choose the employment visa or work permit route that applies to this candidate.' },
-    route: { eyebrow: 'Step 5 of 9', title: 'Route-specific requirements', description: 'Complete only the requirements for the selected service route.' },
-    education: { eyebrow: 'Step 6 of 9', title: 'Certificate of Equivalency & Education Details', description: 'Confirm equivalency availability and stage the education documents required by the source form.' },
-    additional: { eyebrow: 'Step 7 of 9', title: 'Additional Supporting Documents', description: 'Add any other supporting documents needed for this request.' },
-    review: { eyebrow: 'Step 8 of 9', title: 'Review & Submission Readiness', description: 'Check every section, resolve missing items, and prepare the request for simulated submission.' }
+    candidate: { eyebrow: 'Step 2 of 7', title: 'Candidate Information', description: 'Enter the candidate information used to determine the applicable onboarding path.' },
+    documents: { eyebrow: 'Step 3 of 7', title: 'Documents', description: 'Stage the baseline documents required for the request.' },
+    servicePath: { eyebrow: 'Step 4 of 7', title: 'Service & Onboarding Path', description: 'Select the service. Intake2 will show the applicable onboarding path and requirements.' },
+    conditionalRequirements: { eyebrow: 'Step 5 of 7', title: 'Conditional Requirements', description: 'Complete only the additional requirements that apply to this request.' },
+    review: { eyebrow: 'Step 6 of 7', title: 'Review & Submit', description: 'Check the request, resolve missing items, and submit when ready.' }
   };
 
   const state = {
@@ -146,15 +144,15 @@
     const describedBy = `${field.helper ? `help-${field.id} ` : ''}error-${field.id}`.trim();
 
     if (field.type === 'radio') {
-      return `<fieldset class="field-group field-group-wide" data-field-id="${field.id}"><legend>${escapeHtml(field.label)} ${required}${requiredText}</legend>${helper}<div class="choice-grid">${field.options.map((option) => `<label class="choice-card"><input type="radio" name="${field.id}" value="${escapeHtml(option)}" ${value === option ? 'checked' : ''} ${field.required ? 'required' : ''} aria-describedby="${describedBy}"><span><strong>${escapeHtml(option)}</strong></span></label>`).join('')}</div><p class="field-error" id="error-${field.id}" aria-live="polite"></p></fieldset>`;
+      return `<fieldset class="field-group field-group-wide" data-field-id="${field.id}"><legend>${escapeHtml(field.label)} ${required}${requiredText}</legend>${helper}<div class="choice-grid">${field.options.map((option) => `<label class="choice-card"><input type="radio" name="${field.id}" data-section="${section}" value="${escapeHtml(option)}" ${value === option ? 'checked' : ''} ${field.required ? 'required' : ''} aria-describedby="${describedBy}"><span><strong>${escapeHtml(option)}</strong></span></label>`).join('')}</div><p class="field-error" id="error-${field.id}" aria-live="polite"></p></fieldset>`;
     }
 
     if (field.type === 'select') {
-      return `<label class="field-group"><span>${escapeHtml(field.label)} ${required}${requiredText}</span>${helper}<select name="${field.id}" ${field.required ? 'required' : ''} aria-describedby="${describedBy}"><option value="">Select an option</option>${field.options.map((option) => `<option value="${escapeHtml(option)}" ${value === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}</select><p class="field-error" id="error-${field.id}" aria-live="polite"></p></label>`;
+      return `<label class="field-group"><span>${escapeHtml(field.label)} ${required}${requiredText}</span>${helper}<select name="${field.id}" data-section="${section}" ${field.required ? 'required' : ''} aria-describedby="${describedBy}"><option value="">Select an option</option>${field.options.map((option) => `<option value="${escapeHtml(option)}" ${value === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}</select><p class="field-error" id="error-${field.id}" aria-live="polite"></p></label>`;
     }
 
     const autocomplete = field.id === 'candidateFullName' ? 'name' : field.id === 'personalEmail' ? 'email' : field.id === 'contactNumber' ? 'tel' : 'off';
-    return `<label class="field-group"><span>${escapeHtml(field.label)} ${required}${requiredText}</span>${helper}<input name="${field.id}" type="${field.type}" value="${escapeHtml(value)}" ${field.required ? 'required' : ''} autocomplete="${autocomplete}" aria-describedby="${describedBy}"><p class="field-error" id="error-${field.id}" aria-live="polite"></p></label>`;
+    return `<label class="field-group"><span>${escapeHtml(field.label)} ${required}${requiredText}</span>${helper}<input name="${field.id}" data-section="${section}" type="${field.type}" value="${escapeHtml(value)}" ${field.required ? 'required' : ''} autocomplete="${autocomplete}" aria-describedby="${describedBy}"><p class="field-error" id="error-${field.id}" aria-live="polite"></p></label>`;
   }
 
   function renderDocumentCard(rule, section, requiredOverride) {
@@ -174,53 +172,60 @@
     setScreenStatus(`${R.candidateFields.filter((field) => field.required).length} required fields`);
   }
 
-  function renderMainDocuments() {
+  function renderDocuments() {
     const location = state.draft.candidate.sponsorshipLocation;
-    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#info"></use></svg><div><strong>Baseline document set</strong><p>These documents remain the primary reference across the selected employment visa or work permit workflow. Some items apply only in specific circumstances.</p></div></div><div class="document-grid">${R.mainDocuments.map((rule) => renderDocumentCard(rule, 'mainDocuments', R.isMainDocumentRequired(rule.id, state.draft.candidate))).join('')}</div>`;
+    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#info"></use></svg><div><strong>Core documents</strong><p>Stage the documents used across the selected service. Conditional requirements will appear later.</p></div></div><div class="document-grid">${R.mainDocuments.map((rule) => renderDocumentCard(rule, 'mainDocuments', R.isMainDocumentRequired(rule.id, state.draft.candidate))).join('')}</div>`;
     const count = R.mainDocuments.filter((rule) => R.isMainDocumentRequired(rule.id, state.draft.candidate)).length;
-    setScreenStatus(`${count} required documents${location ? ` for ${shortLocation(location)}` : ''}`);
+    setScreenStatus(`${count} required document${count === 1 ? '' : 's'}${location ? ` for ${shortLocation(location)}` : ''}`);
   }
 
-  function renderService() {
+  function serviceSelectionMarkup() {
     const selected = state.draft.service.serviceType;
-    dom.screenHost.innerHTML = `<div class="section-intro"><div class="section-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></div><div><strong>Choose one route</strong><span>Your selection controls the next document requirements.</span></div></div><fieldset class="field-group field-group-wide"><legend>Select Service Type <span class="required-mark" aria-hidden="true">*</span><span class="sr-only">required</span></legend><div class="service-grid">${R.serviceTypes.map((service) => `<label class="service-card"><input type="radio" name="serviceType" value="${escapeHtml(service.value)}" data-route-id="${service.routeId}" ${selected === service.value ? 'checked' : ''}><span class="service-card-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></span><span><strong>${escapeHtml(service.label)}</strong><small>${routeSummary(service.routeId)}</small></span><span class="service-radio" aria-hidden="true"></span></label>`).join('')}</div><p class="field-error" id="error-serviceType" aria-live="polite"></p></fieldset>`;
-    setScreenStatus(selected ? currentRoute().title : 'Selection required');
+    return `<div class="section-intro"><div class="section-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></div><div><strong>Choose a service</strong><span>Your selection determines the onboarding path and next requirements.</span></div></div><fieldset class="field-group field-group-wide"><legend>Select Service Type <span class="required-mark" aria-hidden="true">*</span><span class="sr-only">required</span></legend><div class="service-grid">${R.serviceTypes.map((service) => `<label class="service-card"><input type="radio" name="serviceType" data-section="service" value="${escapeHtml(service.value)}" data-route-id="${service.routeId}" ${selected === service.value ? 'checked' : ''}><span class="service-card-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#route"></use></svg></span><span><strong>${escapeHtml(service.label)}</strong><small>${pathSummary(service.routeId)}</small></span><span class="service-radio" aria-hidden="true"></span></label>`).join('')}</div><p class="field-error" id="error-serviceType" aria-live="polite"></p></fieldset>`;
   }
 
-  function renderEmploymentRoute(route) {
+  function renderServicePath() {
+    const route = currentRoute();
+    const pathPreview = route ? `<div class="route-banner"><div class="route-banner-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#passport"></use></svg></div><div><p class="eyebrow">Onboarding path</p><h2>${escapeHtml(route.title)}</h2><p>${escapeHtml(pathSummary(route.id))}</p></div></div>` : '<div class="empty-state"><strong>Your onboarding path will appear here.</strong><p>Select a service to continue.</p></div>';
+    dom.screenHost.innerHTML = `${serviceSelectionMarkup()}${pathPreview}`;
+    setScreenStatus(route ? route.title : 'Selection required');
+  }
+
+  function renderEmploymentPathRequirements(route) {
     const answer = state.draft.service.caseConfirmation || '';
-    return `<div class="important-note"><div class="important-note-heading"><svg class="icon"><use href="./assets/icon-sprite.svg#warning"></use></svg><div><span>Important note</span><strong>Check whether the request falls under the source Case A or Case B criteria.</strong></div></div><p>${escapeHtml(route.importantNote.intro)}</p><div class="case-grid"><div><span class="case-label">Case A</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseA.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseA.hiredUnder.join(' · '))}</p></div><div><span class="case-label">Case B</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseB.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseB.hiredUnder.join(' · '))}</p></div></div></div><fieldset class="field-group field-group-wide stop-confirm"><legend>${escapeHtml(route.confirmQuestion)} <span class="required-mark" aria-hidden="true">*</span></legend><p class="field-helper">The source does not map Yes to Case A or No to Case B. Both answers continue to the Special Hire requirements.</p><div class="choice-grid choice-grid-compact">${route.confirmOptions.map((option) => `<label class="choice-card"><input type="radio" name="caseConfirmation" value="${option}" ${answer === option ? 'checked' : ''}><span><strong>${option}</strong></span></label>`).join('')}</div><p class="field-error" id="error-caseConfirmation" aria-live="polite"></p></fieldset><div class="subsection-heading"><span>Special Hire Case</span><h2>Required confirmations and identification</h2></div><div class="document-grid">${route.specialHire.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div><div class="confirmation-list">${route.specialHire.confirmations.map((field) => renderConfirmationField(field)).join('')}</div>`;
+    return `<div class="important-note"><div class="important-note-heading"><svg class="icon"><use href="./assets/icon-sprite.svg#warning"></use></svg><div><span>Important note</span><strong>Check whether the request falls under the source Case A or Case B criteria.</strong></div></div><p>${escapeHtml(route.importantNote.intro)}</p><div class="case-grid"><div><span class="case-label">Case A</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseA.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseA.hiredUnder.join(' · '))}</p></div><div><span class="case-label">Case B</span><strong>Nationals of</strong><p>${escapeHtml(route.importantNote.caseB.nationals.join(' · '))}</p><strong>Hired under</strong><p>${escapeHtml(route.importantNote.caseB.hiredUnder.join(' · '))}</p></div></div></div><fieldset class="field-group field-group-wide stop-confirm"><legend>${escapeHtml(route.confirmQuestion)} <span class="required-mark" aria-hidden="true">*</span></legend><div class="choice-grid choice-grid-compact">${route.confirmOptions.map((option) => `<label class="choice-card"><input type="radio" name="caseConfirmation" data-section="service" value="${option}" ${answer === option ? 'checked' : ''}><span><strong>${option}</strong></span></label>`).join('')}</div><p class="field-error" id="error-caseConfirmation" aria-live="polite"></p></fieldset><div class="subsection-heading"><span>Special Hire Case</span><h2>Required confirmations and identification</h2></div><div class="document-grid">${route.specialHire.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div><div class="confirmation-list">${route.specialHire.confirmations.map((field) => renderConfirmationField(field)).join('')}</div>`;
   }
 
   function renderConfirmationField(field) {
     const value = state.draft.route[field.id] || '';
-    return `<fieldset class="confirmation-item"><legend>${escapeHtml(field.label)} <span class="required-mark" aria-hidden="true">*</span></legend><label class="confirmation-choice"><input type="radio" name="${field.id}" value="Yes" ${value === 'Yes' ? 'checked' : ''}><span><svg class="icon"><use href="./assets/icon-sprite.svg#check"></use></svg>Yes, confirmed</span></label><p class="field-error" id="error-${field.id}" aria-live="polite"></p></fieldset>`;
+    return `<fieldset class="confirmation-item"><legend>${escapeHtml(field.label)} <span class="required-mark" aria-hidden="true">*</span></legend><label class="confirmation-choice"><input type="radio" name="${field.id}" data-section="route" value="Yes" ${value === 'Yes' ? 'checked' : ''}><span><svg class="icon"><use href="./assets/icon-sprite.svg#check"></use></svg>Yes, confirmed</span></label><p class="field-error" id="error-${field.id}" aria-live="polite"></p></fieldset>`;
   }
 
-  function renderRoute() {
+  function pathRequirementsMarkup() {
+    const route = currentRoute();
+    if (!route) return '<div class="empty-state"><strong>No service selected.</strong><p>Return to Service & Path and select the applicable service.</p></div>';
+    if (route.id === 'employmentVisa') return renderEmploymentPathRequirements(route);
+    return `<div class="subsection-heading"><span>Onboarding path</span><h2>${escapeHtml(route.title)}</h2></div><div class="document-grid">${route.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div>`;
+  }
+
+  function educationRequirementsMarkup() {
+    return `<div class="subsection-heading"><span>Education</span><h2>Education & equivalency</h2></div><div class="form-grid education-field">${R.educationFields.map((field) => renderField(field, 'education')).join('')}</div><div class="document-grid">${R.educationDocuments.map((rule) => renderDocumentCard(rule, 'education')).join('')}</div>`;
+  }
+
+  function additionalDocumentsMarkup() {
+    return `<div class="subsection-heading"><span>Optional</span><h2>Other supporting documents</h2></div><div class="document-grid">${R.additionalDocuments.map((rule) => renderDocumentCard(rule, 'additionalDocuments')).join('')}</div>`;
+  }
+
+  function renderConditionalRequirements() {
     const route = currentRoute();
     if (!route) {
-      dom.screenHost.innerHTML = '<div class="empty-state"><strong>No service selected.</strong><p>Return to Service Type and select the applicable route.</p></div>';
+      dom.screenHost.innerHTML = '<div class="empty-state"><strong>No service selected.</strong><p>Return to Service & Path and select a service before continuing.</p></div>';
       setScreenStatus('Service selection required');
       return;
     }
-    if (route.id === 'employmentVisa') {
-      dom.screenHost.innerHTML = renderEmploymentRoute(route);
-    } else {
-      dom.screenHost.innerHTML = `<div class="route-banner"><div class="route-banner-icon"><svg class="icon"><use href="./assets/icon-sprite.svg#passport"></use></svg></div><div><p class="eyebrow">Selected route</p><h2>${escapeHtml(route.title)}</h2><p>${escapeHtml(routeSummary(route.id))}</p></div></div><div class="document-grid">${route.documents.map((rule) => renderDocumentCard(rule, 'route')).join('')}</div>`;
-    }
-    const requiredCount = R.getRequiredRouteItems(route.id).length;
-    setScreenStatus(`${requiredCount} required route item${requiredCount === 1 ? '' : 's'}`);
-  }
-
-  function renderEducation() {
-    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#education"></use></svg><div><strong>Education & equivalency</strong><p>The supplied branching schema sends every service route through this section.</p></div></div><div class="form-grid education-field">${R.educationFields.map((field) => renderField(field, 'education')).join('')}</div><div class="document-grid">${R.educationDocuments.map((rule) => renderDocumentCard(rule, 'education')).join('')}</div>`;
-    setScreenStatus('1 required answer · 2 required documents');
-  }
-
-  function renderAdditional() {
-    dom.screenHost.innerHTML = `<div class="source-callout"><svg class="icon"><use href="./assets/icon-sprite.svg#document"></use></svg><div><strong>Optional supporting material</strong><p>Use this section to stage any additional supporting documents if required.</p></div></div><div class="document-grid">${R.additionalDocuments.map((rule) => renderDocumentCard(rule, 'additionalDocuments')).join('')}</div>`;
-    setScreenStatus('Optional section');
+    dom.screenHost.innerHTML = `${pathRequirementsMarkup()}${educationRequirementsMarkup()}${additionalDocumentsMarkup()}`;
+    const routeCount = R.getRequiredRouteItems(route.id).length;
+    setScreenStatus(`${routeCount} path item${routeCount === 1 ? '' : 's'} · education and optional supporting documents`);
   }
 
   function reviewValue(value) {
@@ -241,31 +246,30 @@
     const route = currentRoute();
     const candidateRows = R.candidateFields.map((field) => [field.label, state.draft.candidate[field.id]]);
     const mainRows = R.mainDocuments.map((rule) => [rule.label, state.draft.mainDocuments[rule.id] || []]);
-    const serviceRows = [['Service Type', state.draft.service.serviceType], ['Route', route ? route.title : 'Not selected']];
+    const serviceRows = [['Service Type', state.draft.service.serviceType], ['Onboarding Path', route ? route.title : 'Not selected']];
     if (route && route.id === 'employmentVisa') serviceRows.push([route.confirmQuestion, state.draft.service.caseConfirmation]);
     const routeRules = route ? (route.id === 'employmentVisa' ? [...route.specialHire.documents, ...route.specialHire.confirmations] : route.documents) : [];
-    const routeRows = routeRules.map((rule) => [rule.label, state.draft.route[rule.id]]);
-    const educationRows = [...R.educationFields, ...R.educationDocuments].map((rule) => [rule.label, state.draft.education[rule.id]]);
-    const additionalRows = R.additionalDocuments.map((rule) => [rule.label, state.draft.additionalDocuments[rule.id] || []]);
+    const conditionalRows = [
+      ...routeRules.map((rule) => [rule.label, state.draft.route[rule.id]]),
+      ...[...R.educationFields, ...R.educationDocuments].map((rule) => [rule.label, state.draft.education[rule.id]]),
+      ...R.additionalDocuments.map((rule) => [rule.label, state.draft.additionalDocuments[rule.id] || []])
+    ];
 
     const missingCandidate = sectionMissing('candidate');
     const missingMain = sectionMissing('mainDocuments');
     const missingService = sectionMissing('service');
-    const missingRoute = sectionMissing('route');
-    const missingEducation = sectionMissing('education');
+    const missingConditional = sectionMissing('route') + sectionMissing('education');
 
-    dom.screenHost.innerHTML = `<div class="review-hero ${readiness.ready ? 'is-ready' : ''}"><div><p class="eyebrow">Submission readiness</p><h2>${readiness.ready ? 'Ready to submit' : 'Action required before Submit'}</h2><p>${readiness.ready ? 'All source-required fields and documents for this route are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} still need attention.`}</p></div><div class="review-score"><strong>${calculatePercent(readiness)}%</strong><span>complete</span></div></div><div class="review-grid">${reviewSection('Candidate Information', 'candidate', candidateRows, { complete: missingCandidate === 0, missing: missingCandidate })}${reviewSection('Main Required Documents', 'mainDocuments', mainRows, { complete: missingMain === 0, missing: missingMain })}${reviewSection('Selected Service Route', 'service', serviceRows, { complete: missingService === 0, missing: missingService })}${reviewSection('Route-Specific Requirements', 'route', routeRows, { complete: missingRoute === 0, missing: missingRoute })}${reviewSection('Education / Equivalency', 'education', educationRows, { complete: missingEducation === 0, missing: missingEducation })}${reviewSection('Additional Supporting Documents', 'additional', additionalRows, { complete: true, missing: 0 })}</div>`;
+    dom.screenHost.innerHTML = `<div class="review-hero ${readiness.ready ? 'is-ready' : ''}"><div><p class="eyebrow">Submission readiness</p><h2>${readiness.ready ? 'Ready to submit' : 'Action required before Submit'}</h2><p>${readiness.ready ? 'All required fields and documents for this onboarding path are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} still need attention.`}</p></div><div class="review-score"><strong>${calculatePercent(readiness)}%</strong><span>complete</span></div></div><div class="review-grid">${reviewSection('Candidate Information', 'candidate', candidateRows, { complete: missingCandidate === 0, missing: missingCandidate })}${reviewSection('Documents', 'documents', mainRows, { complete: missingMain === 0, missing: missingMain })}${reviewSection('Service & Onboarding Path', 'servicePath', serviceRows, { complete: missingService === 0, missing: missingService })}${reviewSection('Conditional Requirements', 'conditionalRequirements', conditionalRows, { complete: missingConditional === 0, missing: missingConditional })}</div>`;
     setScreenStatus(readiness.ready ? 'Ready to submit' : `${readiness.missing.length} missing required item${readiness.missing.length === 1 ? '' : 's'}`);
   }
 
   function renderCurrentStep() {
     clearValidation();
     if (state.currentStep === 'candidate') renderCandidate();
-    else if (state.currentStep === 'mainDocuments') renderMainDocuments();
-    else if (state.currentStep === 'service') renderService();
-    else if (state.currentStep === 'route') renderRoute();
-    else if (state.currentStep === 'education') renderEducation();
-    else if (state.currentStep === 'additional') renderAdditional();
+    else if (state.currentStep === 'documents') renderDocuments();
+    else if (state.currentStep === 'servicePath') renderServicePath();
+    else if (state.currentStep === 'conditionalRequirements') renderConditionalRequirements();
     else if (state.currentStep === 'review') renderReview();
     bindDynamicEvents();
     updateReadiness();
@@ -283,11 +287,8 @@
 
   function sectionForCurrentStep() {
     if (state.currentStep === 'candidate') return 'candidate';
-    if (state.currentStep === 'mainDocuments') return 'mainDocuments';
-    if (state.currentStep === 'service') return 'service';
-    if (state.currentStep === 'route') return 'route';
-    if (state.currentStep === 'education') return 'education';
-    if (state.currentStep === 'additional') return 'additionalDocuments';
+    if (state.currentStep === 'documents') return 'mainDocuments';
+    if (state.currentStep === 'servicePath') return 'service';
     return '';
   }
 
@@ -297,14 +298,14 @@
     const name = control.name;
     if (!name) return;
 
-    if (state.currentStep === 'service' && name === 'serviceType') {
+    if (state.currentStep === 'servicePath' && name === 'serviceType') {
       const newService = control.value;
       const newRouteId = R.getRouteIdForService(newService);
       const previousRouteId = state.draft.service.routeId;
       if (previousRouteId && previousRouteId !== newRouteId && routeHasData()) {
-        const confirmed = window.confirm('Changing the service type will clear information already staged for the current route. Common candidate and document data will be kept. Continue?');
+        const confirmed = window.confirm('Changing the service type will clear information already staged for the current onboarding path. Common candidate and document data will be kept. Continue?');
         if (!confirmed) {
-          renderService();
+          renderServicePath();
           bindDynamicEvents();
           return;
         }
@@ -314,15 +315,16 @@
       state.draft.service.routeId = newRouteId;
       state.draft.service.caseConfirmation = '';
       const route = R.getRoute(newRouteId);
-      dom.routeLiveRegion.textContent = route ? `${route.title} selected. Route requirements updated.` : 'Service selection cleared.';
-      setScreenStatus(route ? route.title : 'Selection required');
+      dom.routeLiveRegion.textContent = route ? `${route.title} selected. Onboarding path requirements updated.` : 'Service selection cleared.';
+      renderServicePath();
+      bindDynamicEvents();
       updateReadiness();
       return;
     }
 
-    const section = sectionForCurrentStep();
+    const section = control.dataset.section || sectionForCurrentStep();
     if (!section) return;
-    if (state.currentStep === 'route' && name === 'caseConfirmation') state.draft.service.caseConfirmation = control.value;
+    if (name === 'caseConfirmation') state.draft.service.caseConfirmation = control.value;
     else state.draft[section][name] = control.value;
     updateReadiness();
 
@@ -382,42 +384,57 @@
     return all.find((rule) => rule.id === id) || null;
   }
 
-  function validateCurrentStep() {
-    const errors = [];
-    if (state.currentStep === 'candidate') {
-      R.candidateFields.filter((field) => field.required).forEach((field) => {
-        const value = state.draft.candidate[field.id];
-        if (!hasValue(value)) errors.push({ id: field.id, message: `${field.label} is required.` });
-        else if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(String(value))) errors.push({ id: field.id, message: 'Enter a valid personal email address.' });
+  function validateCandidate(errors) {
+    R.candidateFields.filter((field) => field.required).forEach((field) => {
+      const value = state.draft.candidate[field.id];
+      if (!hasValue(value)) errors.push({ id: field.id, message: `${field.label} is required.` });
+      else if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(String(value))) errors.push({ id: field.id, message: 'Enter a valid personal email address.' });
+    });
+  }
+
+  function validateDocuments(errors) {
+    R.mainDocuments.forEach((rule) => {
+      if (R.isMainDocumentRequired(rule.id, state.draft.candidate) && !hasValue(state.draft.mainDocuments[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
+    });
+  }
+
+  function validateServicePath(errors) {
+    if (!hasValue(state.draft.service.serviceType)) errors.push({ id: 'serviceType', message: 'Select Service Type is required.' });
+  }
+
+  function validateConditionalRequirements(errors) {
+    const route = currentRoute();
+    if (!route) {
+      errors.push({ id: 'serviceType', message: 'Select a service before continuing.' });
+      return;
+    }
+    if (route.id === 'employmentVisa') {
+      if (!hasValue(state.draft.service.caseConfirmation)) errors.push({ id: 'caseConfirmation', message: 'Complete the Special Hire check.' });
+      route.specialHire.documents.filter((rule) => rule.required).forEach((rule) => {
+        if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
       });
-    } else if (state.currentStep === 'mainDocuments') {
-      R.mainDocuments.forEach((rule) => {
-        if (R.isMainDocumentRequired(rule.id, state.draft.candidate) && !hasValue(state.draft.mainDocuments[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
+      route.specialHire.confirmations.filter((field) => field.required).forEach((field) => {
+        if (state.draft.route[field.id] !== 'Yes') errors.push({ id: field.id, message: 'Confirmation is required.' });
       });
-    } else if (state.currentStep === 'service') {
-      if (!hasValue(state.draft.service.serviceType)) errors.push({ id: 'serviceType', message: 'Select Service Type is required.' });
-    } else if (state.currentStep === 'route') {
-      const route = currentRoute();
-      if (!route) errors.push({ id: 'serviceType', message: 'Select a service type before continuing.' });
-      else if (route.id === 'employmentVisa') {
-        if (!hasValue(state.draft.service.caseConfirmation)) errors.push({ id: 'caseConfirmation', message: 'Answer the STOP & CONFIRM question.' });
-        route.specialHire.documents.filter((rule) => rule.required).forEach((rule) => {
-          if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-        });
-        route.specialHire.confirmations.filter((field) => field.required).forEach((field) => {
-          if (state.draft.route[field.id] !== 'Yes') errors.push({ id: field.id, message: 'Confirmation is required.' });
-        });
-      } else {
-        route.documents.filter((rule) => rule.required).forEach((rule) => {
-          if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
-        });
-      }
-    } else if (state.currentStep === 'education') {
-      if (!hasValue(state.draft.education.equivalencyAvailable)) errors.push({ id: 'equivalencyAvailable', message: 'Confirm whether Certificate of Equivalency is available.' });
-      R.educationDocuments.filter((rule) => rule.required).forEach((rule) => {
-        if (!hasValue(state.draft.education[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
+    } else {
+      route.documents.filter((rule) => rule.required).forEach((rule) => {
+        if (!hasValue(state.draft.route[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
       });
     }
+
+    const equivalencyField = R.educationFields.find((field) => field.id === 'equivalencyAvailable');
+    if (equivalencyField?.required && !hasValue(state.draft.education.equivalencyAvailable)) errors.push({ id: 'equivalencyAvailable', message: 'Confirm whether Certificate of Equivalency is available.' });
+    R.educationDocuments.filter((rule) => rule.required).forEach((rule) => {
+      if (!hasValue(state.draft.education[rule.id])) errors.push({ id: rule.id, message: `${rule.label} is required.` });
+    });
+  }
+
+  function validateCurrentStep() {
+    const errors = [];
+    if (state.currentStep === 'candidate') validateCandidate(errors);
+    else if (state.currentStep === 'documents') validateDocuments(errors);
+    else if (state.currentStep === 'servicePath') validateServicePath(errors);
+    else if (state.currentStep === 'conditionalRequirements') validateConditionalRequirements(errors);
     showErrorSummary(errors);
     return errors.length === 0;
   }
@@ -500,7 +517,7 @@
     dom.readinessMissing.textContent = readiness.ready ? 'All required items are complete.' : `${readiness.missing.length} required item${readiness.missing.length === 1 ? '' : 's'} remaining.`;
 
     const route = currentRoute();
-    dom.routePreviewText.textContent = route ? `${route.title}. Next: ${routeSummary(route.id)}` : 'Select a service type to see the applicable route.';
+    dom.routePreviewText.textContent = route ? `${route.title}. Next: ${pathSummary(route.id)}` : 'Select a service type to see the applicable onboarding path.';
 
     if (readiness.missing.length) {
       dom.missingPreview.hidden = false;
@@ -518,16 +535,16 @@
     return location.replace('AECOM Middle East Limited – ', '');
   }
 
-  function routeSummary(routeId) {
+  function pathSummary(routeId) {
     const summaries = {
-      employmentVisa: 'Case A/B source check, Special Hire requirements, then education/equivalency.',
-      relativeVisa: 'Sponsor passport, residence visa, Emirates ID and NOC, then education/equivalency.',
-      goldenVisa: 'Golden Visa copy, then education/equivalency.',
-      emiratiNational: 'Family Book, applicable medical result and National ID, then education/equivalency.',
-      gccNational: 'Applicable Emirati/GCC section items and National ID, then education/equivalency.',
-      diplomaticPassport: 'Visa sponsor NOC and applicable Embassy approval, then education/equivalency.'
+      employmentVisa: 'Special Hire check where applicable, followed by education/equivalency requirements.',
+      relativeVisa: 'Sponsor documents and education/equivalency requirements.',
+      goldenVisa: 'Existing-residency and education/equivalency requirements.',
+      emiratiNational: 'Emirati-specific identification and education/equivalency requirements.',
+      gccNational: 'GCC identification and education/equivalency requirements.',
+      diplomaticPassport: 'Sponsor and Embassy requirements, followed by education/equivalency.'
     };
-    return summaries[routeId] || 'Route requirements will appear after selection.';
+    return summaries[routeId] || 'Applicable requirements will appear after selection.';
   }
 
   function createPrototypeRequest() {
