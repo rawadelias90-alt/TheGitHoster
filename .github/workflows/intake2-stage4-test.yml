@@ -1,0 +1,17 @@
+name: Intake2 Stage 4 test
+
+on:
+  push:
+    branches:
+      - intake2-stage4-sharepoint-model
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run Stage 4 data model contract
+        run: node Intake2/tests/stage4-sharepoint-data-model.test.js
