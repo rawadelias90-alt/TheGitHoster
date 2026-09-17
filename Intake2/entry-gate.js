@@ -71,7 +71,7 @@
   function getOrCreateRequestTitle() {
     if (!window.Intake2Access) return '';
     if (!window.Intake2Access.requestTitle) {
-      window.Intake2Access.requestTitle = `INT-${Date.now().toString().slice(-8)}`;
+      window.Intake2Access.requestTitle = `REQ-${Date.now().toString().slice(-8)}`;
     }
     return window.Intake2Access.requestTitle;
   }
