@@ -23,9 +23,7 @@
     emailInput.removeAttribute('aria-invalid');
     employeeIdInput.removeAttribute('aria-invalid');
     flowUrlInput.removeAttribute('aria-invalid');
-
     if (!message) return;
-
     if (target === 'email') emailInput.setAttribute('aria-invalid', 'true');
     if (target === 'employeeId') employeeIdInput.setAttribute('aria-invalid', 'true');
     if (target === 'flowUrl') flowUrlInput.setAttribute('aria-invalid', 'true');
@@ -81,9 +79,7 @@
   async function callPowerAutomate(flowUrl, email, employeeId) {
     const response = await fetch(flowUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email,
         employeeId: employeeId,
@@ -94,19 +90,9 @@
     });
 
     const body = await readResponseBody(response);
-
-    if (response.status === 200) {
-      return { success: true, message: body.message || 'Access validated.' };
-    }
-
-    if (response.status === 403) {
-      return { success: false, message: body.message || 'User validation failed.' };
-    }
-
-    return {
-      success: false,
-      message: body.message || `Power Automate returned HTTP ${response.status}.`
-    };
+    if (response.status === 200) return { success: true, message: body.message || 'Access validated.' };
+    if (response.status === 403) return { success: false, message: body.message || 'User validation failed.' };
+    return { success: false, message: body.message || `Power Automate returned HTTP ${response.status}.` };
   }
 
   async function validateAccessEntry() {
@@ -123,26 +109,22 @@
       emailInput.focus();
       return false;
     }
-
     if (!emailInput.validity.valid) {
       setError('Enter a valid AECOM email address.', 'email');
       emailInput.focus();
       return false;
     }
-
     if (!employeeId) {
       setError('Enter your Employee ID.', 'employeeId');
       employeeIdInput.focus();
       return false;
     }
-
     if (!flowUrl) {
       setError('Open Test connection setup and paste the Power Automate validation URL.', 'flowUrl');
       flowUrlInput.closest('details')?.setAttribute('open', '');
       flowUrlInput.focus();
       return false;
     }
-
     if (!validHttpsUrl(flowUrl)) {
       setError('Enter a valid HTTPS Power Automate URL.', 'flowUrl');
       flowUrlInput.closest('details')?.setAttribute('open', '');
@@ -160,13 +142,10 @@
         setError(result.message || 'User validation failed.');
         return false;
       }
-
       window.Intake2Access.email = email;
       window.Intake2Access.employeeId = employeeId;
       window.Intake2Access.validated = true;
       window.Intake2Access.validationMode = 'power-automate';
-
-      // Minimize exposure after a successful validation. The endpoint is not retained.
       flowUrlInput.value = '';
       return true;
     } catch (error) {
@@ -185,13 +164,10 @@
       queueMicrotask(() => delete startButton.dataset.accessBypass);
       return;
     }
-
     event.preventDefault();
     event.stopImmediatePropagation();
-
     const valid = await validateAccessEntry();
     if (!valid) return;
-
     startButton.dataset.accessBypass = 'true';
     startButton.click();
   }
@@ -204,7 +180,6 @@
     const confirmationScreen = document.querySelector('#confirmationScreen');
     const confirmationText = document.querySelector('#confirmationText');
     const confirmationNote = document.querySelector('.confirmation-note');
-
     if (!prototypeTools || !submitButton || !workflowShell || !welcomeScreen || !confirmationScreen || !confirmationText) return;
 
     prototypeTools.insertAdjacentHTML('beforeend', `
@@ -251,14 +226,13 @@
       const mobileLabel = document.querySelector('#mobileProgressLabel');
       const mobileCount = document.querySelector('#mobileProgressCount');
       if (mobileLabel) mobileLabel.textContent = 'Done';
-      if (mobileCount) mobileCount.textContent = '9 / 9';
+      if (mobileCount) mobileCount.textContent = '7 / 7';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function submitToPowerAutomate(event) {
       event.preventDefault();
       event.stopImmediatePropagation();
-
       const submissionUrl = submissionUrlInput.value.trim();
       setSubmissionError('');
 
@@ -266,7 +240,6 @@
         setSubmissionError('Requester access is not validated. Return to Start and validate again.');
         return;
       }
-
       if (!submissionUrl) {
         prototypeTools.open = true;
         setSubmissionError('Paste the Intake2 Submission Test URL before submitting.');
@@ -274,7 +247,6 @@
         prototypeTools.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-
       if (!validHttpsUrl(submissionUrl)) {
         prototypeTools.open = true;
         setSubmissionError('Enter a valid HTTPS Power Automate submission URL.');
@@ -290,28 +262,19 @@
       try {
         const response = await fetch(submissionUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: window.Intake2Access?.email || '',
-            requestTitle: requestTitle
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: window.Intake2Access?.email || '', requestTitle: requestTitle })
         });
-
         const body = await readResponseBody(response);
-
         if (response.status === 200) {
           submissionUrlInput.value = '';
           showConfirmation(requestTitle, body);
           return;
         }
-
         if (response.status === 500 || !response.ok) {
           setSubmissionError(body.message || `Submission failed with HTTP ${response.status}.`);
           return;
         }
-
         setSubmissionError(body.message || `Unexpected Power Automate response: HTTP ${response.status}.`);
       } catch (error) {
         console.error('Power Automate submission request failed.');
@@ -328,7 +291,6 @@
 
   startButton.addEventListener('click', handleStartClick, true);
   form.addEventListener('submit', (event) => event.preventDefault());
-
   emailInput.addEventListener('input', () => setError(''));
   employeeIdInput.addEventListener('input', () => setError(''));
   flowUrlInput.addEventListener('input', () => setError(''));
