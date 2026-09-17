@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const model = require('../sharepoint-data-model.js');
+const provisioning = require('../sharepoint-provisioning.js');
 
 assert.equal(model.version, '1.0');
 assert.equal(model.requestsList.title, 'Intake2 Requests');
@@ -68,4 +69,27 @@ assert.equal(model.provisioning.requiresAdmin, false);
 assert.equal(model.provisioning.connector, 'SharePoint');
 assert.equal(model.provisioning.method, 'Power Automate SharePoint REST');
 
-console.log('Stage 4 SharePoint production data model contract passed');
+const siteUrl = 'https://tenant.sharepoint.com/sites/example';
+const steps = provisioning.buildRestSteps(siteUrl);
+assert.equal(steps[0].label, 'create Intake2 Requests');
+assert.equal(steps[0].method, 'POST');
+assert.equal(steps[0].uri, '_api/web/lists');
+assert.equal(steps[1].label, 'create Intake2 Documents');
+assert.equal(steps.filter((step) => step.kind === 'request-column').length, model.requestsList.columns.length);
+assert.equal(steps.filter((step) => step.kind === 'document-column').length, model.documentsLibrary.columns.length);
+assert.ok(steps.some((step) => step.kind === 'verify' && step.uri.includes("getbyinternalnameortitle('RequestID')")));
+assert.ok(steps.some((step) => step.kind === 'verify' && step.uri.includes("getbytitle('Intake2 Documents')")));
+
+const definition = provisioning.buildFlowDefinition(siteUrl);
+assert.equal(definition.triggers.manual.kind, 'Button');
+assert.ok(Object.keys(definition.actions).length > model.requestsList.columns.length + model.documentsLibrary.columns.length);
+for (const action of Object.values(definition.actions)) {
+  assert.equal(action.type, 'OpenApiConnection');
+  assert.equal(action.inputs.host.operationId, 'HttpRequest');
+  assert.equal(action.inputs.parameters.dataset, siteUrl);
+}
+
+const serialized = JSON.stringify(definition);
+assert.doesNotMatch(serialized, /aecom\.sharepoint\.com/i, 'public provisioning source must not embed the corporate site URL');
+
+console.log('Stage 4 SharePoint production data model and provisioning contract passed');
