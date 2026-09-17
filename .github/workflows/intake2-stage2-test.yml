@@ -1,0 +1,18 @@
+name: Intake2 Stage 2 test
+
+on:
+  push:
+    branches:
+      - intake2-stage2-simplified-journey
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node Intake2/tests/stage2-journey-structure.test.js
+      - run: node --check Intake2/script.js
+      - run: node --check Intake2/entry-gate.js
