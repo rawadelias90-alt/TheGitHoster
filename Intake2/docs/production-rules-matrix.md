@@ -1,9 +1,17 @@
 # Intake2 Production Rules Matrix
 
-**Status:** Approved Stage 1 baseline  
-**Purpose:** Canonical business-rule source for the production Intake2 implementation.
+**Status:** Approved Stage 1 baseline — synced to Project Source dated 17 September 2026  
+**Purpose:** Canonical rules source for the production Intake2 implementation.
 
-## Terminology
+The Project Source is the authority for business journey and document requirements. Intake2-only technical decisions such as `REQ-########`, upload limits, and UI terminology are recorded separately as implementation decisions.
+
+## Intake2 Preconditions
+
+- Client Approval is required before Intake 2 for all new-hire service paths.
+- Intake 1 is path-specific and must be complete where the Project Source requires it.
+- Intake 2 is the formal trigger for GRO processing.
+
+## Terminology — Intake2 implementation decision
 
 | Technical term | User-facing term |
 |---|---|
@@ -12,7 +20,7 @@
 | Route Register | Onboarding Path Overview |
 | Route Steps | Path Steps and Dependencies |
 
-## Request ID
+## Request ID — Intake2 implementation decision
 
 Production requests use one identifier only: `REQ-########`.
 
@@ -20,22 +28,52 @@ Production requests use one identifier only: `REQ-########`.
 
 | Entity | Group |
 |---|---|
-| AECOM Middle East Limited – Abu Dhabi | Mainland |
-| AECOM Middle East Limited – Dubai | Mainland |
-| AECOM Middle East Limited – Al Ain | Mainland |
+| AECOM Abu Dhabi | Mainland |
+| AECOM Dubai | Mainland |
+| AECOM Al Ain | Mainland |
 | AECOM Dubai South / DWC | Free Zone |
 
-## Services
+## Main Service Groups
 
-| Service | Hire status |
+| Service group | When it applies |
 |---|---|
-| Employment Visa & Work Permit | Local / Overseas |
-| Work Permit for Relative Visa Holders | Local |
-| Work Permit for Golden Visa Holder | Local |
-| Work Permit for Emirati National | Local |
-| Work Permit for GCC National | Local |
+| Employment Visa and Work Permit | Candidate requires an AECOM-sponsored employment visa and work permit |
+| Work Permit | Candidate already holds valid UAE residency, such as Golden Visa or Relative / Family Visa |
+| Emirati and GCC National Work Permit | Candidate is an Emirati or GCC national |
 
-Diplomatic Passport is excluded from the production Intake2 service list.
+Diplomatic Passport Service is excluded from the current operational journey.
+
+### Intake2 service variants
+
+| Intake2 service | Service group | Hire status |
+|---|---|---|
+| Employment Visa & Work Permit | Employment Visa and Work Permit | Local / Overseas |
+| Work Permit for Relative Visa Holders | Work Permit | UAE resident |
+| Work Permit for Golden Visa Holder | Work Permit | UAE resident |
+| Work Permit for Emirati National | Emirati and GCC National Work Permit | Local |
+| Work Permit for GCC National | Emirati and GCC National Work Permit | Local |
+
+Existing Visa Work Permit cases are UAE-resident cases and are not treated as Overseas Hire cases.
+
+## Pre-Hire Readiness Fields
+
+The production intake logic must support the following readiness information where applicable:
+
+- Candidate Full Name — required and must match passport
+- Nationality — required
+- Country of Birth — required
+- Hire Status — required for Employment Visa and Work Permit cases
+- Sponsoring Entity — required
+- Service — required
+- Current UAE Visa / Residency — where applicable
+- Unified Number — where available
+- Last Working Date — where applicable
+- Personal Email — required
+- Contact Number — required
+- Skilled Status — confirm where applicable
+- Special Hire Status — check for applicable Overseas Employment Visa cases
+- Expected Joining Date — required
+- Candidate Actions — confirm where applicable
 
 ## Core Documents
 
@@ -44,31 +82,44 @@ Diplomatic Passport is excluded from the production Intake2 service list.
 | Passport Copy | Required |
 | Candidate Photograph | Required |
 | Signed AECOM Offer / Contract | Required |
-| Education Certificate attested by MoFA UAE | Required only for applicable skilled cases |
-| Police Clearance Certificate | Where applicable |
+| Education Certificate | Required for applicable skilled classifications |
+| Educational Verification / Equivalency | Required where available and applicable |
+| Award or Education Details Document | Required where candidate has an Education Certificate but no verification / equivalency |
+| Police Clearance Certificate | Where requested or applicable |
 | Emirates ID | Where applicable |
 | Current UAE Visa / Residency | Where applicable |
-| External Cover Passport | Required for Dubai and AECOM Dubai South / DWC |
+| External Cover Passport | Dubai Mainland and AECOM Dubai South / DWC, where applicable |
+| Home-country National ID | Applicable Overseas Special Hire cases |
+
+External Cover Passport does not apply to Abu Dhabi or Al Ain.
 
 ## Education / Equivalency
 
-When the education requirement applies:
+Education Certificate is required only for applicable skilled classifications.
 
-- Equivalency / Educational Verification available → upload Certificate of Equivalency / Educational Verification.
-- Equivalency / Educational Verification not available → upload Award / Education Details document.
+Where an Education Certificate is provided:
+
+- Educational Verification / Certificate of Equivalency available → upload the available verification / equivalency document.
+- Verification / equivalency unavailable → upload the applicable Award or Education Details document.
+
+Education verification is separate from Intake 1.
 
 ## Existing Visa Documents
 
-### Relative Visa
+### Relative / Family Visa
 
-- Sponsor Passport Copy — Required
-- Sponsor Residence Visa — Required
-- Sponsor Emirates ID — Required
-- Sponsor NOC — Required
+Where applicable, Mobilisation collects:
+
+- Sponsor Passport Copy
+- Sponsor Residence Visa
+- Sponsor Emirates ID
+- Sponsor No Objection Certificate
+
+These are conditional in Intake2 rather than universally mandatory.
 
 ### Golden Visa
 
-- Golden Visa Copy — Required
+The current Project Source does not define a separate mandatory Golden Visa upload. Current UAE residency evidence remains covered by the core `Current UAE Visa / Residency` rule where applicable.
 
 ## Emirati / GCC Documents
 
@@ -77,6 +128,8 @@ When the education requirement applies:
 | National ID | Required | Required |
 | Family Book | Required | Not applicable |
 | Medical at Intake2 | Not requested | Not requested |
+
+Medical is completed after Work Permit approval.
 
 ## Special Hire
 
@@ -102,20 +155,35 @@ Applicable nationalities:
 
 ### Intake2 document rule
 
-Required at Intake2:
+Required at the initial Intake2 stage:
 
 - Home-country National ID
 
-Later process steps, not Intake2 uploads:
+Later process steps, not initial Intake2 uploads:
 
 - Home-country Medical
 - UAE Embassy process
 
-## Additional Supporting Documents
+## Intake 1 Applicability
+
+| Path | Intake 1 |
+|---|---|
+| Mainland Employment Visa & Work Permit — Local | Yes |
+| Mainland Employment Visa & Work Permit — Overseas | Yes |
+| Mainland Employment Visa & Work Permit — Overseas Special Hire | Yes |
+| AECOM Dubai South / DWC Employment Visa & Work Permit | No |
+| Mainland Golden Visa Work Permit | Yes |
+| Mainland Relative Visa Work Permit | Yes |
+| AECOM Dubai South / DWC Golden Visa Work Permit | No |
+| AECOM Dubai South / DWC Relative Visa Work Permit | No |
+| Emirati National Work Permit | No |
+| GCC National Work Permit | No |
+
+## Additional Supporting Documents — Intake2 implementation decision
 
 Optional, placed before Review. Multiple files allowed.
 
-## File Rules
+## File Rules — Intake2 implementation decision
 
 - Allowed: PDF, JPG, JPEG, PNG
 - Maximum: 10 MB per file
@@ -124,23 +192,23 @@ Optional, placed before Review. Multiple files allowed.
 
 ## Approved Onboarding Paths
 
-| Path ID | Onboarding Path |
-|---|---|
-| EVW-MNL-LOCAL | Employment Visa & Work Permit – Mainland – Local Hire |
-| EVW-MNL-OVERSEAS | Employment Visa & Work Permit – Mainland – Overseas Hire |
-| EVW-MNL-OVERSEAS-SH | Employment Visa & Work Permit – Mainland – Overseas Special Hire |
-| EVW-DWC-LOCAL | Employment Visa & Work Permit – AECOM Dubai South / DWC – Local Hire |
-| EVW-DWC-OVERSEAS | Employment Visa & Work Permit – AECOM Dubai South / DWC – Overseas Hire |
-| EVW-DWC-OVERSEAS-SH | Employment Visa & Work Permit – AECOM Dubai South / DWC – Overseas Special Hire |
-| WP-MNL-GOLDEN | Golden Visa Work Permit – Mainland |
-| WP-DWC-GOLDEN | Golden Visa Work Permit – AECOM Dubai South / DWC |
-| WP-MNL-RELATIVE | Relative Visa Work Permit – Mainland |
-| WP-DWC-RELATIVE | Relative Visa Work Permit – AECOM Dubai South / DWC |
-| WP-MNL-EMIRATI | Emirati National Work Permit – Mainland |
-| WP-DWC-EMIRATI | Emirati National Work Permit – AECOM Dubai South / DWC |
-| WP-MNL-GCC | GCC National Work Permit – Mainland |
-| WP-DWC-GCC | GCC National Work Permit – AECOM Dubai South / DWC |
+| Path ID | Onboarding Path | Hire status | Intake 1 |
+|---|---|---|---|
+| EVW-MNL-LOCAL | Employment Visa & Work Permit – Mainland – Local Hire | Local | Yes |
+| EVW-MNL-OVERSEAS | Employment Visa & Work Permit – Mainland – Overseas Hire | Overseas | Yes |
+| EVW-MNL-OVERSEAS-SH | Employment Visa & Work Permit – Mainland – Overseas Special Hire | Overseas | Yes |
+| EVW-DWC-LOCAL | Employment Visa & Work Permit – AECOM Dubai South / DWC – Local Hire | Local | No |
+| EVW-DWC-OVERSEAS | Employment Visa & Work Permit – AECOM Dubai South / DWC – Overseas Hire | Overseas | No |
+| EVW-DWC-OVERSEAS-SH | Employment Visa & Work Permit – AECOM Dubai South / DWC – Overseas Special Hire | Overseas | No |
+| WP-MNL-GOLDEN | Golden Visa Work Permit – Mainland | UAE resident | Yes |
+| WP-DWC-GOLDEN | Golden Visa Work Permit – AECOM Dubai South / DWC | UAE resident | No |
+| WP-MNL-RELATIVE | Relative Visa Work Permit – Mainland | UAE resident | Yes |
+| WP-DWC-RELATIVE | Relative Visa Work Permit – AECOM Dubai South / DWC | UAE resident | No |
+| WP-MNL-EMIRATI | Emirati National Work Permit – Mainland | Local | No |
+| WP-DWC-EMIRATI | Emirati National Work Permit – AECOM Dubai South / DWC | Local | No |
+| WP-MNL-GCC | GCC National Work Permit – Mainland | Local | No |
+| WP-DWC-GCC | GCC National Work Permit – AECOM Dubai South / DWC | Local | No |
 
 ## Stage 1 Boundary
 
-This matrix is the approved production baseline. The current prototype runtime still uses `requirements.js`; Stage 3 will make that runtime engine consume this canonical rule source. Stage 2 will apply the approved user-facing terminology while simplifying the journey structure.
+This matrix is the source-synced production baseline. The current prototype runtime still uses `requirements.js`; Stage 3 will make the runtime rules engine consume this canonical source. Stage 2 will simplify the journey structure and apply the approved user-facing terminology without changing the business rules established here.
