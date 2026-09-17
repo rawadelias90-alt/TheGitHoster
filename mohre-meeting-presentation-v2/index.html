@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>AECOM UAE Emiratisation Programme & Workforce Outlook</title>
+  <style>
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#F8F6F3}
+    #presentationFrame{display:block;width:100%;height:100%;border:0;background:#F8F6F3}
+  </style>
+</head>
+<body>
+  <iframe id="presentationFrame" title="AECOM UAE Emiratisation Programme & Workforce Outlook" allow="fullscreen" allowfullscreen></iframe>
+  <script>
+    const frame = document.getElementById('presentationFrame');
+    frame.src = '../mohre-meeting-presentation/' + (location.hash || '');
+
+    frame.addEventListener('load', () => {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+
+      const style = doc.createElement('style');
+      style.textContent = `
+        #slide-7 .slide__inner{justify-content:flex-start;padding-top:clamp(82px,9vh,108px)}
+        #slide-7 .section-heading{margin-bottom:clamp(18px,2.6vh,30px)}
+        #slide-7 .section-heading .title{max-width:none}
+        .hiring-outlook{display:grid;gap:clamp(18px,2.4vh,28px)}
+        .hiring-outlook__subtitle{color:#000;font-size:clamp(.92rem,1.05vw,1.05rem);font-weight:620;line-height:1.45}
+        .hiring-outlook__summary{display:flex;align-items:baseline;gap:16px;padding:16px 0 18px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+        .hiring-outlook__summary-value{flex:0 0 auto;color:var(--accent);font-size:clamp(2.8rem,4.8vw,4.6rem);font-weight:620;letter-spacing:-.065em;line-height:.9}
+        .hiring-outlook__summary-text{max-width:54ch;color:#000;font-size:clamp(.92rem,1.05vw,1.06rem);font-weight:610;line-height:1.45}
+        .hiring-outlook__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,2vw,26px)}
+        .hiring-card{min-height:280px;padding:clamp(22px,2.5vw,30px);display:flex;flex-direction:column;justify-content:space-between;background:var(--surface);border-top:4px solid var(--accent);box-shadow:var(--shadow)}
+        .hiring-card__location{color:#000;font-size:clamp(1rem,1.3vw,1.25rem);font-weight:720;line-height:1.25}
+        .hiring-card__delta{margin-top:12px;color:var(--accent);font-size:clamp(4rem,7.5vw,6.6rem);font-weight:620;letter-spacing:-.08em;line-height:.9}
+        .hiring-card__label{margin-top:10px;color:#000;font-size:.7rem;font-weight:760;letter-spacing:.11em;text-transform:uppercase}
+        [dir="rtl"] .hiring-card__label{letter-spacing:0}
+        .hiring-card__supporting{margin-top:22px;padding-top:15px;border-top:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+        .hiring-card__supporting-label{color:#000;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.35}
+        [dir="rtl"] .hiring-card__supporting-label{letter-spacing:0}
+        .hiring-card__supporting-value{color:#000;font-size:clamp(1.3rem,1.8vw,1.8rem);font-weight:720;line-height:1}
+        .hiring-outlook__closing{max-width:72ch;padding-top:2px;color:#000;font-size:clamp(.82rem,.92vw,.94rem);line-height:1.5}
+        @media(max-width:760px){
+          #slide-7 .slide__inner{padding-top:88px}
+          .hiring-outlook__summary{align-items:flex-start}
+          .hiring-outlook__grid{grid-template-columns:1fr}
+          .hiring-card{min-height:220px}
+        }
+      `;
+      doc.head.appendChild(style);
+
+      const slide = doc.getElementById('slide-7');
+      if (!slide) return;
+      slide.setAttribute('data-title-en','December Hiring Outlook');
+      slide.setAttribute('data-title-ar','توقعات التوظيف لشهر ديسمبر');
+      slide.setAttribute('aria-labelledby','slide-7-title');
+      slide.innerHTML = `
+        <div class="slide__inner">
+          <div class="section-heading section-heading--row reveal" style="--reveal-index:0">
+            <div>
+              <p class="eyebrow" data-lang="en">December outlook</p>
+              <p class="eyebrow" data-lang="ar" dir="rtl">توقعات ديسمبر</p>
+              <h2 class="title" id="slide-7-title" data-lang="en">December Hiring Outlook</h2>
+              <h2 class="title" data-lang="ar" dir="rtl">توقعات التوظيف لشهر ديسمبر</h2>
+            </div>
+          </div>
+          <div class="hiring-outlook reveal" style="--reveal-index:1">
+            <p class="hiring-outlook__subtitle" data-lang="en">Additional Emirati Hires Required by December</p>
+            <p class="hiring-outlook__subtitle" data-lang="ar" dir="rtl">التعيينات الإماراتية الإضافية المطلوبة بحلول ديسمبر</p>
+            <div class="hiring-outlook__summary">
+              <div class="hiring-outlook__summary-value">47</div>
+              <div class="hiring-outlook__summary-text" data-lang="en">47 additional Emirati hires are currently projected across the UAE by December.</div>
+              <div class="hiring-outlook__summary-text" data-lang="ar" dir="rtl">من المتوقع حاليًا توظيف 47 مواطنًا إماراتيًا إضافيًا عبر دولة الإمارات بحلول ديسمبر.</div>
+            </div>
+            <div class="hiring-outlook__grid">
+              <article class="hiring-card">
+                <div>
+                  <div class="hiring-card__location" data-lang="en">Dubai</div>
+                  <div class="hiring-card__location" data-lang="ar" dir="rtl">دبي</div>
+                  <div class="hiring-card__delta">+32</div>
+                  <div class="hiring-card__label" data-lang="en">Additional hires</div>
+                  <div class="hiring-card__label" data-lang="ar" dir="rtl">تعيينات إضافية</div>
+                </div>
+                <div class="hiring-card__supporting">
+                  <div class="hiring-card__supporting-label" data-lang="en">December forecast</div>
+                  <div class="hiring-card__supporting-label" data-lang="ar" dir="rtl">توقع ديسمبر</div>
+                  <div class="hiring-card__supporting-value">91</div>
+                </div>
+              </article>
+              <article class="hiring-card">
+                <div>
+                  <div class="hiring-card__location" data-lang="en">Abu Dhabi</div>
+                  <div class="hiring-card__location" data-lang="ar" dir="rtl">أبوظبي</div>
+                  <div class="hiring-card__delta">+13</div>
+                  <div class="hiring-card__label" data-lang="en">Additional hires</div>
+                  <div class="hiring-card__label" data-lang="ar" dir="rtl">تعيينات إضافية</div>
+                </div>
+                <div class="hiring-card__supporting">
+                  <div class="hiring-card__supporting-label" data-lang="en">December forecast</div>
+                  <div class="hiring-card__supporting-label" data-lang="ar" dir="rtl">توقع ديسمبر</div>
+                  <div class="hiring-card__supporting-value">80</div>
+                </div>
+              </article>
+              <article class="hiring-card">
+                <div>
+                  <div class="hiring-card__location" data-lang="en">Al Ain</div>
+                  <div class="hiring-card__location" data-lang="ar" dir="rtl">العين</div>
+                  <div class="hiring-card__delta">+2</div>
+                  <div class="hiring-card__label" data-lang="en">Additional hires</div>
+                  <div class="hiring-card__label" data-lang="ar" dir="rtl">تعيينات إضافية</div>
+                </div>
+                <div class="hiring-card__supporting">
+                  <div class="hiring-card__supporting-label" data-lang="en">December forecast</div>
+                  <div class="hiring-card__supporting-label" data-lang="ar" dir="rtl">توقع ديسمبر</div>
+                  <div class="hiring-card__supporting-value">22</div>
+                </div>
+              </article>
+            </div>
+            <p class="hiring-outlook__closing" data-lang="en">Our focus through December is converting the active hiring pipeline into 47 additional Emirati hires across the three locations.</p>
+            <p class="hiring-outlook__closing" data-lang="ar" dir="rtl">يركز عملنا حتى ديسمبر على تحويل مسار التوظيف النشط إلى 47 تعيينًا إماراتيًا إضافيًا عبر المواقع الثلاثة.</p>
+          </div>
+        </div>`;
+
+      const target = location.hash.match(/^#slide-(\\d+)$/);
+      if (target) frame.contentWindow.location.hash = location.hash;
+    });
+
+    window.addEventListener('hashchange', () => {
+      if (frame.contentWindow) frame.contentWindow.location.hash = location.hash;
+    });
+  </script>
+</body>
+</html>
