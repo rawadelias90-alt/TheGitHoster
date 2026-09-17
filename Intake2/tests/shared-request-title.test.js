@@ -8,7 +8,7 @@ const upload = fs.readFileSync(path.join(root, 'document-upload-pilot.js'), 'utf
 
 assert.match(gate, /requestTitle:\s*''/, 'Access state must reserve one shared request title for the current journey');
 assert.match(gate, /function getOrCreateRequestTitle\(/, 'A shared request-title helper must exist');
-assert.match(gate, /`INT-\$\{Date\.now\(\)\.toString\(\)\.slice\(-8\)\}`/, 'Shared request titles must use the INT- prefix');
+assert.match(gate, /`REQ-\$\{Date\.now\(\)\.toString\(\)\.slice\(-8\)\}`/, 'Shared request titles must use the REQ- prefix');
 assert.match(gate, /const requestTitle = getOrCreateRequestTitle\(\);/, 'Submission must use the shared request title');
 assert.match(gate, /getOrCreateRequestTitle\s*\}/, 'The request-title helper must be exposed to the upload pilot');
 
