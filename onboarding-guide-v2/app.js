@@ -1,17 +1,11 @@
 import { ENTITIES, SERVICE_TYPES, NATIONALITIES, resolveCase, getQuestionSequence, browseCases } from "./services.js";
 
 const app = document.getElementById("app");
+const COVER_LOGO = "./assets/aecom-logo.webp";
 
 const state = {
   mode: "welcome",
-  answers: {
-    entity: "",
-    service: "",
-    hireStatus: "",
-    nationality: "",
-    residency: "",
-    category: "",
-  },
+  answers: { entity: "", service: "", hireStatus: "", nationality: "", residency: "", category: "" },
   questionIndex: 0,
   result: null,
   browseEntity: "all",
@@ -37,11 +31,8 @@ const QUESTIONS = {
     title: "What is the candidate’s hire status?",
     label: "Hire status",
     placeholder: "Select the confirmed hire status",
-    help: "Local Hire and Overseas Hire are confirmed case facts.",
-    options: [
-      { value: "local", label: "Local Hire" },
-      { value: "overseas", label: "Overseas Hire" },
-    ],
+    help: "Local Hire and Overseas Hire are confirmed case statuses for Employment Visa routes.",
+    options: [{ value: "local", label: "Local Hire" }, { value: "overseas", label: "Overseas Hire" }],
   },
   nationality: {
     title: "What is the candidate’s nationality?",
@@ -54,26 +45,24 @@ const QUESTIONS = {
     title: "What UAE residency does the candidate currently hold?",
     label: "Current UAE residency",
     placeholder: "Select current residency",
-    help: "V1 covers Golden Visa and Relative / Family Visa Work Permit cases.",
-    options: [
-      { value: "golden", label: "Golden Visa" },
-      { value: "relative", label: "Relative / Family Visa" },
-    ],
+    help: "Existing-residency Work Permit routes cover Golden Visa and Relative / Family Visa cases.",
+    options: [{ value: "golden", label: "Golden Visa" }, { value: "relative", label: "Relative / Family Visa" }],
   },
   category: {
     title: "Which candidate category applies?",
     label: "Candidate category",
     placeholder: "Select category",
     help: "This service is limited to Emirati and GCC National candidates.",
-    options: [
-      { value: "emirati", label: "Emirati" },
-      { value: "gcc", label: "GCC National" },
-    ],
+    options: [{ value: "emirati", label: "Emirati" }, { value: "gcc", label: "GCC National" }],
   },
 };
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[char]));
+}
+
+function setBodyMode() {
+  document.body.classList.toggle("landing-mode", state.mode === "welcome");
 }
 
 function focusHeading() {
@@ -89,41 +78,41 @@ function setMode(mode) {
   focusHeading();
 }
 
+function resetAnswers() {
+  Object.keys(state.answers).forEach(key => state.answers[key] = "");
+  state.questionIndex = 0;
+  state.result = null;
+}
+
 function clearDownstream(changedKey) {
-  const order = ["entity","service","hireStatus","nationality","residency","category"];
+  const order = ["entity", "service", "hireStatus", "nationality", "residency", "category"];
   const index = order.indexOf(changedKey);
   for (let i = index + 1; i < order.length; i++) state.answers[order[i]] = "";
-
   if (changedKey === "service") {
     state.answers.hireStatus = "";
     state.answers.nationality = "";
     state.answers.residency = "";
     state.answers.category = "";
   }
-  if (changedKey === "hireStatus" && state.answers.hireStatus !== "overseas") {
-    state.answers.nationality = "";
-  }
+  if (changedKey === "hireStatus" && state.answers.hireStatus !== "overseas") state.answers.nationality = "";
   state.result = null;
 }
 
 function renderWelcome() {
   app.innerHTML = `
-    <section class="screen welcome">
-      <div>
-        <p class="eyebrow">AECOM UAE onboarding</p>
-        <h1 class="display-title" data-screen-heading tabindex="-1">UAE New Hire Guide</h1>
-        <p class="lede">Find the onboarding requirements, documents and next steps that apply to a UAE new hire.</p>
-        <div class="welcome-actions">
-          <button class="primary-button" type="button" data-action="start">Start guided journey</button>
-          <button class="secondary-button" type="button" data-action="browse">Explore all services</button>
-        </div>
+    <section class="screen landing-cover">
+      <img class="cover-logo" src="${COVER_LOGO}" alt="AECOM">
+      <div class="cover-title-block">
+        <h1 class="cover-title" data-screen-heading tabindex="-1" aria-label="UAE New Hire Guide">
+          <span>UAE New Hire</span>
+          <span>Guide</span>
+        </h1>
       </div>
-      <aside class="welcome-aside">
-        <strong>How to use the guide</strong>
-        Answer only the questions relevant to the candidate. The guide then presents the applicable preparation, documents, candidate actions and joining guidance. If you already know what you need, browse all services instead.
-      </aside>
-    </section>
-  `;
+      <div class="cover-actions" aria-label="Guide entry options">
+        <button class="cover-primary" type="button" data-action="start">Start guided journey</button>
+        <button class="cover-secondary" type="button" data-action="browse">Explore all services</button>
+      </div>
+    </section>`;
 }
 
 function currentSequence() {
@@ -162,21 +151,35 @@ function renderQuestion() {
           <button class="primary-button" type="button" data-action="question-next" ${value ? "" : "disabled"}>${nextLabel}</button>
         </div>
       </div>
-    </section>
-  `;
+    </section>`;
 }
 
 function renderJourney(result) {
-  return result.journey.map((step, index) => `
+  return result.journey.map((item, index) => `
     <li class="journey-item">
-      <span class="journey-index">${String(index + 1).padStart(2,"0")}</span>
-      <span class="journey-name">${escapeHtml(step)}</span>
-    </li>
-  `).join("");
+      <span class="journey-index">${String(index + 1).padStart(2, "0")}</span>
+      <span class="journey-name">${escapeHtml(item)}</span>
+    </li>`).join("");
 }
 
 function renderList(items) {
   return `<ul class="clean-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+}
+
+function renderGroProcess(result) {
+  return `
+    <div class="gro-sequence">
+      ${result.groProcess.map((item, index) => `
+        <article class="gro-step">
+          <div class="gro-step-index">${String(index + 1).padStart(2, "0")}</div>
+          <div class="gro-step-body">
+            <span class="owner-label">${escapeHtml(item.owner)}</span>
+            <h3>${escapeHtml(item.title)}</h3>
+            ${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ""}
+          </div>
+        </article>`).join("")}
+    </div>
+    ${result.groNote ? `<div class="process-note">${escapeHtml(result.groNote)}</div>` : ""}`;
 }
 
 function renderResult(result) {
@@ -199,42 +202,80 @@ function renderResult(result) {
             <span>${escapeHtml(result.entityLabel)}</span>
             <span>·</span>
             <span>${escapeHtml(result.descriptor)}</span>
+            <span>·</span>
+            <span>${escapeHtml(result.authority)}</span>
             ${result.specialHire ? `<span class="badge">Special Hire applies</span>` : ""}
           </div>
           <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
           <div class="summary-grid">
             <section class="summary-item">
-              <h3>Before Intake 2</h3>
+              <h2>Before Intake 2</h2>
               <p>${escapeHtml(result.beforeIntake2)}</p>
             </section>
             <section class="summary-item">
-              <h3>Next</h3>
+              <h2>GRO route</h2>
               <p>${escapeHtml(result.next)}</p>
             </section>
             <section class="summary-item">
-              <h3>Joining</h3>
+              <h2>Joining</h2>
               <p>${escapeHtml(result.joining)}</p>
             </section>
           </div>
         </header>
 
         <section class="detail-section">
+          <p class="section-number">01</p>
+          <h2>Pre-Hire Readiness</h2>
+          <p class="section-intro">Confirm the candidate’s onboarding position before the case progresses. These are readiness checks, not validations performed by this guide.</p>
+          ${renderList(result.preHireReadiness)}
+          ${result.intake1.required ? `
+            <div class="intake-card">
+              <div><span class="owner-label">Intake 1</span><h3>${escapeHtml(result.intake1.title)}</h3></div>
+              <p>${escapeHtml(result.intake1.detail)}</p>
+              <strong>Documents checked</strong>
+              ${renderList(result.intake1.documents)}
+            </div>` : ""}
+        </section>
+
+        <section class="detail-section">
+          <p class="section-number">02</p>
           <h2>Documents</h2>
-          <h3>Required</h3>
+          <h3 class="subsection-title">Required</h3>
           ${renderList(result.documents.required)}
-          <h3>Where applicable / requested</h3>
+          <h3 class="subsection-title">Where applicable / requested</h3>
           ${renderList(result.documents.conditional)}
         </section>
 
         <section class="detail-section">
-          <h2>Candidate actions</h2>
+          <p class="section-number">03</p>
+          <h2>Candidate Actions</h2>
           ${renderList(result.candidateActions)}
         </section>
 
+        <section class="detail-section gro-section">
+          <p class="section-number">04</p>
+          <h2>GRO Processing</h2>
+          <p class="section-intro">Intake 2 is the formal trigger for GRO processing. The sequence below reflects the selected route.</p>
+          ${renderGroProcess(result)}
+        </section>
+
         <section class="detail-section">
-          <h2>${result.service === "nat" ? "After Work Permit approval" : "After joining"}</h2>
-          <p>${escapeHtml(result.afterJoining)}</p>
-          <div class="guidance-note">${escapeHtml(result.note)}</div>
+          <p class="section-number">05</p>
+          <h2>${escapeHtml(result.joiningHeading)}</h2>
+          <p class="large-copy">${escapeHtml(result.joining)}</p>
+        </section>
+
+        <section class="detail-section">
+          <p class="section-number">06</p>
+          <h2>Post-Joining</h2>
+          <p class="large-copy">${escapeHtml(result.postJoining)}</p>
+        </section>
+
+        <section class="detail-section completion-section">
+          <p class="section-number">07</p>
+          <h2>Completion Point</h2>
+          <p class="completion-copy">${escapeHtml(result.completionPoint)}</p>
+          <div class="guidance-note">${escapeHtml(result.guidance)}</div>
         </section>
 
         <div class="result-actions">
@@ -243,12 +284,15 @@ function renderResult(result) {
           <button class="primary-button" type="button" data-action="browse">Explore more services</button>
         </div>
       </article>
-    </section>
-  `;
+    </section>`;
 }
 
-function shortBefore(caseItem) {
-  return caseItem.intake1 ? "Intake 1 + Client Approval" : "Client Approval";
+function shortBefore(item) {
+  return item.intake1.required ? "Intake 1 + Client Approval" : "Client Approval";
+}
+
+function groSummary(item) {
+  return item.groProcess.map(step => step.title).join(" → ");
 }
 
 function renderCatalogue() {
@@ -258,7 +302,7 @@ function renderCatalogue() {
       <header class="catalogue-header">
         <p class="eyebrow">Browse services</p>
         <h1 class="catalogue-title" data-screen-heading tabindex="-1">Explore UAE onboarding services</h1>
-        <p class="catalogue-subtitle">Browse the supported services without completing the guided questions.</p>
+        <p class="catalogue-subtitle">Browse supported services without completing the guided questions.</p>
       </header>
 
       <div class="filter-bar">
@@ -266,14 +310,14 @@ function renderCatalogue() {
           <label for="browseEntity">Entity / location</label>
           <select id="browseEntity">
             <option value="all">All locations</option>
-            ${ENTITIES.map(item => `<option value="${item.value}" ${state.browseEntity===item.value?"selected":""}>${escapeHtml(item.label)}</option>`).join("")}
+            ${ENTITIES.map(item => `<option value="${item.value}" ${state.browseEntity === item.value ? "selected" : ""}>${escapeHtml(item.label)}</option>`).join("")}
           </select>
         </div>
         <div class="filter-group">
           <label for="browseService">Service</label>
           <select id="browseService">
             <option value="all">All services</option>
-            ${SERVICE_TYPES.map(item => `<option value="${item.value}" ${state.browseService===item.value?"selected":""}>${escapeHtml(item.label)}</option>`).join("")}
+            ${SERVICE_TYPES.map(item => `<option value="${item.value}" ${state.browseService === item.value ? "selected" : ""}>${escapeHtml(item.label)}</option>`).join("")}
           </select>
         </div>
       </div>
@@ -291,24 +335,24 @@ function renderCatalogue() {
             <div class="preview-body">
               <div class="preview-grid">
                 <div><strong>Before Intake 2</strong>${escapeHtml(shortBefore(item))}</div>
-                <div><strong>Next</strong>${escapeHtml(item.next)}</div>
+                <div><strong>Processed through</strong>${escapeHtml(item.authority)}</div>
                 <div><strong>Joining</strong>${escapeHtml(item.joining)}</div>
               </div>
+              <div class="browse-gro-summary"><strong>GRO route</strong><span>${escapeHtml(groSummary(item))}</span></div>
               <button class="primary-button" type="button" data-action="view-service" data-service-id="${escapeHtml(item.serviceId)}" data-entity="${escapeHtml(item.entity)}">View full service</button>
             </div>
-          </details>
-        `).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
+          </details>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
       </div>
 
       <div class="result-actions">
         <button class="secondary-button" type="button" data-action="home">Back to guide</button>
         <button class="primary-button" type="button" data-action="start">Start guided journey</button>
       </div>
-    </section>
-  `;
+    </section>`;
 }
 
 function render() {
+  setBodyMode();
   if (state.mode === "welcome") renderWelcome();
   else if (state.mode === "guided") renderQuestion();
   else if (state.mode === "result" && state.result) renderResult(state.result);
@@ -319,7 +363,6 @@ function questionNext() {
   const sequence = currentSequence();
   const key = sequence[state.questionIndex];
   if (!state.answers[key]) return;
-
   const refreshed = currentSequence();
   const currentKeyIndex = refreshed.indexOf(key);
   if (currentKeyIndex < refreshed.length - 1) {
@@ -328,20 +371,17 @@ function questionNext() {
     focusHeading();
     return;
   }
-
   const result = resolveCase(state.answers);
   if (!result) return;
+  state.result = result;
   state.mode = "result";
-  renderResult(result);
+  render();
   focusHeading();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function questionBack() {
-  if (state.questionIndex === 0) {
-    setMode("welcome");
-    return;
-  }
+  if (state.questionIndex === 0) { setMode("welcome"); return; }
   state.questionIndex -= 1;
   render();
   focusHeading();
@@ -357,17 +397,10 @@ app.addEventListener("change", event => {
     state.answers[key] = event.target.value;
     clearDownstream(key);
     render();
-    const select = document.getElementById("questionSelect");
-    if (select) select.focus();
+    document.getElementById("questionSelect")?.focus();
   }
-  if (event.target.id === "browseEntity") {
-    state.browseEntity = event.target.value;
-    renderCatalogue();
-  }
-  if (event.target.id === "browseService") {
-    state.browseService = event.target.value;
-    renderCatalogue();
-  }
+  if (event.target.id === "browseEntity") { state.browseEntity = event.target.value; render(); }
+  if (event.target.id === "browseService") { state.browseService = event.target.value; render(); }
 });
 
 document.addEventListener("click", event => {
@@ -379,17 +412,14 @@ document.addEventListener("click", event => {
     state.result = null;
     setMode("welcome");
   } else if (action === "start") {
-    if (state.mode === "browse") {
-      Object.keys(state.answers).forEach(key => state.answers[key] = "");
-      state.result = null;
-    }
+    if (state.mode === "browse" || state.mode === "welcome") resetAnswers();
     state.mode = "guided";
     state.questionIndex = 0;
     render();
     focusHeading();
   } else if (action === "browse") {
     state.mode = "browse";
-    renderCatalogue();
+    render();
     focusHeading();
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (action === "question-next") {
@@ -398,21 +428,18 @@ document.addEventListener("click", event => {
     questionBack();
   } else if (action === "edit") {
     state.mode = "guided";
-    const sequence = currentSequence();
-    state.questionIndex = Math.max(0, sequence.length - 1);
+    state.questionIndex = Math.max(0, currentSequence().length - 1);
     render();
     focusHeading();
   } else if (action === "restart") {
-    Object.keys(state.answers).forEach(key => state.answers[key] = "");
-    state.questionIndex = 0;
-    state.result = null;
+    resetAnswers();
     setMode("welcome");
   } else if (action === "view-service") {
     const result = findBrowseCase(actionEl.dataset.serviceId, actionEl.dataset.entity);
     if (result) {
       state.result = result;
       state.mode = "result";
-      renderResult(result);
+      render();
       focusHeading();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
