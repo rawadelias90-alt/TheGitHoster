@@ -1,0 +1,17 @@
+name: Intake2 Stage 3 test
+
+on:
+  push:
+    branches:
+      - intake2-stage3-production-runtime
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run Stage 3 contract
+        run: node Intake2/tests/stage3-production-runtime.test.js
