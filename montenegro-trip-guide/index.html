@@ -63,7 +63,7 @@
           <button class="starter" type="button" data-chatgpt-prompt="weather"><span data-i18n="starterWeather">Plan around today's weather</span><span data-icon="external"></span></button>
           <button class="starter" type="button" data-chatgpt-prompt="food"><span data-i18n="starterFood">Recommend somewhere to eat</span><span data-icon="external"></span></button>
         </div>
-        <a class="primary chatgpt-open-button" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><span data-icon="sparkles"></span><span data-i18n="openChatGPT">Open ChatGPT</span></a>
+        <button class="primary chatgpt-open-button" id="openChatGPTApp" type="button"><span data-icon="sparkles"></span><span data-i18n="openChatGPT">Open ChatGPT</span></button>
       </div>
     </section>
     <section id="page-documents" class="page scroll-page documents-page" hidden aria-labelledby="documentsHeading">
@@ -972,10 +972,25 @@ window.MONTE_DATA = {
     $('weather').title=`Tivat · ${Math.round(data.temperature)}°C · Open-Meteo live`;
     $('weather').ariaLabel=$('weather').title;
   }
+  function openChatGPTApp(){
+    const fallback='https://chatgpt.com/';
+    const started=Date.now();
+    let fallbackTimer=setTimeout(()=>{
+      if(Date.now()-started<2200 && !document.hidden) location.href=fallback;
+    },1200);
+    const cancelFallback=()=>{
+      clearTimeout(fallbackTimer);
+      document.removeEventListener('visibilitychange',onVisibility);
+      window.removeEventListener('pagehide',cancelFallback);
+    };
+    const onVisibility=()=>{if(document.hidden)cancelFallback();};
+    document.addEventListener('visibilitychange',onVisibility);
+    window.addEventListener('pagehide',cancelFallback,{once:true});
+    location.href='chatgpt://';
+  }
   async function prepareQuestion(question){
     await copyText(question);
-    const win=window.open('https://chatgpt.com/','_blank','noopener,noreferrer');
-    if(!win) location.href='https://chatgpt.com/';
+    openChatGPTApp();
   }
   function renderAttachments(){
     $('attachments').innerHTML='';pendingFiles.forEach((item,i)=>{const chip=document.createElement('div');chip.className='attachment-chip';
@@ -1035,6 +1050,7 @@ window.MONTE_DATA = {
     }[key];
     prepareQuestion(prompt);
   });
+  const chatGPTButton=$('openChatGPTApp');if(chatGPTButton)chatGPTButton.onclick=openChatGPTApp;
   $('showCredits').onclick=showCredits;$('homeCredit').onclick=showCredits;
   window.addEventListener('hashchange',()=>navigate());window.visualViewport?.addEventListener('resize',viewport);window.addEventListener('resize',viewport);
   decorate();translate();renderExplore();renderDocuments();navigate();viewport();
