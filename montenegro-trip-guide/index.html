@@ -998,3 +998,10 @@ window.MONTE_DATA = {
   $('showCredits').onclick=showCredits;$('homeCredit').onclick=showCredits;
   window.addEventListener('hashchange',()=>navigate());window.visualViewport?.addEventListener('resize',viewport);window.addEventListener('resize',viewport);
   window.addEventListener('pagehide',stopVoice);
+  decorate();translate();renderExplore();renderDocuments();navigate();viewport();
+  loadPhoto($('homePhoto'),DATA.photos.perast[0]);updateWeather();
+})();
+
+</script>
+</body>
+</html>
