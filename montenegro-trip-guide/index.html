@@ -20,6 +20,19 @@
 @media(max-height:710px){:root{--header-height:86px;--nav-height:75px}.home-heading{top:125px;font-size:25px}.voice-orb{width:126px;height:126px}.orb-area{top:58%}.page-heading{padding-top:20px}.chat-empty{padding-top:0}.empty-ai{width:50px;height:50px;margin-bottom:15px}.starter-list{margin-top:18px}.composer-note{display:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition:none!important}}
 
+
+.weather-trigger{border:0;background:transparent;padding:0;color:inherit;text-align:inherit}.weather-trigger:active{transform:scale(.97)}
+.weather-sheet-backdrop{position:fixed;inset:0;background:rgba(17,42,57,.28);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:40;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.weather-sheet-backdrop.open{opacity:1;pointer-events:auto}
+.weather-sheet{position:fixed;left:50%;bottom:0;width:min(480px,100%);max-height:82dvh;transform:translate(-50%,105%);z-index:41;background:#f9fbfc;border-radius:30px 30px 0 0;box-shadow:0 -18px 50px rgba(22,58,78,.18);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow:hidden;color:var(--ink)}
+.weather-sheet.open{transform:translate(-50%,0)}
+.weather-sheet-handle{width:44px;height:5px;border-radius:99px;background:#bad0d8;margin:10px auto 4px}
+.weather-sheet-scroll{max-height:calc(82dvh - 19px);overflow-y:auto;padding:12px 22px calc(26px + env(safe-area-inset-bottom))}
+.weather-sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}.weather-sheet-head h2{font-size:22px;line-height:1.15}.weather-close{width:44px;height:44px;border-radius:50%;background:#edf4f6;display:grid;place-items:center}
+.weather-current{display:flex;align-items:center;gap:17px;margin-bottom:8px}.weather-current-icon{width:58px;height:58px;display:grid;place-items:center;color:#2b729c}.weather-current-icon svg{width:48px;height:48px}.weather-current-temp{font-size:58px;line-height:1;font-weight:700;letter-spacing:-3px}.weather-current-copy{margin:0 0 24px;font-size:17px;font-weight:600;color:#304f5e}
+.weather-week{display:grid;grid-template-columns:repeat(7,minmax(58px,1fr));gap:8px;overflow-x:auto;padding:2px 0 14px;scrollbar-width:none}.weather-week::-webkit-scrollbar{display:none}.weather-day{min-width:62px;padding:11px 7px;border-radius:18px;text-align:center}.weather-day.today{background:#e8f3fb}.weather-day strong{display:block;font-size:14px;margin-bottom:8px}.weather-day .day-icon{height:32px;display:grid;place-items:center}.weather-day .day-icon svg{width:26px;height:26px}.weather-day .high{display:block;font-size:18px;font-weight:700;margin-top:6px}.weather-day .low{display:block;font-size:14px;color:#81949d;margin-top:2px}
+.weather-hourly-title{font-size:18px;margin:10px 0 12px}.weather-hourly{display:flex;gap:10px;overflow-x:auto;padding-bottom:5px;scrollbar-width:none}.weather-hourly::-webkit-scrollbar{display:none}.weather-hour{min-width:72px;padding:12px 9px;border:1px solid var(--line);border-radius:17px;background:#fff;text-align:center}.weather-hour .hour-time{font-size:12px;color:var(--muted);display:block}.weather-hour svg{width:24px;height:24px;margin:8px auto}.weather-hour strong{font-size:17px;display:block}.weather-hour small{font-size:11px;color:#4e83a3;display:block;margin-top:4px;min-height:14px}.weather-updated{font-size:11px;color:#7d919b;margin-top:14px;text-align:center}
+@media(max-width:390px){.weather-sheet-scroll{padding-inline:16px}.weather-week{gap:5px}.weather-day{min-width:58px}}
 </style>
 </head>
 <body>
@@ -31,7 +44,7 @@
       <span class="brand-name">MonteAgent</span><span class="brand-sub">MONTENEGRO</span>
     </a>
     <div class="header-controls">
-      <div id="weather" class="weather" aria-live="polite" title="Tivat weather · Open-Meteo"><span id="weatherIcon" data-icon="cloud"></span><div><span id="temperature" dir="ltr">—°</span><small data-i18n="tivat">Tivat</small></div></div>
+      <button id="weather" class="weather weather-trigger" type="button" aria-live="polite" aria-haspopup="dialog" aria-controls="weatherSheet" title="Tivat weather · Open-Meteo"><span id="weatherIcon" data-icon="cloud"></span><div><span id="temperature" dir="ltr">—°</span><small id="weatherStatus">Tivat</small></div></button>
       <div class="language-control" role="group" aria-label="Language"><button type="button" id="en" data-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">/</span><button type="button" id="ar" data-lang="ar" aria-pressed="false" lang="ar">عربي</button></div>
     </div>
   </header>
@@ -80,6 +93,19 @@
     <a href="#/ask" data-page="ask"><span class="nav-icon" data-icon="sparkles"></span><span data-i18n="askAI">Ask AI</span></a>
     <a href="#/documents" data-page="documents"><span class="nav-icon" data-icon="document"></span><span data-i18n="documents">Documents</span></a>
   </nav>
+  <div id="weatherBackdrop" class="weather-sheet-backdrop" hidden></div>
+  <aside id="weatherSheet" class="weather-sheet" role="dialog" aria-modal="true" aria-labelledby="weatherSheetTitle" hidden>
+    <div class="weather-sheet-handle" aria-hidden="true"></div>
+    <div class="weather-sheet-scroll">
+      <div class="weather-sheet-head"><div><span class="eyebrow">TIVAT · MONTENEGRO</span><h2 id="weatherSheetTitle">Weather</h2></div><button id="weatherClose" class="weather-close" type="button" aria-label="Close weather"><span data-icon="x"></span></button></div>
+      <div class="weather-current"><div id="weatherSheetIcon" class="weather-current-icon"></div><div id="weatherSheetTemp" class="weather-current-temp" dir="ltr">—°</div></div>
+      <p id="weatherSheetStatus" class="weather-current-copy">Loading weather…</p>
+      <div id="weatherWeek" class="weather-week" aria-label="7 day forecast"></div>
+      <h3 id="hourlyTitle" class="weather-hourly-title">Today</h3>
+      <div id="weatherHourly" class="weather-hourly" aria-label="Hourly forecast"></div>
+      <p id="weatherUpdated" class="weather-updated"></p>
+    </div>
+  </aside>
   <div id="toast" class="toast" role="status" hidden></div>
 </div>
 <script>
@@ -928,49 +954,111 @@ window.MONTE_DATA = {
       if(request!==nearbyRequest)return;activeNearby.status='results';activeNearby.results=results;
     }catch{if(request===nearbyRequest)activeNearby.status='error';}finally{clearTimeout(timer);if(request===nearbyRequest&&route.page==='explore'&&route.kind==='nearby')renderNearby();}
   }
-  async function updateWeather(){
+  function weatherType(code){
+    code=Number(code);
+    if(code===0)return 'sun';
+    if(code===1||code===2||code===3||code===45||code===48)return 'cloud';
+    if((code>=51&&code<=67)||(code>=80&&code<=82)||(code>=95&&code<=99))return 'rain';
+    if((code>=71&&code<=77)||(code>=85&&code<=86))return 'snow';
+    return 'cloud';
+  }
+  function weatherLabel(code){
+    code=Number(code);
+    const ar=lang==='ar';
+    if(code===0)return ar?'مشمس':'Sunny';
+    if(code===1||code===2)return ar?'غائم جزئياً':'Partly cloudy';
+    if(code===3)return ar?'غائم':'Cloudy';
+    if(code===45||code===48)return ar?'ضباب':'Foggy';
+    if(code>=51&&code<=57)return ar?'رذاذ':'Drizzle';
+    if(code>=61&&code<=67)return ar?'ممطر':'Rain';
+    if(code>=71&&code<=77)return ar?'ثلوج':'Snow';
+    if(code>=80&&code<=82)return ar?'زخات مطر':'Showers';
+    if(code>=85&&code<=86)return ar?'زخات ثلج':'Snow showers';
+    if(code>=95)return ar?'عواصف رعدية':'Thunderstorms';
+    return ar?'طقس متغير':'Variable';
+  }
+  function formatWeatherTime(iso){
+    const d=new Date(iso);
+    return new Intl.DateTimeFormat(lang==='ar'?'ar':'en',{hour:'numeric',hour12:true,timeZone:'Europe/Podgorica'}).format(d);
+  }
+  function dayLabel(iso,index){
+    if(index===0)return lang==='ar'?'اليوم':'Today';
+    return new Intl.DateTimeFormat(lang==='ar'?'ar':'en',{weekday:'short',timeZone:'Europe/Podgorica'}).format(new Date(iso+'T12:00:00'));
+  }
+  function paintWeather(data){
+    const type=weatherType(data.code);
+    const label=weatherLabel(data.code);
+    $('temperature').textContent=Math.round(data.temperature)+'°';
+    $('weatherIcon').innerHTML=icon(type);
+    $('weatherStatus').textContent=label;
+    $('weather').classList.toggle('sunny',type==='sun');
+    $('weather').title=`Tivat · ${Math.round(data.temperature)}°C · ${label}`;
+    $('weather').ariaLabel=$('weather').title;
+    if($('weatherSheetTemp'))$('weatherSheetTemp').textContent=Math.round(data.temperature)+'°';
+    if($('weatherSheetIcon'))$('weatherSheetIcon').innerHTML=icon(type);
+    if($('weatherSheetStatus'))$('weatherSheetStatus').textContent=label;
+  }
+  function renderWeatherDetails(data){
+    paintWeather(data);
+    const daily=data.daily||{};
+    const times=daily.time||[],codes=daily.weather_code||[],highs=daily.temperature_2m_max||[],lows=daily.temperature_2m_min||[];
+    $('weatherWeek').innerHTML=times.slice(0,7).map((date,i)=>{
+      const type=weatherType(codes[i]);
+      return `<div class="weather-day ${i===0?'today':''}"><strong>${esc(dayLabel(date,i))}</strong><span class="day-icon">${icon(type)}</span><span class="high">${Math.round(highs[i])}°</span><span class="low">${Math.round(lows[i])}°</span></div>`;
+    }).join('');
+    const hourly=data.hourly||{},hTimes=hourly.time||[],hTemps=hourly.temperature_2m||[],hCodes=hourly.weather_code||[],hRain=hourly.precipitation_probability||[];
+    const now=Date.now();
+    let start=hTimes.findIndex(v=>new Date(v).getTime()>=now-30*60*1000);
+    if(start<0)start=0;
+    $('weatherHourly').innerHTML=hTimes.slice(start,start+8).map((time,j)=>{
+      const i=start+j,type=weatherType(hCodes[i]),rain=Number(hRain[i]||0);
+      return `<div class="weather-hour"><span class="hour-time">${esc(j===0?(lang==='ar'?'الآن':'Now'):formatWeatherTime(time))}</span>${icon(type)}<strong>${Math.round(hTemps[i])}°</strong><small>${rain>0?rain+'% '+(lang==='ar'?'مطر':'rain'):''}</small></div>`;
+    }).join('');
+    const updated=new Date(data.time||Date.now());
+    $('weatherUpdated').textContent=(lang==='ar'?'آخر تحديث ':'Updated ')+new Intl.DateTimeFormat(lang==='ar'?'ar':'en',{hour:'numeric',minute:'2-digit',timeZone:'Europe/Podgorica'}).format(updated);
+    $('weatherSheetTitle').textContent=lang==='ar'?'الطقس في تيفات':'Tivat weather';
+    $('hourlyTitle').textContent=lang==='ar'?'اليوم':'Today';
+    $('weatherClose').ariaLabel=lang==='ar'?'إغلاق الطقس':'Close weather';
+  }
+  async function updateWeather(force=false){
     if(!CFG.weatherEnabled)return;
     let cached=null;try{cached=JSON.parse(store.get('monte-weather','null'));}catch{}
-    if(cached && Date.now()-cached.time<300000 && Number.isFinite(cached.temperature)){paintWeather(cached);}
+    if(cached && Number.isFinite(cached.temperature)){renderWeatherDetails(cached);}
+    if(!force && cached && Date.now()-cached.time<300000 && cached.daily && cached.hourly)return;
     const lat=String(CFG.weatherCoordinates.latitude),lon=String(CFG.weatherCoordinates.longitude);
-    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),9000);
+    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),10000);
     try{
       const q=new URLSearchParams({
-        latitude:lat,
-        longitude:lon,
-        current_weather:'true',
-        timezone:'Europe/Podgorica'
+        latitude:lat,longitude:lon,
+        current:'temperature_2m,weather_code',
+        daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+        hourly:'temperature_2m,weather_code,precipitation_probability',
+        forecast_days:'7',timezone:'Europe/Podgorica'
       });
-      const r=await fetch('https://api.open-meteo.com/v1/forecast?'+q.toString(),{
-        signal:ctrl.signal,
-        cache:'no-store',
-        headers:{'Accept':'application/json'}
-      });
+      const r=await fetch('https://api.open-meteo.com/v1/forecast?'+q.toString(),{signal:ctrl.signal,cache:'no-store',headers:{Accept:'application/json'}});
       if(!r.ok)throw Error('Weather request failed');
       const data=await r.json();
-      const temp=Number(data.current_weather?.temperature);
-      const code=Number(data.current_weather?.weathercode);
+      const temp=Number(data.current?.temperature_2m),code=Number(data.current?.weather_code);
       if(!Number.isFinite(temp)||!Number.isFinite(code))throw Error('Invalid weather payload');
-      const live={temperature:temp,code,time:Date.now()};
+      const live={temperature:temp,code,time:Date.now(),daily:data.daily,hourly:data.hourly};
       store.set('monte-weather',JSON.stringify(live));
-      paintWeather(live);
+      renderWeatherDetails(live);
     }catch(err){
-      if(!(cached && Number.isFinite(cached.temperature))){
-        $('weather').title='Tivat weather unavailable';
-        $('temperature').textContent='—°';
-        $('weatherIcon').innerHTML=icon('cloud');
+      if(!(cached&&Number.isFinite(cached.temperature))){
+        $('weather').title='Tivat weather unavailable';$('temperature').textContent='—°';$('weatherStatus').textContent=lang==='ar'?'غير متاح':'Unavailable';$('weatherIcon').innerHTML=icon('cloud');
+        $('weatherSheetStatus').textContent=lang==='ar'?'تعذر تحميل الطقس حالياً':'Weather is temporarily unavailable';
       }
       console.warn('Weather update failed',err);
     }finally{clearTimeout(timer);}
   }
-  function paintWeather(data){
-    const code=Number(data.code);
-    const type=code===0?'sun':(code>=71&&code<=77)||code>=85?'snow':(code>=51&&code<=67)||(code>=80&&code<=82)?'rain':'cloud';
-    $('temperature').textContent=Math.round(data.temperature)+'°';
-    $('weatherIcon').innerHTML=icon(type);
-    $('weather').classList.toggle('sunny',type==='sun');
-    $('weather').title=`Tivat · ${Math.round(data.temperature)}°C · Open-Meteo live`;
-    $('weather').ariaLabel=$('weather').title;
+  function openWeather(){
+    $('weatherBackdrop').hidden=false;$('weatherSheet').hidden=false;
+    requestAnimationFrame(()=>{$('weatherBackdrop').classList.add('open');$('weatherSheet').classList.add('open');});
+    updateWeather(true);
+  }
+  function closeWeather(){
+    $('weatherBackdrop').classList.remove('open');$('weatherSheet').classList.remove('open');
+    setTimeout(()=>{$('weatherBackdrop').hidden=true;$('weatherSheet').hidden=true;},280);
   }
   function openChatGPTApp(){
     const fallback='https://chatgpt.com/';
@@ -1037,8 +1125,9 @@ window.MONTE_DATA = {
       recognition.onerror=()=>{setListening(false);toast(t('micDenied'));};recognition.onend=()=>setListening(false);recognition.start();
     }catch{setListening(false);location.hash='#/ask';toast(t('speechUnsupported'));}
   }
-  function setLanguage(value){if(value===lang)return;savePosition();lang=value;store.set('monte-language',lang);translate();renderExplore();renderDocuments();navigate(true);}
+  function setLanguage(value){if(value===lang)return;savePosition();lang=value;store.set('monte-language',lang);translate();renderExplore();renderDocuments();let cached=null;try{cached=JSON.parse(store.get('monte-weather','null'));}catch{}if(cached&&Number.isFinite(cached.temperature))renderWeatherDetails(cached);navigate(true);}
   function viewport(){if(!window.visualViewport)return;const narrow=window.innerWidth<600;document.documentElement.style.setProperty('--app-height',narrow?window.visualViewport.height+'px':'calc(100dvh - 36px)');}
+  $('weather').onclick=openWeather;$('weatherClose').onclick=closeWeather;$('weatherBackdrop').onclick=closeWeather;
   document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>setLanguage(b.dataset.lang));
   document.querySelectorAll('[data-chatgpt-prompt]').forEach(b=>b.onclick=()=>{
     const key=b.dataset.chatgptPrompt;
