@@ -191,12 +191,48 @@ function syncGuidedQuestions() {
   if (viewButton) viewButton.hidden = !resolveCase(state.answers);
 }
 
+const JOURNEY_TARGETS = {
+  "Pre-Hire Readiness": "phase-pre-hire",
+  "Intake 1": "phase-intake-1",
+  "Client Approval": "phase-client-approval",
+  "Intake 2": "phase-intake-2",
+  "GRO Processing": "phase-gro-processing",
+  "Special Hire Requirements": "phase-special-hire",
+  "Visa & Status Change": "phase-visa-status-change",
+  "Visa Issued": "phase-visa-issued",
+  "Travel / Joining": "phase-joining",
+  "Joining": "phase-joining",
+  "Post-Joining": "phase-post-joining",
+  "Work Permit Approval": "phase-work-permit-approval",
+  "Medical": "phase-medical",
+  "Joining / Employment Activity": "phase-joining",
+  "Pension Enrollment": "phase-pension",
+  "Completion": "phase-completion",
+};
+
+function journeyTargetId(label) {
+  return JOURNEY_TARGETS[label] || "phase-gro-processing";
+}
+
+function groStepTargetId(title) {
+  const value = String(title || "").toLowerCase();
+  if (value === "visa issued") return "phase-visa-issued";
+  if (value === "status change" || value.includes("visa and status change")) return "phase-visa-status-change";
+  if (value === "work permit approval") return "phase-work-permit-approval";
+  return "";
+}
+
 function renderJourney(result) {
-  return result.journey.map((item, index) => `
-    <li class="journey-item">
-      <span class="journey-index">${String(index + 1).padStart(2, "0")}</span>
-      <span class="journey-name">${escapeHtml(item)}</span>
-    </li>`).join("");
+  return result.journey.map((item, index) => {
+    const target = journeyTargetId(item);
+    return `
+      <li class="journey-item">
+        <button class="journey-link" type="button" data-action="journey-scroll" data-target="${escapeHtml(target)}" aria-label="Go to ${escapeHtml(item)}">
+          <span class="journey-index">${String(index + 1).padStart(2, "0")}</span>
+          <span class="journey-name">${escapeHtml(item)}</span>
+        </button>
+      </li>`;
+  }).join("");
 }
 
 function renderList(items) {
@@ -206,15 +242,18 @@ function renderList(items) {
 function renderGroProcess(result) {
   return `
     <div class="gro-sequence">
-      ${result.groProcess.map((item, index) => `
-        <article class="gro-step">
-          <div class="gro-step-index">${String(index + 1).padStart(2, "0")}</div>
-          <div class="gro-step-body">
-            <span class="owner-label">${escapeHtml(item.owner)}</span>
-            <h3>${escapeHtml(item.title)}</h3>
-            ${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ""}
-          </div>
-        </article>`).join("")}
+      ${result.groProcess.map((item, index) => {
+        const anchorId = groStepTargetId(item.title);
+        return `
+          <article class="gro-step" ${anchorId ? `id="${anchorId}"` : ""}>
+            <div class="gro-step-index">${String(index + 1).padStart(2, "0")}</div>
+            <div class="gro-step-body">
+              <span class="owner-label">${escapeHtml(item.owner)}</span>
+              <h3>${escapeHtml(item.title)}</h3>
+              ${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ""}
+            </div>
+          </article>`;
+      }).join("")}
     </div>
     ${result.groNote ? `<div class="process-note">${escapeHtml(result.groNote)}</div>` : ""}`;
 }
@@ -229,9 +268,12 @@ function renderResult(result) {
       </aside>
 
       <article class="result-main">
+        <div class="result-toolbar">
+          <button class="secondary-button print-button" type="button" data-action="print" aria-label="Print service guide">Print</button>
+        </div>
         <details class="mobile-journey">
           <summary>Your journey <span aria-hidden="true">+</span></summary>
-          <ol>${result.journey.map(step => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+          <ol class="mobile-journey-list">${renderJourney(result)}</ol>
         </details>
 
         <header class="result-hero">
@@ -245,11 +287,11 @@ function renderResult(result) {
           </div>
           <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
           <div class="summary-grid">
-            <section class="summary-item" tabindex="0">
+            <section class="summary-item" id="phase-client-approval" tabindex="0">
               <h2>Before Intake 2</h2>
               <p>${escapeHtml(result.beforeIntake2)}</p>
             </section>
-            <section class="summary-item" tabindex="0">
+            <section class="summary-item" id="phase-intake-2" tabindex="0">
               <h2>GRO route</h2>
               <p>${escapeHtml(result.next)}</p>
             </section>
@@ -260,13 +302,13 @@ function renderResult(result) {
           </div>
         </header>
 
-        <section class="detail-section">
+        <section class="detail-section" id="phase-pre-hire">
           <p class="section-number">01</p>
           <h2>Pre-Hire Readiness</h2>
           <p class="section-intro">Confirm the candidate’s onboarding position before the case progresses. These are readiness checks, not validations performed by this guide.</p>
           ${renderList(result.preHireReadiness)}
           ${result.intake1.required ? `
-            <div class="intake-card">
+            <div class="intake-card" id="phase-intake-1">
               <div><span class="owner-label">Intake 1</span><h3>${escapeHtml(result.intake1.title)}</h3></div>
               <p>${escapeHtml(result.intake1.detail)}</p>
               <strong>Documents checked</strong>
@@ -289,26 +331,29 @@ function renderResult(result) {
           ${renderList(result.candidateActions)}
         </section>
 
-        <section class="detail-section gro-section">
+        <section class="detail-section gro-section" id="phase-gro-processing">
+          ${result.specialHire ? '<span id="phase-special-hire" class="phase-anchor" aria-hidden="true"></span>' : ""}
           <p class="section-number">04</p>
           <h2>GRO Processing</h2>
           <p class="section-intro">Intake 2 is the formal trigger for GRO processing. The sequence below reflects the selected route.</p>
           ${renderGroProcess(result)}
         </section>
 
-        <section class="detail-section">
+        <section class="detail-section" id="phase-joining">
+          ${result.journey.includes("Medical") ? '<span id="phase-medical" class="phase-anchor" aria-hidden="true"></span>' : ""}
           <p class="section-number">05</p>
           <h2>${escapeHtml(result.joiningHeading)}</h2>
           <p class="large-copy">${escapeHtml(result.joining)}</p>
         </section>
 
-        <section class="detail-section">
+        <section class="detail-section" id="phase-post-joining">
+          ${result.journey.includes("Pension Enrollment") ? '<span id="phase-pension" class="phase-anchor" aria-hidden="true"></span>' : ""}
           <p class="section-number">06</p>
           <h2>Post-Joining</h2>
           <p class="large-copy">${escapeHtml(result.postJoining)}</p>
         </section>
 
-        <section class="detail-section completion-section">
+        <section class="detail-section completion-section" id="phase-completion">
           <p class="section-number">07</p>
           <h2>Completion Point</h2>
           <p class="completion-copy">${escapeHtml(result.completionPoint)}</p>
@@ -430,6 +475,15 @@ document.addEventListener("click", event => {
     render();
     focusHeading();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (action === "journey-scroll") {
+    const target = document.getElementById(actionEl.dataset.target);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      const mobileJourney = actionEl.closest(".mobile-journey");
+      if (mobileJourney) mobileJourney.open = false;
+    }
+  } else if (action === "print") {
+    window.print();
   } else if (action === "guided-view-service") {
     const result = resolveCase(state.answers);
     if (!result) return;
