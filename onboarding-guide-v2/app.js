@@ -14,7 +14,7 @@ function ensureProgressiveStyles() {
     .progressive-question[hidden] { display: none !important; }
     .progressive-question__number { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--green-dark); font-size: .68rem; font-weight: 800; }
     .progressive-question__body { min-width: 0; }
-    .progressive-question__prompt { margin: 0 0 12px; font-size: 1.08rem; font-weight: 650; letter-spacing: -.015em; }
+    .progressive-question__prompt { margin: 0 0 12px; font-size: 1.08rem; font-weight: 700; letter-spacing: -.015em; }
     .progressive-question__help { margin: 10px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
     .progressive-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
     .guided-view-button[hidden] { display: none !important; }
