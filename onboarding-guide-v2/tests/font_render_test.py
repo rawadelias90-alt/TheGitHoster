@@ -20,7 +20,19 @@ try:
         page = browser.new_page(viewport={"width": 1440, "height": 1000})
         page.goto(f"http://127.0.0.1:{PORT}/", wait_until="networkidle")
         page.evaluate("document.fonts.ready")
-        assert page.evaluate('document.fonts.check(\'16px "AECOM Sans"\')')
+        for weight in (300, 400, 700, 800):
+            loaded = page.evaluate(
+                """async ([weight]) => {
+                    const faces = await document.fonts.load(weight + ' 16px "AECOM Sans"', 'AECOM Sans');
+                    return faces.length;
+                }""",
+                [weight],
+            )
+            assert loaded > 0, f"AECOM Sans weight {weight} did not load"
+            assert page.evaluate(
+                """([weight]) => document.fonts.check(weight + ' 16px "AECOM Sans"')""",
+                [weight],
+            )
         assert "AECOM Sans" in page.locator("body").evaluate("el => getComputedStyle(el).fontFamily")
 
         # Desktop guided flow and field typography.
