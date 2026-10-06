@@ -165,6 +165,10 @@ select option[value=""] { color: var(--field-placeholder); }
 .journey-index { position: relative; z-index: 1; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--bg); color: var(--green-dark); font-size: .68rem; font-weight: 780; }
 .journey-name { padding-top: 5px; }
 .result-main { min-width: 0; }
+.result-toolbar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 14px; }
+.print-button { min-width: 92px; }
+.phase-anchor { display: block; height: 1px; scroll-margin-top: 104px; }
+
 .mobile-journey { display: none; margin-bottom: 26px; border-block: 1px solid var(--line); }
 .mobile-journey summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 720; }
 .mobile-journey ol { margin-top: 0; padding-left: 22px; color: var(--muted); }
@@ -288,4 +292,42 @@ select option[value=""] { color: var(--field-placeholder); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+
+@media print {
+  @page { margin: 12mm; }
+  html, body { background: #fff !important; color: #111 !important; }
+  body { min-height: auto; }
+  .app-header,
+  .app-footer,
+  .journey-rail,
+  .mobile-journey,
+  .result-toolbar,
+  .result-actions { display: none !important; }
+  .app-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .result-layout { display: block !important; }
+  .result-main { width: 100% !important; }
+  .result-hero { padding-bottom: 22px; }
+  .summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .summary-item,
+  .detail-section,
+  .gro-step,
+  .intake-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .summary-item { border-color: #d9d9d4 !important; }
+  .detail-section { padding: 24px 0; }
+  .gro-step { padding: 16px 0; }
+  .screen { animation: none !important; }
 }
