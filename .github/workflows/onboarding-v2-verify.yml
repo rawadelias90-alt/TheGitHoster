@@ -1,0 +1,26 @@
+name: onboarding-v2-verify
+
+on:
+  push:
+    paths:
+      - 'onboarding-guide-v2/**'
+      - '.github/workflows/onboarding-v2-verify.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Run rule tests
+        run: node --test onboarding-guide-v2/tests/rules.test.mjs
+      - name: Run UI tests
+        run: python onboarding-guide-v2/tests/ui_test.py
