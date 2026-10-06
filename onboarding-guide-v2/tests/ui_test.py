@@ -14,7 +14,7 @@ html = index.replace('<link rel="stylesheet" href="styles.css">', f'<style>{css}
 html = html.replace('<script type="module" src="app.js"></script>', f'<script>{services}\n{app}</script>')
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True, executable_path="/usr/bin/chromium", args=["--no-sandbox"])
+    browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
     page = browser.new_page(viewport={"width": 1440, "height": 1000})
     page.set_content(html, wait_until="load")
 
@@ -60,6 +60,26 @@ with sync_playwright() as p:
     assert page.get_by_role("heading", name="Joining / Travel").is_visible()
     assert page.get_by_role("heading", name="Post-Joining").is_visible()
     assert page.get_by_role("heading", name="Completion Point").is_visible()
+    assert page.get_by_role("button", name="Print").is_visible()
+
+    # Every journey entry has an explicit target and can move both down and back up.
+    journey_links = page.locator(".journey-list .journey-link")
+    assert journey_links.count() == page.locator(".journey-list .journey-item").count()
+    assert journey_links.count() >= 7
+    for i in range(journey_links.count()):
+        target_id = journey_links.nth(i).get_attribute("data-target")
+        assert target_id
+        assert page.locator(f"#{target_id}").count() == 1
+
+    start_y = page.evaluate("window.scrollY")
+    page.get_by_role("button", name=re.compile("Go to Completion", re.I)).click()
+    page.wait_for_timeout(350)
+    bottom_y = page.evaluate("window.scrollY")
+    assert bottom_y > start_y
+    page.get_by_role("button", name=re.compile("Go to Pre-Hire Readiness", re.I)).click()
+    page.wait_for_timeout(350)
+    top_y = page.evaluate("window.scrollY")
+    assert top_y < bottom_y
 
     cards = page.locator(".summary-item")
     assert cards.count() == 3
