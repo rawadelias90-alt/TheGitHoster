@@ -61,6 +61,9 @@ with sync_playwright() as p:
     assert page.get_by_role("heading", name="Post-Joining").is_visible()
     assert page.get_by_role("heading", name="Completion Point").is_visible()
     assert page.get_by_role("button", name="Print").is_visible()
+    page.evaluate("window.__printCalled = false; window.print = () => { window.__printCalled = true; }")
+    page.get_by_role("button", name="Print").click()
+    assert page.evaluate("window.__printCalled === true")
 
     # Every journey entry has an explicit target and can move both down and back up.
     journey_links = page.locator(".journey-list .journey-link")
