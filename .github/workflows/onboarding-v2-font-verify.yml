@@ -1,0 +1,18 @@
+name: onboarding-v2-font-verify
+
+on:
+  push:
+    paths:
+      - 'onboarding-guide-v2/**'
+      - '.github/workflows/onboarding-v2-font-verify.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run rule tests
+        run: node --test onboarding-guide-v2/tests/rules.test.mjs
+      - name: Run font tests
+        run: node --test onboarding-guide-v2/tests/fonts.test.mjs
