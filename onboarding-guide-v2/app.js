@@ -32,7 +32,7 @@ ensureProgressiveStyles();
 
 const state = {
   mode: "welcome",
-  answers: { entity: "", service: "", hireStatus: "", nationality: "", residency: "", category: "" },
+  answers: { entity: "", service: "", hireStatus: "", nationality: "", residency: "", category: "", gccStatus: "" },
   result: null,
   browseEntity: "all",
   browseService: "all",
@@ -81,6 +81,17 @@ const QUESTIONS = {
     help: "This service is limited to Emirati and GCC National candidates.",
     options: [{ value: "emirati", label: "Emirati" }, { value: "gcc", label: "GCC National" }],
   },
+  gccStatus: {
+    title: "What is the GCC candidate's current UAE status?",
+    label: "GCC candidate status",
+    placeholder: "Select the current UAE status",
+    help: "For Mainland GCC National only. This determines whether a UAE Emirates ID or UID is already available.",
+    options: [
+      { value: "existingEid", label: "Already holds an Emirates ID (local hire)" },
+      { value: "existingUid", label: "No Emirates ID, previously entered UAE (existing UID)" },
+      { value: "firstEntry", label: "Never entered UAE (first UAE entry)" },
+    ],
+  },
 };
 
 function escapeHtml(value = "") {
@@ -110,7 +121,7 @@ function resetAnswers() {
 }
 
 function clearDownstream(changedKey) {
-  const order = ["entity", "service", "hireStatus", "nationality", "residency", "category"];
+  const order = ["entity", "service", "hireStatus", "nationality", "residency", "category", "gccStatus"];
   const index = order.indexOf(changedKey);
   for (let i = index + 1; i < order.length; i++) state.answers[order[i]] = "";
   if (changedKey === "service") {
@@ -118,6 +129,7 @@ function clearDownstream(changedKey) {
     state.answers.nationality = "";
     state.answers.residency = "";
     state.answers.category = "";
+    state.answers.gccStatus = "";
   }
   if (changedKey === "hireStatus" && state.answers.hireStatus !== "overseas") state.answers.nationality = "";
   state.result = null;
@@ -145,7 +157,7 @@ function currentSequence() {
 }
 
 function renderQuestion() {
-  const questionKeys = ["entity", "service", "hireStatus", "nationality", "residency", "category"];
+  const questionKeys = ["entity", "service", "hireStatus", "nationality", "residency", "category", "gccStatus"];
   app.innerHTML = `
     <section class="screen question-screen progressive-screen">
       <p class="eyebrow">Guided journey</p>
@@ -180,10 +192,13 @@ function renderQuestion() {
 }
 
 function syncGuidedQuestions() {
-  const visible = new Set(currentSequence());
+  const sequence = currentSequence();
+  const visible = new Set(sequence);
   app.querySelectorAll("[data-question-row]").forEach(row => {
     const key = row.dataset.questionRow;
     row.hidden = !visible.has(key);
+    const number = row.querySelector(".progressive-question__number");
+    if (number && visible.has(key)) number.textContent = String(sequence.indexOf(key) + 1).padStart(2, "0");
     const select = row.querySelector("select[data-question]");
     if (select && select.value !== (state.answers[key] || "")) select.value = state.answers[key] || "";
   });
@@ -204,6 +219,10 @@ const JOURNEY_TARGETS = {
   "Joining": "phase-joining",
   "Post-Joining": "phase-post-joining",
   "Work Permit Approval": "phase-work-permit-approval",
+  "MOHRE Approval": "phase-mohre-approval",
+  "DWC Work Permit Approval": "phase-dwc-approval",
+  "Emirates ID": "phase-emirates-id",
+  "Pension Registration": "phase-pension",
   "Medical": "phase-medical",
   "Joining / Employment Activity": "phase-joining",
   "Pension Enrollment": "phase-pension",
@@ -219,6 +238,8 @@ function groStepTargetId(title) {
   if (value === "visa issued") return "phase-visa-issued";
   if (value === "status change" || value.includes("visa and status change")) return "phase-visa-status-change";
   if (value === "work permit approval") return "phase-work-permit-approval";
+  if (value === "mohre approval") return "phase-mohre-approval";
+  if (value === "dwc work permit approval") return "phase-dwc-approval";
   return "";
 }
 
@@ -260,6 +281,9 @@ function renderGroProcess(result) {
 
 function renderResult(result) {
   state.result = result;
+  const gccWithNewId = result.category === "gcc" && result.journey.includes("Emirates ID");
+  const pensionNumber = gccWithNewId ? "07" : "06";
+  const completionNumber = gccWithNewId ? "08" : "07";
   app.innerHTML = `
     <section class="screen result-layout">
       <aside class="journey-rail" aria-label="Service journey">
@@ -306,6 +330,7 @@ function renderResult(result) {
           <p class="section-number">01</p>
           <h2>Pre-Hire Readiness</h2>
           <p class="section-intro">Confirm the candidate’s onboarding position before the case progresses. These are readiness checks, not validations performed by this guide.</p>
+          ${result.gccStatus === "firstEntry" ? '<div class="process-note">First UAE entry is required: the candidate must travel to the UAE to receive a UID before the MOHRE case can progress.</div>' : ""}
           ${renderList(result.preHireReadiness)}
           ${result.intake1.required ? `
             <div class="intake-card" id="phase-intake-1">
@@ -346,15 +371,24 @@ function renderResult(result) {
           <p class="large-copy">${escapeHtml(result.joining)}</p>
         </section>
 
-        <section class="detail-section" id="phase-post-joining">
+        ${gccWithNewId ? `
+          <section class="detail-section" id="phase-emirates-id">
+            <p class="section-number">06</p>
+            <h2>Emirates ID</h2>
+            <p class="large-copy">${escapeHtml(result.emiratesIdAction)}</p>
+          </section>` : ""}
+
+        <section class="detail-section" id="${result.category === "gcc" ? "phase-pension" : "phase-post-joining"}">
           ${result.journey.includes("Pension Enrollment") ? '<span id="phase-pension" class="phase-anchor" aria-hidden="true"></span>' : ""}
-          <p class="section-number">06</p>
-          <h2>Post-Joining</h2>
+          <p class="section-number">${pensionNumber}</p>
+          <h2>${result.category === "gcc" ? "Pension Registration" : "Post-Joining"}</h2>
+          ${result.category === "gcc" && !gccWithNewId && result.emiratesIdAction ? `
+            <p class="section-intro"><strong>Emirates ID (when applicable):</strong> ${escapeHtml(result.emiratesIdAction)}</p>` : ""}
           <p class="large-copy">${escapeHtml(result.postJoining)}</p>
         </section>
 
         <section class="detail-section completion-section" id="phase-completion">
-          <p class="section-number">07</p>
+          <p class="section-number">${completionNumber}</p>
           <h2>Completion Point</h2>
           <p class="completion-copy">${escapeHtml(result.completionPoint)}</p>
           <div class="guidance-note">${escapeHtml(result.guidance)}</div>
@@ -378,7 +412,11 @@ function groSummary(item) {
 }
 
 function renderCatalogue() {
-  const cases = browseCases(state.browseEntity, state.browseService);
+  const allCases = browseCases(state.browseEntity, state.browseService);
+  // Only one card per Mainland GCC entity; scenario choices live inside that card.
+  const cases = allCases.filter(item =>
+    !(item.category === "gcc" && item.entity !== "dwc" && item.gccStatus !== "existingEid")
+  );
   app.innerHTML = `
     <section class="screen">
       <header class="catalogue-header">
@@ -421,7 +459,18 @@ function renderCatalogue() {
                 <div><strong>Joining</strong>${escapeHtml(item.joining)}</div>
               </div>
               <div class="browse-gro-summary"><strong>GRO route</strong><span>${escapeHtml(groSummary(item))}</span></div>
-              <button class="primary-button" type="button" data-action="view-service" data-service-id="${escapeHtml(item.serviceId)}" data-entity="${escapeHtml(item.entity)}">View full service</button>
+              ${item.category === "gcc" && item.gccStatus === "existingEid" ? `
+                <div class="gcc-choice-panel">
+                  <p class="gcc-choice-help">Choose the GCC candidate's UAE status</p>
+                  <div class="gcc-choice-list">
+                    ${allCases.filter(variant => variant.category === "gcc" && variant.entity === item.entity).map(variant => `
+                      <button class="gcc-choice-button" type="button" data-action="view-service" data-service-id="${escapeHtml(variant.serviceId)}" data-entity="${escapeHtml(variant.entity)}">
+                        ${escapeHtml(variant.gccStatus === "existingEid" ? "Already has Emirates ID" : variant.gccStatus === "existingUid" ? "Previous UAE entry / UID" : "First UAE entry")}
+                        <span aria-hidden="true">↗</span>
+                      </button>`).join("")}
+                  </div>
+                </div>` : `
+                <button class="primary-button" type="button" data-action="view-service" data-service-id="${escapeHtml(item.serviceId)}" data-entity="${escapeHtml(item.entity)}">View full service</button>`}
             </div>
           </details>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
       </div>
@@ -502,6 +551,14 @@ document.addEventListener("click", event => {
   } else if (action === "view-service") {
     const result = findBrowseCase(actionEl.dataset.serviceId, actionEl.dataset.entity);
     if (result) {
+      // A chosen GCC catalogue scenario must also be editable in the guided selection.
+      if (result.category === "gcc") {
+        resetAnswers();
+        state.answers.entity = result.entity;
+        state.answers.service = "nat";
+        state.answers.category = "gcc";
+        state.answers.gccStatus = result.gccStatus ?? "";
+      }
       state.result = result;
       state.mode = "result";
       render();
