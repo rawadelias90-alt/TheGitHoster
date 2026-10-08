@@ -1,0 +1,8 @@
+name: onboarding rules verification
+on: push
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test onboarding-guide-v2/tests/*.test.mjs
