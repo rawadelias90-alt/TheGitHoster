@@ -64,7 +64,7 @@ test("education document logic stays separate from Intake 1", () => {
   const conditional = item.documents.conditional.join(" | ");
   assert.match(conditional, /Education Certificate/);
   assert.match(conditional, /Educational Verification \/ Equivalency/);
-  assert.match(conditional, /Award or Education Details/);
+  assert.match(conditional, /Education Details document/);
   assert.ok(!item.intake1.documents.some(x => /education/i.test(x)));
 });
 
