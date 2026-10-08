@@ -64,7 +64,7 @@ test("education document logic stays separate from Intake 1", () => {
   const conditional = item.documents.conditional.join(" | ");
   assert.match(conditional, /Education Certificate/);
   assert.match(conditional, /Educational Verification \/ Equivalency/);
-  assert.match(conditional, /Award or Education Details/);
+  assert.match(conditional, /Education Details document/);
   assert.ok(!item.intake1.documents.some(x => /education/i.test(x)));
 });
 
@@ -139,4 +139,29 @@ test("incomplete and unsupported combinations do not resolve", () => {
   assert.equal(resolveCase({entity:"ad",service:"ev"}), null);
   assert.equal(resolveCase({entity:"ad",service:"wp",residency:"other"}), null);
   assert.equal(resolveCase({entity:"ad",service:"other"}), null);
+});
+
+test("Education Details wording never calls for an Award document", () => {
+  for (const item of SERVICES) {
+    const text = [...item.documents.required, ...item.documents.conditional].join(" | ");
+    assert.doesNotMatch(text, /Award or Education Details/i, item.serviceId);
+    assert.match(text, /Education Details document/i, item.serviceId);
+  }
+});
+
+test("External Cover Passport is limited to Dubai Employment Visa routes", () => {
+  for (const entity of ["ad", "dubai", "alain", "dwc"]) {
+    const cases = [
+      resolveCase({entity, service:"ev", hireStatus:"local"}),
+      resolveCase({entity, service:"wp", residency:"golden"}),
+      resolveCase({entity, service:"wp", residency:"relative"}),
+      resolveCase({entity, service:"nat", category:"emirati"}),
+      resolveCase({entity, service:"nat", category:"gcc", gccStatus: "existingEid"}),
+    ];
+    for (const item of cases) {
+      assert.ok(item, entity);
+      const hasCover = item.documents.conditional.some(x => /External Cover Passport/i.test(x));
+      assert.equal(hasCover, item.service === "ev" && ["dubai", "dwc"].includes(entity), item.serviceId + "/" + entity);
+    }
+  }
 });

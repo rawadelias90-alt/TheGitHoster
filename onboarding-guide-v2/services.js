@@ -24,7 +24,7 @@ const COMMON_REQUIRED = ["Passport copy", "Candidate photograph", "Signed AECOM 
 const EDUCATION_CONDITIONAL = [
   "Education Certificate — required for applicable skilled classifications",
   "Educational Verification / Equivalency — where available and applicable",
-  "Award or Education Details document — where the candidate has an education certificate but no verification or equivalency",
+  "Education Details document — where the candidate has an education certificate but no verification or equivalency",
 ];
 
 const entityLabel = entity => ENTITIES.find(item => item.value === entity)?.label ?? "";
@@ -77,7 +77,7 @@ function readinessFor({ service, hireStatus, specialHire, residency, category })
   return items;
 }
 
-function documentsFor(entity, { specialHire = false, relative = false, category = "" } = {}) {
+function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "" } = {}) {
   const required = [...COMMON_REQUIRED];
   const conditional = [
     ...EDUCATION_CONDITIONAL,
@@ -86,8 +86,8 @@ function documentsFor(entity, { specialHire = false, relative = false, category 
     "Current UAE visa / residency — where applicable",
   ];
 
-  if (["dubai", "dwc"].includes(entity)) {
-    conditional.push("External Cover Passport — required for Dubai Mainland and Dubai South (DWC), where applicable");
+  if (service === "ev" && ["dubai", "dwc"].includes(entity)) {
+    conditional.push("External Cover Passport — Employment Visa cases in Dubai Mainland and Dubai South (DWC) only");
   }
   if (specialHire) required.push("Home-country National ID");
   if (relative) {
@@ -282,7 +282,7 @@ function employmentCase(entity, hireStatus, specialHire = false) {
     specialHire,
     preHireReadiness: readinessFor({ service: "ev", hireStatus, specialHire }),
     intake1,
-    documents: documentsFor(entity, { specialHire }),
+    documents: documentsFor(entity, { specialHire, service: "ev" }),
     candidateActions,
     groProcess,
     groNote: specialHire ? "Special Hire sequence may vary according to authority requirements. Home-Country Medical and Embassy requirements occur after initial approval at the applicable later stage and are not initial Intake 2 uploads." : "",
@@ -313,7 +313,7 @@ function workPermitCase(entity, residency) {
     descriptor: relative ? "Existing UAE residency · Relative / Family Visa" : "Existing UAE residency · Golden Visa",
     preHireReadiness: readinessFor({ service: "wp", residency }),
     intake1,
-    documents: documentsFor(entity, { relative }),
+    documents: documentsFor(entity, { relative, service: "wp" }),
     candidateActions: [isDwc ? "Complete the digital candidate signature when requested." : "Complete the employee signature when requested by Mobilisation."],
     groProcess: groWorkPermit(entity),
     journey: workPermitJourney(intake1.required),
@@ -342,7 +342,7 @@ function emiratiNationalCase(entity) {
     descriptor: category === "emirati" ? "Emirati candidate" : "GCC National candidate",
     preHireReadiness: readinessFor({ service: "nat", category }),
     intake1: intake1For(entity, "nat"),
-    documents: documentsFor(entity, { category }),
+    documents: documentsFor(entity, { category, service: "nat" }),
     candidateActions: [isDwc ? "Complete the required digital candidate signature." : "Complete the required candidate signature.", "Complete the required Medical after Work Permit approval."],
     groProcess: groNational(entity),
     journey: nationalJourney(),
@@ -437,7 +437,7 @@ function gccNationalMainlandCase(entity, gccStatus) {
     descriptor: `GCC National · ${label}`,
     preHireReadiness: readiness,
     intake1: intake1For(entity, "nat"),
-    documents: documentsFor(entity, { category: "gcc" }),
+    documents: documentsFor(entity, { category: "gcc", service: "nat" }),
     candidateActions: actions,
     groProcess,
     groNote: "UID and linked mobile are operational information, not document uploads. Candidate owns Emirates ID issuance or renewal. GCC pension registration starts once a valid Emirates ID is available; Medical is required only when requested for pension registration.",
@@ -473,7 +473,7 @@ function gccNationalDwcCase(entity) {
     descriptor: "GCC National · Dubai South Work Permit",
     preHireReadiness: readiness,
     intake1: intake1For(entity, "nat"),
-    documents: documentsFor(entity, { category: "gcc" }),
+    documents: documentsFor(entity, { category: "gcc", service: "nat" }),
     candidateActions: [
       "Complete the required digital candidate signature through the DWC Work Permit process when Mobilisation requests it.",
       "If the Emirates ID is valid, no action is needed; if missing, expired or nearing expiry, the candidate is responsible for obtaining or renewing it.",
@@ -531,6 +531,7 @@ function cloneForEntity(base, entity) {
     copy.postJoining = gccPensionText(entity);
   }
   copy.documents = documentsFor(entity, {
+    service: copy.service,
     specialHire: copy.specialHire,
     relative: copy.serviceId.endsWith("relative"),
     category: copy.category ?? "",
