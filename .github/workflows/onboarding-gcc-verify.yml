@@ -1,0 +1,15 @@
+name: GCC onboarding verification
+on:
+  push:
+    branches: [feature/gcc-national-onboarding]
+    paths:
+      - 'onboarding-guide-v2/**'
+      - '.github/workflows/onboarding-gcc-verify.yml'
+  workflow_dispatch:
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Business rule suite
+        run: node --test onboarding-guide-v2/tests/*.test.mjs
