@@ -76,7 +76,7 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
-    assert page.locator(".result-kicker").get_by_text("DWC").is_visible()
+    assert page.locator(".result-kicker").get_by_text("DWC", exact=True).is_visible()
     assert page.get_by_text("Digital Candidate Signature", exact=True).count() > 0
     assert page.locator(".journey-list").get_by_role("button", name="Go to DWC Work Permit Approval").is_visible()
     assert page.locator("#phase-emirates-id").count() == 0
