@@ -38,7 +38,7 @@ test("GCC local existing EID has candidate-owned renewal, joins after approval, 
   assert.ok(item.journey.includes("MOHRE Approval"));
   assert.ok(!item.journey.includes("Emirates ID"));
   assert.match(joined(item.candidateActions), /candidate.*renew/i);
-  assert.match(item.joining, /after.*approv/i);
+  assert.match(item.joining, /(?:after|once).*approv/i);
   assert.doesNotMatch(item.joining, /medical.*before.*join/i);
   assert.match(item.postJoining, /valid Emirates ID/i);
   assert.match(item.postJoining, /GRO.*pension/i);
