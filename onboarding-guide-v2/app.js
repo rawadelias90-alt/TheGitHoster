@@ -448,7 +448,7 @@ function renderCatalogue() {
             <summary>
               <div>
                 <div class="preview-title">${escapeHtml(item.title)}</div>
-                <div class="preview-meta">${escapeHtml(item.entityLabel)} · ${escapeHtml(item.descriptor)}</div>
+                <div class="preview-meta">${escapeHtml(item.entityLabel)} · ${escapeHtml(item.category === "gcc" && item.entity !== "dwc" ? "GCC National · All UAE status scenarios" : item.descriptor)}</div>
               </div>
               <div class="preview-outcome">${escapeHtml(item.outcome)}</div>
             </summary>
@@ -527,9 +527,16 @@ document.addEventListener("click", event => {
   } else if (action === "journey-scroll") {
     const target = document.getElementById(actionEl.dataset.target);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
       const mobileJourney = actionEl.closest(".mobile-journey");
-      if (mobileJourney) mobileJourney.open = false;
+      if (mobileJourney) {
+        mobileJourney.open = false;
+        // Let the browser settle collapse and scroll anchoring before navigating.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
+        });
+      } else {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   } else if (action === "print") {
     window.print();
@@ -551,12 +558,17 @@ document.addEventListener("click", event => {
   } else if (action === "view-service") {
     const result = findBrowseCase(actionEl.dataset.serviceId, actionEl.dataset.entity);
     if (result) {
-      // A chosen GCC catalogue scenario must also be editable in the guided selection.
-      if (result.category === "gcc") {
-        resetAnswers();
-        state.answers.entity = result.entity;
-        state.answers.service = "nat";
-        state.answers.category = "gcc";
+      // Restore only details known from the catalogue; never reuse candidate answers.
+      resetAnswers();
+      state.answers.entity = result.entity;
+      state.answers.service = result.service;
+      if (result.service === "ev") {
+        state.answers.hireStatus = result.serviceId.endsWith("-local") ? "local" : "overseas";
+        // A catalogue route does not identify the candidate's nationality.
+      } else if (result.service === "wp") {
+        state.answers.residency = result.serviceId.endsWith("-relative") ? "relative" : "golden";
+      } else if (result.service === "nat") {
+        state.answers.category = result.category;
         state.answers.gccStatus = result.gccStatus ?? "";
       }
       state.result = result;

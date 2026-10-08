@@ -57,6 +57,34 @@ try:
         assert page.locator("body").evaluate("(el) => el.scrollWidth <= window.innerWidth")
         assert "AECOM Sans" in page.locator("body").evaluate("el => getComputedStyle(el).fontFamily")
 
+        # Every link reaches its target after the mobile menu collapses, in both directions.
+        for width, height, selector in (
+            (1440, 1000, ".journey-list .journey-link"),
+            (390, 844, ".mobile-journey-list .journey-link"),
+        ):
+            page.set_viewport_size({"width": width, "height": height})
+            links = page.locator(selector)
+            indices = list(range(links.count()))
+            for index in indices + indices[::-1]:
+                if width == 390:
+                    page.locator(".mobile-journey summary").click()
+                target_id = links.nth(index).get_attribute("data-target")
+                links.nth(index).click()
+                if width == 390:
+                    assert not page.locator(".mobile-journey").evaluate("el => el.open")
+                print(f"Checking journey target {target_id} at {width}px", flush=True)
+                page.wait_for_function(
+                    """id => {
+                        const target = document.getElementById(id);
+                        const margin = parseFloat(getComputedStyle(target).scrollMarginTop);
+                        const desired = target.getBoundingClientRect().top + scrollY - margin;
+                        const maximum = document.documentElement.scrollHeight - innerHeight;
+                        return Math.abs(scrollY - Math.max(0, Math.min(desired, maximum))) < 2;
+                    }""",
+                    arg=target_id,
+                    timeout=5000,
+                )
+
         browser.close()
 finally:
     server.terminate()
