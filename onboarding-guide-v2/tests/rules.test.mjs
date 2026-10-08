@@ -16,7 +16,7 @@ const supportedCases = [
   [{entity:"dwc",service:"wp",residency:"golden"}, "wp-dwc-golden"],
   [{entity:"dwc",service:"wp",residency:"relative"}, "wp-dwc-relative"],
   [{entity:"ad",service:"nat",category:"emirati"}, "nat-mainland-emirati"],
-  [{entity:"dubai",service:"nat",category:"gcc"}, "nat-mainland-gcc"],
+  [{entity:"dubai",service:"nat",category:"gcc",gccStatus:"existingEid"}, "nat-mainland-gcc-existingEid"],
   [{entity:"dwc",service:"nat",category:"emirati"}, "nat-dwc-emirati"],
   [{entity:"dwc",service:"nat",category:"gcc"}, "nat-dwc-gcc"],
 ];
@@ -37,7 +37,7 @@ test("question sequence stays short and branch-specific", () => {
 });
 
 test("all service families expose the complete operating result model", () => {
-  assert.equal(SERVICES.length, 14);
+  assert.equal(SERVICES.length, 16);
   for (const item of SERVICES) {
     assert.ok(item.authority, item.serviceId);
     assert.ok(Array.isArray(item.preHireReadiness) && item.preHireReadiness.length >= 6, item.serviceId);
@@ -64,7 +64,7 @@ test("education document logic stays separate from Intake 1", () => {
   const conditional = item.documents.conditional.join(" | ");
   assert.match(conditional, /Education Certificate/);
   assert.match(conditional, /Educational Verification \/ Equivalency/);
-  assert.match(conditional, /Award or Education Details/);
+  assert.match(conditional, /Education Details document/);
   assert.ok(!item.intake1.documents.some(x => /education/i.test(x)));
 });
 
@@ -92,10 +92,10 @@ test("Special Hire documents and later actions are separated correctly", () => {
 
 test("national routes require National ID and Emirati-only Family Book", () => {
   const emir = resolveCase({entity:"ad",service:"nat",category:"emirati"});
-  const gcc = resolveCase({entity:"ad",service:"nat",category:"gcc"});
+  const gcc = resolveCase({entity:"ad",service:"nat",category:"gcc",gccStatus:"existingEid"});
   assert.ok(emir.documents.required.includes("National ID"));
   assert.ok(emir.documents.required.includes("Family Book"));
-  assert.ok(gcc.documents.required.includes("National ID"));
+  assert.ok(gcc.documents.required.includes("GCC-country National ID"));
   assert.ok(!gcc.documents.required.includes("Family Book"));
   assert.ok(!emir.documents.required.some(x => /Medical/i.test(x)));
 });
@@ -118,17 +118,17 @@ test("Work Permit and National routes also expose GRO processing", () => {
   assert.deepEqual(mainlandWp.groProcess.map(s => s.title), ["MOHRE Work Permit Process", "Employee Signature", "Work Permit Approval"]);
   const dwcWp = resolveCase({entity:"dwc",service:"wp",residency:"relative"});
   assert.deepEqual(dwcWp.groProcess.map(s => s.title), ["DWC Portal", "Work Permit Processing", "Digital Candidate Signature", "Work Permit Approval"]);
-  const national = resolveCase({entity:"dubai",service:"nat",category:"gcc"});
+  const national = resolveCase({entity:"dubai",service:"nat",category:"gcc",gccStatus:"existingEid"});
   assert.equal(national.authority, "MOHRE");
   assert.ok(national.groProcess.some(step => step.title === "Candidate Signature"));
-  assert.ok(national.journey.includes("Medical"));
-  assert.ok(national.journey.includes("Pension Enrollment"));
+  assert.ok(!national.journey.includes("Medical"));
+  assert.ok(national.journey.includes("Pension Registration"));
 });
 
 test("pension fund and completion points follow the updated source", () => {
   assert.match(resolveCase({entity:"ad",service:"nat",category:"emirati"}).postJoining, /ADPF/);
-  assert.match(resolveCase({entity:"alain",service:"nat",category:"gcc"}).postJoining, /ADPF/);
-  assert.match(resolveCase({entity:"dubai",service:"nat",category:"gcc"}).postJoining, /GPSSA/);
+  assert.match(resolveCase({entity:"alain",service:"nat",category:"gcc",gccStatus:"existingEid"}).postJoining, /ADPF/);
+  assert.match(resolveCase({entity:"dubai",service:"nat",category:"gcc",gccStatus:"existingEid"}).postJoining, /GPSSA/);
   assert.match(resolveCase({entity:"dwc",service:"nat",category:"emirati"}).postJoining, /GPSSA/);
   assert.match(resolveCase({entity:"ad",service:"ev",hireStatus:"local"}).completionPoint, /visa, residence, joining and post-joining/i);
   assert.match(resolveCase({entity:"ad",service:"wp",residency:"golden"}).completionPoint, /Work Permit approved and employee joins/i);
@@ -139,4 +139,29 @@ test("incomplete and unsupported combinations do not resolve", () => {
   assert.equal(resolveCase({entity:"ad",service:"ev"}), null);
   assert.equal(resolveCase({entity:"ad",service:"wp",residency:"other"}), null);
   assert.equal(resolveCase({entity:"ad",service:"other"}), null);
+});
+
+test("Education Details wording never calls for an Award document", () => {
+  for (const item of SERVICES) {
+    const text = [...item.documents.required, ...item.documents.conditional].join(" | ");
+    assert.doesNotMatch(text, /Award or Education Details/i, item.serviceId);
+    assert.match(text, /Education Details document/i, item.serviceId);
+  }
+});
+
+test("External Cover Passport is limited to Dubai Employment Visa routes", () => {
+  for (const entity of ["ad", "dubai", "alain", "dwc"]) {
+    const cases = [
+      resolveCase({entity, service:"ev", hireStatus:"local"}),
+      resolveCase({entity, service:"wp", residency:"golden"}),
+      resolveCase({entity, service:"wp", residency:"relative"}),
+      resolveCase({entity, service:"nat", category:"emirati"}),
+      resolveCase({entity, service:"nat", category:"gcc", gccStatus: "existingEid"}),
+    ];
+    for (const item of cases) {
+      assert.ok(item, entity);
+      const hasCover = item.documents.conditional.some(x => /External Cover Passport/i.test(x));
+      assert.equal(hasCover, item.service === "ev" && ["dubai", "dwc"].includes(entity), item.serviceId + "/" + entity);
+    }
+  }
 });

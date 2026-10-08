@@ -24,7 +24,7 @@ const COMMON_REQUIRED = ["Passport copy", "Candidate photograph", "Signed AECOM 
 const EDUCATION_CONDITIONAL = [
   "Education Certificate — required for applicable skilled classifications",
   "Educational Verification / Equivalency — where available and applicable",
-  "Award or Education Details document — where the candidate has an education certificate but no verification or equivalency",
+  "Education Details document — where the candidate has an education certificate but no verification or equivalency",
 ];
 
 const entityLabel = entity => ENTITIES.find(item => item.value === entity)?.label ?? "";
@@ -77,7 +77,7 @@ function readinessFor({ service, hireStatus, specialHire, residency, category })
   return items;
 }
 
-function documentsFor(entity, { specialHire = false, relative = false, category = "" } = {}) {
+function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "" } = {}) {
   const required = [...COMMON_REQUIRED];
   const conditional = [
     ...EDUCATION_CONDITIONAL,
@@ -86,15 +86,15 @@ function documentsFor(entity, { specialHire = false, relative = false, category 
     "Current UAE visa / residency — where applicable",
   ];
 
-  if (["dubai", "dwc"].includes(entity)) {
-    conditional.push("External Cover Passport — required for Dubai Mainland and Dubai South (DWC), where applicable");
+  if (service === "ev" && ["dubai", "dwc"].includes(entity)) {
+    conditional.push("External Cover Passport — Employment Visa cases in Dubai Mainland and Dubai South (DWC) only");
   }
   if (specialHire) required.push("Home-country National ID");
   if (relative) {
     conditional.push("Sponsor passport, residence visa, Emirates ID and No Objection Certificate — where applicable");
   }
-  if (category === "emirati" || category === "gcc") required.push("National ID");
-  if (category === "emirati") required.push("Family Book");
+  if (category === "gcc") required.push("GCC-country National ID");
+  if (category === "emirati") required.push("National ID", "Family Book");
 
   return { required, conditional };
 }
@@ -224,6 +224,9 @@ function buildCase(config) {
     entityLabel: entityLabel(config.entity),
     authority: config.authority,
     service: config.service,
+    category: config.category,
+    gccStatus: config.gccStatus,
+    emiratesIdAction: config.emiratesIdAction ?? "",
     descriptor: config.descriptor,
     specialHire: config.specialHire ?? false,
     preHireReadiness: config.preHireReadiness,
@@ -279,7 +282,7 @@ function employmentCase(entity, hireStatus, specialHire = false) {
     specialHire,
     preHireReadiness: readinessFor({ service: "ev", hireStatus, specialHire }),
     intake1,
-    documents: documentsFor(entity, { specialHire }),
+    documents: documentsFor(entity, { specialHire, service: "ev" }),
     candidateActions,
     groProcess,
     groNote: specialHire ? "Special Hire sequence may vary according to authority requirements. Home-Country Medical and Embassy requirements occur after initial approval at the applicable later stage and are not initial Intake 2 uploads." : "",
@@ -310,7 +313,7 @@ function workPermitCase(entity, residency) {
     descriptor: relative ? "Existing UAE residency · Relative / Family Visa" : "Existing UAE residency · Golden Visa",
     preHireReadiness: readinessFor({ service: "wp", residency }),
     intake1,
-    documents: documentsFor(entity, { relative }),
+    documents: documentsFor(entity, { relative, service: "wp" }),
     candidateActions: [isDwc ? "Complete the digital candidate signature when requested." : "Complete the employee signature when requested by Mobilisation."],
     groProcess: groWorkPermit(entity),
     journey: workPermitJourney(intake1.required),
@@ -324,7 +327,8 @@ function workPermitCase(entity, residency) {
   });
 }
 
-function nationalCase(entity, category) {
+function emiratiNationalCase(entity) {
+  const category = "emirati";
   const isDwc = entity === "dwc";
   const fund = pensionFund(entity);
   return buildCase({
@@ -334,10 +338,11 @@ function nationalCase(entity, category) {
     entity,
     authority: isDwc ? "DWC" : "MOHRE",
     service: "nat",
+    category: "emirati",
     descriptor: category === "emirati" ? "Emirati candidate" : "GCC National candidate",
     preHireReadiness: readinessFor({ service: "nat", category }),
     intake1: intake1For(entity, "nat"),
-    documents: documentsFor(entity, { category }),
+    documents: documentsFor(entity, { category, service: "nat" }),
     candidateActions: [isDwc ? "Complete the required digital candidate signature." : "Complete the required candidate signature.", "Complete the required Medical after Work Permit approval."],
     groProcess: groNational(entity),
     journey: nationalJourney(),
@@ -348,6 +353,148 @@ function nationalCase(entity, category) {
     joining: "After Work Permit approval, complete the required Medical, then progress joining / employment activity with Mobilisation.",
     postJoining: `GRO progresses ${fund} pension enrollment after Work Permit approval using the applicable Work Permit start date, not the employee joining date.`,
     completionPoint: "Case is complete when the Work Permit, Medical and pension requirements are completed.",
+  });
+}
+
+
+const GCC_MAINLAND_STATUSES = ["existingEid", "existingUid", "firstEntry"];
+
+function gccPensionText(entity) {
+  return `Once a valid Emirates ID is available, GRO starts ${pensionFund(entity)} pension registration using the Work Permit start date, not the employee joining date. Medical is completed if requested as part of pension registration. GRO completes pension registration once any requested requirements are met.`;
+}
+
+function gccJourney(isDwc, needsNewId) {
+  const items = [
+    "Pre-Hire Readiness", "Client Approval", "Intake 2", "GRO Processing",
+    isDwc ? "DWC Work Permit Approval" : "MOHRE Approval",
+    "Joining / Employment Activity",
+  ];
+  if (needsNewId) items.push("Emirates ID");
+  items.push("Pension Registration", "Completion");
+  return items;
+}
+
+function gccNationalMainlandCase(entity, gccStatus) {
+  const existingId = gccStatus === "existingEid";
+  const previousEntry = gccStatus === "existingUid";
+  const firstEntry = gccStatus === "firstEntry";
+  const label = existingId ? "Existing Emirates ID" : previousEntry ? "Previous UAE entry / existing UID" : "First UAE entry / new UID";
+  const readiness = readinessFor({ service: "nat", category: "gcc" });
+  readiness.push("Candidate's GCC-country National ID is required and is separate from the UAE Emirates ID.");
+
+  if (existingId) {
+    readiness.push("Candidate already has an Emirates ID; Mobilisation confirms that it is valid.");
+    readiness.push("If the Emirates ID is expired or near expiry, the candidate is asked to renew it.");
+  } else if (previousEntry) {
+    readiness.push("Previous UAE entry is confirmed. Candidate has no Emirates ID but provides an existing UID.");
+    readiness.push("Existing UID is linked to an active mobile number the candidate can access to receive OTP.");
+  } else if (firstEntry) {
+    readiness.push("Candidate must travel to UAE first. A UID is assigned automatically upon UAE entry before GRO starts MOHRE processing.");
+    readiness.push("New UID must be linked to an active mobile number accessible by the candidate for OTP.");
+  }
+
+  const actions = existingId
+    ? [
+        "Complete the applicable MOHRE candidate signature when requested through Mobilisation.",
+        "If your Emirates ID is expired or near expiry, the candidate must renew it; if valid, no Emirates ID action is needed.",
+        "Complete Medical only if requested for GCC pension registration.",
+      ]
+    : [
+        ...(firstEntry ? ["Travel to the UAE; a UID is assigned automatically upon UAE entry."] : []),
+        ...(previousEntry ? ["Provide your existing UID from your previous UAE entry."] : []),
+        "Link the UID to an active mobile number that you can access for OTP verification and provide the UID and linked mobile to Mobilisation before Intake 2.",
+        "Receive and complete OTP verification during the MOHRE processing stage when requested.",
+        "Complete the applicable MOHRE candidate signature when requested through Mobilisation.",
+        "After MOHRE approval, the candidate applies for an Emirates ID and shares the issued valid Emirates ID with Mobilisation.",
+        "Complete Medical only if requested for GCC pension registration.",
+      ];
+
+  const groProcess = [
+    step("GRO", "MOHRE Contract Processing", existingId
+      ? "GRO prepares and processes the MOHRE employment contract / Work Permit after Intake 2."
+      : "GRO processes the MOHRE employment contract using the candidate's UID and active linked mobile after Intake 2."),
+    ...(!existingId ? [step("Candidate", "OTP Verification", "Candidate receives the OTP on the active mobile linked to the UID; GRO progresses the authority verification stage.")] : []),
+    step("Candidate", "Candidate Signature", "Mobilisation coordinates the applicable candidate signature when requested."),
+    step("Authority", "MOHRE Approval", "The applicable MOHRE contract / Work Permit approval is obtained."),
+    step("GRO", "Approved Contract Shared", "GRO confirms approval and returns the approved contract to Mobilisation."),
+  ];
+
+  const before = existingId
+    ? "Obtain Client Approval, confirm a valid Emirates ID and GCC-country National ID, then submit Intake 2. Intake 1 does not apply."
+    : previousEntry
+      ? "Obtain Client Approval and confirm the existing UID, linked active OTP mobile and GCC-country National ID before submitting Intake 2. No Intake 1 applies."
+      : "Obtain Client Approval. The candidate must travel to UAE to receive a UID automatically upon entry, link an active OTP mobile and provide these details before Intake 2. No Intake 1 applies.";
+
+  return buildCase({
+    allowedEntities: [...MAINLAND_ENTITIES],
+    serviceId: `nat-mainland-gcc-${gccStatus}`,
+    title: "GCC National Work Permit",
+    entity,
+    authority: "MOHRE",
+    service: "nat",
+    category: "gcc",
+    gccStatus,
+    descriptor: `GCC National · ${label}`,
+    preHireReadiness: readiness,
+    intake1: intake1For(entity, "nat"),
+    documents: documentsFor(entity, { category: "gcc", service: "nat" }),
+    candidateActions: actions,
+    groProcess,
+    groNote: "UID and linked mobile are operational information, not document uploads. Candidate owns Emirates ID issuance or renewal. GCC pension registration starts once a valid Emirates ID is available; Medical is required only when requested for pension registration.",
+    journey: gccJourney(false, !existingId),
+    beforeIntake2: before,
+    next: existingId
+      ? "After Intake 2, GRO processes the MOHRE contract, confirms approval and shares it with Mobilisation."
+      : "After Intake 2, GRO processes the MOHRE contract using UID / linked OTP mobile, then shares the approved contract with Mobilisation.",
+    outcome: "MOHRE contract / Work Permit and pension",
+    joiningHeading: "Joining / Employment Activity",
+    joining: "The candidate may join once the applicable MOHRE contract / Work Permit approval is confirmed by Mobilisation. Medical is not a pre-joining requirement for this GCC pension route.",
+    emiratesIdAction: existingId ? "" : "After MOHRE approval, the candidate obtains an Emirates ID and provides the issued valid Emirates ID to Mobilisation. GRO may start pension registration once the ID is available.",
+    postJoining: gccPensionText(entity),
+    completionPoint: existingId
+      ? "Complete once the MOHRE contract / Work Permit approval, joining and GRO pension registration are completed with a valid Emirates ID, including Medical if requested for pension."
+      : "Complete once the MOHRE contract / Work Permit approval, joining, Emirates ID issuance and GRO pension registration are completed, including Medical if requested for pension.",
+  });
+}
+
+function gccNationalDwcCase(entity) {
+  const readiness = readinessFor({ service: "nat", category: "gcc" });
+  readiness.push("Candidate's GCC-country National ID is required and is separate from a UAE Emirates ID.");
+  readiness.push("Confirm whether the Emirates ID is valid; if missing, expired or near expiry, candidate handles application or renewal.");
+
+  return buildCase({
+    allowedEntities: ["dwc"],
+    serviceId: "nat-dwc-gcc",
+    title: "GCC National Work Permit",
+    entity,
+    authority: "DWC",
+    service: "nat",
+    category: "gcc",
+    descriptor: "GCC National · Dubai South Work Permit",
+    preHireReadiness: readiness,
+    intake1: intake1For(entity, "nat"),
+    documents: documentsFor(entity, { category: "gcc", service: "nat" }),
+    candidateActions: [
+      "Complete the required digital candidate signature through the DWC Work Permit process when Mobilisation requests it.",
+      "If the Emirates ID is valid, no action is needed; if missing, expired or nearing expiry, the candidate is responsible for obtaining or renewing it.",
+      "Complete Medical only if requested for GCC pension registration.",
+    ],
+    groProcess: [
+      step("GRO", "DWC Work Permit Process", "GRO processes the application directly through the Dubai South portal."),
+      step("Candidate", "Digital Candidate Signature", "Candidate completes the required digital signature when requested."),
+      step("Authority", "DWC Work Permit Approval", "The Dubai South Work Permit is approved."),
+      step("GRO", "Approved Permit Shared", "GRO shares the approved Work Permit with Mobilisation."),
+    ],
+    groNote: "Dubai South Work Permit processing applies. A valid Emirates ID is required before GCC pension registration; the candidate, not GRO, owns any issuance or renewal.",
+    journey: gccJourney(true, false),
+    beforeIntake2: "Obtain Client Approval, confirm the GCC-country National ID and applicable supporting documents, and submit Intake 2. Intake 1 does not apply.",
+    next: "GRO processes the DWC Work Permit, coordinates digital signature through Mobilisation and shares the approved permit.",
+    outcome: "DWC Work Permit and pension",
+    joiningHeading: "Joining / Employment Activity",
+    joining: "The candidate may join after Dubai South Work Permit approval and Mobilisation confirmation. Medical for pension does not block joining.",
+    emiratesIdAction: "If a valid Emirates ID is already held, no action is required. If it is missing, expired or near expiry, the candidate obtains or renews the Emirates ID and shares the valid ID with Mobilisation before pension registration.",
+    postJoining: gccPensionText(entity),
+    completionPoint: "Complete once the DWC Work Permit approval, joining and GRO pension registration are completed with a valid Emirates ID, including Medical if requested for pension.",
   });
 }
 
@@ -362,10 +509,12 @@ export const SERVICES = [
   workPermitCase("ad", "relative"),
   workPermitCase("dwc", "golden"),
   workPermitCase("dwc", "relative"),
-  nationalCase("ad", "emirati"),
-  nationalCase("ad", "gcc"),
-  nationalCase("dwc", "emirati"),
-  nationalCase("dwc", "gcc"),
+  emiratiNationalCase("ad"),
+  gccNationalMainlandCase("ad", "existingEid"),
+  gccNationalMainlandCase("ad", "existingUid"),
+  gccNationalMainlandCase("ad", "firstEntry"),
+  emiratiNationalCase("dwc"),
+  gccNationalDwcCase("dwc"),
 ];
 
 function cloneForEntity(base, entity) {
@@ -375,14 +524,17 @@ function cloneForEntity(base, entity) {
   if (copy.service === "ev" || copy.service === "wp" || copy.service === "nat") {
     copy.intake1 = intake1For(entity, copy.service);
   }
-  if (copy.service === "nat") {
+  if (copy.service === "nat" && copy.category === "emirati") {
     const fund = pensionFund(entity);
     copy.postJoining = `GRO progresses ${fund} pension enrollment after Work Permit approval using the applicable Work Permit start date, not the employee joining date.`;
+  } else if (copy.service === "nat" && copy.category === "gcc") {
+    copy.postJoining = gccPensionText(entity);
   }
   copy.documents = documentsFor(entity, {
+    service: copy.service,
     specialHire: copy.specialHire,
     relative: copy.serviceId.endsWith("relative"),
-    category: copy.serviceId.endsWith("emirati") ? "emirati" : copy.serviceId.endsWith("gcc") ? "gcc" : "",
+    category: copy.category ?? "",
   });
   return copy;
 }
@@ -417,7 +569,15 @@ export function resolveCase(state) {
 
   if (service === "nat") {
     if (!["emirati", "gcc"].includes(category)) return null;
-    const id = `nat-${isDwc ? "dwc" : "mainland"}-${category}`;
+    let id;
+    if (category === "emirati") {
+      id = `nat-${isDwc ? "dwc" : "mainland"}-emirati`;
+    } else if (isDwc) {
+      id = "nat-dwc-gcc";
+    } else {
+      if (!GCC_MAINLAND_STATUSES.includes(state.gccStatus)) return null;
+      id = `nat-mainland-gcc-${state.gccStatus}`;
+    }
     const template = findTemplate(id, entity);
     if (!template) return null;
     return entity === template.entity ? structuredClone(template) : cloneForEntity(template, entity);
@@ -439,6 +599,7 @@ export function getQuestionSequence(state) {
     sequence.push("residency");
   } else if (state.service === "nat") {
     sequence.push("category");
+    if (state.category === "gcc" && state.entity !== "dwc") sequence.push("gccStatus");
   }
   return sequence;
 }
