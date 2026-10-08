@@ -478,9 +478,16 @@ document.addEventListener("click", event => {
   } else if (action === "journey-scroll") {
     const target = document.getElementById(actionEl.dataset.target);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
       const mobileJourney = actionEl.closest(".mobile-journey");
-      if (mobileJourney) mobileJourney.open = false;
+      if (mobileJourney) {
+        mobileJourney.open = false;
+        // Let the browser settle collapse and scroll anchoring before navigating.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
+        });
+      } else {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   } else if (action === "print") {
     window.print();
