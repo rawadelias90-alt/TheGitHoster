@@ -92,6 +92,14 @@ with sync_playwright() as p:
     gcc_card.locator(".gcc-choice-button").nth(2).click()
     assert page.get_by_text("First UAE entry", exact=False).count() > 0
 
+    # Editing a catalogue-selected GCC case must populate the selected route.
+    page.get_by_role("button", name="Edit answers").click()
+    assert page.locator("#question-entity").input_value() == "ad"
+    assert page.locator("#question-service").input_value() == "nat"
+    assert page.locator("#question-category").input_value() == "gcc"
+    assert page.locator("#question-gccStatus").input_value() == "firstEntry"
+    page.get_by_role("button", name="View service").click()
+
     page.set_viewport_size({"width": 390, "height": 844})
     page.get_by_role("button", name="Edit answers").click()
     select_category(page, "alain", "gcc")
