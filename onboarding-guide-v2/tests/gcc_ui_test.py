@@ -35,6 +35,15 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").is_visible()
     assert page.get_by_role("button", name="View service").is_hidden()
     page.select_option("#question-gccStatus", "existingUid")
+    # A switch back to Emirati must remove the GCC answer, not preserve stale values.
+    page.select_option("#question-category", "emirati")
+    assert page.locator("#question-gccStatus").is_hidden()
+    assert page.locator("#question-gccStatus").input_value() == ""
+    assert page.get_by_role("button", name="View service").is_visible()
+    page.select_option("#question-category", "gcc")
+    assert page.locator("#question-gccStatus").is_visible()
+    assert page.get_by_role("button", name="View service").is_hidden()
+    page.select_option("#question-gccStatus", "existingUid")
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
     assert page.get_by_role("heading", name="GCC National Work Permit").is_visible()
