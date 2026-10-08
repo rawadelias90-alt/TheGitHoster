@@ -551,6 +551,14 @@ document.addEventListener("click", event => {
   } else if (action === "view-service") {
     const result = findBrowseCase(actionEl.dataset.serviceId, actionEl.dataset.entity);
     if (result) {
+      // A chosen GCC catalogue scenario must also be editable in the guided selection.
+      if (result.category === "gcc") {
+        resetAnswers();
+        state.answers.entity = result.entity;
+        state.answers.service = "nat";
+        state.answers.category = "gcc";
+        state.answers.gccStatus = result.gccStatus ?? "";
+      }
       state.result = result;
       state.mode = "result";
       render();
