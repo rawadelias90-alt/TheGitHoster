@@ -431,9 +431,9 @@ function gccNationalMainlandCase(entity, gccStatus) {
 
   const groProcess = [
     ...mainlandOtpSteps(),
-    step("GRO", "MOHRE Contract Processing", existingId
-      ? "GRO prepares and processes the MOHRE employment contract / Work Permit after Intake 2."
-      : "GRO processes the MOHRE employment contract using the candidate's UID and active linked mobile after Intake 2."),
+    step("GRO", "Submit to MOHRE", existingId
+      ? "GRO submits the prepared and reviewed MOHRE employment contract / Work Permit after verifying the second OTP."
+      : "GRO submits the prepared and reviewed MOHRE employment contract / Work Permit using the candidate's UID and active linked mobile after verifying the second OTP."),
     step("Candidate", "Candidate Signature", "Mobilisation coordinates the applicable candidate signature when requested."),
     step("Authority", "MOHRE Approval", "The applicable MOHRE contract / Work Permit approval is obtained."),
     step("GRO", "Approved Contract Shared", "GRO confirms approval and returns the approved contract to Mobilisation."),
