@@ -21,6 +21,24 @@ with sync_playwright() as p:
     page.set_content(html, wait_until="load")
     page.get_by_role("button", name="Start guided journey").click()
 
+    # Every Mainland GCC variant renders preparation once, then both OTPs and submission.
+    for entity in ("ad", "dubai", "alain"):
+        for status in ("existingEid", "existingUid", "firstEntry"):
+            select_category(page, entity, "gcc")
+            page.select_option("#question-gccStatus", status)
+            page.get_by_role("button", name="View service").click()
+            assert page.locator(".gro-step h3").all_text_contents() == [
+                "Contract Preparation", "OTP 1 — Contract Typing", "Contract Review",
+                "OTP 2 — Before Contract Submission", "Submit to MOHRE",
+                "Candidate Signature", "MOHRE Approval", "Approved Contract Shared",
+            ], (entity, status)
+            submission = page.locator(".gro-step").nth(4).inner_text()
+            assert "prepared and reviewed" in submission
+            assert "GRO prepares" not in submission
+            if status != "existingEid":
+                assert "candidate's UID and active linked mobile" in submission
+            page.get_by_role("button", name="Edit answers").click()
+
     select_category(page, "ad", "emirati")
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.get_by_role("button", name="View service").is_visible()

@@ -1,0 +1,42 @@
+name: Onboarding guide regression
+
+on:
+  pull_request:
+    paths:
+      - 'onboarding-guide-v2/**'
+      - '.github/workflows/onboarding-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'onboarding-guide-v2/**'
+      - '.github/workflows/onboarding-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runner
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Business rules and font registration
+        run: node --test onboarding-guide-v2/tests/*.test.mjs
+      - name: Existing guide UI
+        run: python onboarding-guide-v2/tests/ui_test.py
+      - name: GCC UI and contract sequence
+        run: python onboarding-guide-v2/tests/gcc_ui_test.py
+      - name: Catalogue UI
+        run: python onboarding-guide-v2/tests/catalogue_ui_test.py
+      - name: Font rendering
+        run: python onboarding-guide-v2/tests/font_render_test.py
