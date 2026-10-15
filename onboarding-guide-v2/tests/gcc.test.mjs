@@ -61,7 +61,7 @@ test("Mainland GCC first UAE entry assigns UID automatically; entry precedes GRO
   const item = gcc("alain","firstEntry");
   assert.match(joined(item.preHireReadiness),/travel.*UAE/i);
   assert.match(joined(item.candidateActions),/UID.*automatically.*entry/i);
-  assert.match(joined(item.candidateActions),/linked.*mobile.*OTP/i);
+  assert.match(joined(item.candidateActions),/link.*mobile.*OTP/i);
   assert.match(item.beforeIntake2,/travel.*UAE/i);
   assert.ok(item.journey.includes("Emirates ID"));
   assert.match(item.emiratesIdAction,/candidate.*Emirates ID/i);
