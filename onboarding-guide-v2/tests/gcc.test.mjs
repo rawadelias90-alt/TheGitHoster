@@ -51,7 +51,7 @@ test("Mainland GCC previous UAE entry requires UID, accessible OTP mobile and po
   assert.match(combined,/existing UID/i);
   assert.match(combined,/OTP/i);
   assert.match(combined,/active.*mobile/i);
-  assert.ok(item.groProcess.some(x=>/OTP Verification/i.test(x.title)));
+  assert.ok(item.groProcess.some(x=>/OTP 1 — Contract Typing/i.test(x.title)));
   assert.ok(item.journey.includes("Emirates ID"));
   assert.match(item.emiratesIdAction, /candidate.*Emirates ID/i);
   assert.ok(item.journey.indexOf("Emirates ID") < item.journey.indexOf("Pension Registration"));
@@ -105,7 +105,9 @@ test("Emirati route stays unchanged in mainland and DWC", () => {
     assert.ok(item.documents.required.includes("National ID"));
     assert.ok(item.journey.includes("Medical"));
     assert.ok(item.journey.includes("Pension Enrollment"));
-    assert.doesNotMatch(joined(item.candidateActions),/UID|OTP/);
+    assert.doesNotMatch(joined(item.candidateActions),/UID/);
+    if(entity==="dwc") assert.doesNotMatch(joined(item.candidateActions),/OTP/);
+    else assert.match(joined(item.candidateActions),/OTP/);
     assert.match(item.joining,/Medical.*joining/i);
     assert.equal(item.intake1.required,false);
   }
