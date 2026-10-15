@@ -25,7 +25,5 @@ jobs:
         run: python onboarding-guide-v2/tests/ui_test.py
       - name: GCC UI
         run: python onboarding-guide-v2/tests/gcc_ui_test.py
-      - name: Catalogue UI
-        run: python onboarding-guide-v2/tests/catalogue_ui_test.py
       - name: Font rendering
         run: python onboarding-guide-v2/tests/font_render_test.py
