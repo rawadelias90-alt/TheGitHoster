@@ -1,0 +1,14 @@
+name: Mainland OTP validation
+on:
+  push:
+    branches: [feature/mainland-mohre-two-otp-checkpoints]
+    paths:
+      - onboarding-guide-v2/**
+      - .github/workflows/mainland-otp-validation.yml
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test onboarding-guide-v2/tests/*.test.mjs
