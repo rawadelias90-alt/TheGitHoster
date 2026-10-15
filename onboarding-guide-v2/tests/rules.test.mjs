@@ -104,6 +104,7 @@ test("route-specific GRO sequences preserve authority and signature timing", () 
   const mainlandLocal = resolveCase({entity:"ad",service:"ev",hireStatus:"local"});
   assert.equal(mainlandLocal.authority, "MOHRE");
   assert.deepEqual(mainlandLocal.groProcess.map(s => s.title), [
+    "Contract Preparation", "OTP 1 — Contract Typing", "Contract Review", "OTP 2 — Before Contract Submission",
     "Submit to MOHRE", "Employee Signature", "GRO Payment", "Visa Approval", "Visa Issued", "Status Change",
   ]);
   const dwcOverseas = resolveCase({entity:"dwc",service:"ev",hireStatus:"overseas",nationality:"other"});
@@ -115,7 +116,7 @@ test("route-specific GRO sequences preserve authority and signature timing", () 
 
 test("Work Permit and National routes also expose GRO processing", () => {
   const mainlandWp = resolveCase({entity:"ad",service:"wp",residency:"golden"});
-  assert.deepEqual(mainlandWp.groProcess.map(s => s.title), ["MOHRE Work Permit Process", "Employee Signature", "Work Permit Approval"]);
+  assert.deepEqual(mainlandWp.groProcess.map(s => s.title), ["Contract Preparation", "OTP 1 — Contract Typing", "Contract Review", "OTP 2 — Before Contract Submission", "MOHRE Work Permit Process", "Employee Signature", "Work Permit Approval"]);
   const dwcWp = resolveCase({entity:"dwc",service:"wp",residency:"relative"});
   assert.deepEqual(dwcWp.groProcess.map(s => s.title), ["DWC Portal", "Work Permit Processing", "Digital Candidate Signature", "Work Permit Approval"]);
   const national = resolveCase({entity:"dubai",service:"nat",category:"gcc",gccStatus:"existingEid"});
