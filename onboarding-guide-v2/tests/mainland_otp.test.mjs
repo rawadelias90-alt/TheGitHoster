@@ -23,7 +23,7 @@ test("every Mainland MOHRE case has two ordered OTP checkpoints, not duplicate g
    const detail=item.groProcess[idx].detail;
    assert.match(detail,/GRO.*Mobilisation/i);
    assert.match(detail,/Mobilisation.*candidate/i);
-   assert.match(detail,/candidate.*Mobilisation.*GRO/i);
+   assert.match(detail,/candidate.*OTP.*GRO/i);
   }
   assert.match(item.candidateActions.join(" "),/OTP/i);
  }
