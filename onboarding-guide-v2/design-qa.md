@@ -43,4 +43,21 @@ Review date: 16 October 2026. Selected design: revised option 2.
 - Published to `design/gro-site-refresh` after user approval. Browser regression, PDF completeness and pagination verification are complete.
 - No merge to main or live-site publishing settings changed.
 
+## Scoped banner and catalogue update: 17 October 2026 (Asia/Dubai)
+
+- Source visual truth: `/workspace/scratch/b330fbaf616f/upload/image(20261016-221228).png` (942 x 207 pixels), requesting the banner logo on the left; `/workspace/scratch/b330fbaf616f/upload/image(20261016-205612).png` (414 x 264 pixels), the compact green-card style reference.
+- Implementation evidence: `/workspace/scratch/guide-v2-entity-cards-1792189143672.jpg` (1225 x 841 screenshot pixels). Desktop browser viewport measured approximately 1239 x 851 CSS pixels; the screenshot has the browser's approximately 0.989 capture scale. Comparison crops use that scale and preserve aspect ratios. The source banner is a cropped reference rather than a full viewport; its red arrow is an annotation, not interface content.
+- Full-view comparison: `/workspace/scratch/b330fbaf616f/qa-final/entity-cards-comparison.png` places both supplied references beside the live catalogue capture. Focused comparison: `/workspace/scratch/b330fbaf616f/qa-final/entity-cards-focused-comparison.png` shows a source tile, the implemented tile and the updated banner together. Different text, tile proportions and four desktop columns are intentional to fit service names and entity grouping.
+- State: Explore services, All locations / All services, panels collapsed. Groups contain 7 Abu Dhabi, 6 Dubai, 7 Al Ain and 7 Dubai South (DWC) service tiles. Mainland GCC variants remain choices inside one GCC tile per entity.
+- Fonts/typography: Playbook Arial body and Segoe UI controls preserved. White bold centered titles and compact descriptors wrap completely, matching the reference's hierarchy.
+- Spacing/layout: logo aligns with the banner title's left edge; on mobile it remains above the title without overlap. Entity headings group compact tiles in four columns on desktop, two on tablet and one on mobile. Open tiles expand across the group width so service information stays readable.
+- Colors/tokens: the existing #008768 flat green, white icons/type and 4px corners match the supplied green cards. No hover movement or shadows added.
+- Image quality/assets: original skyline and AECOM logo preserved. The catalogue reuses the same licensed external Fluent document/person icons. All tile icons loaded successfully.
+- Copy/content: service names, descriptors, outcomes, supporting details, actions and every route preserved. Entity names appear once as group headings instead of repeating on every tile. `services.js` remains unchanged.
+- Interaction checks: entity/service filtering, keyboard Enter to expand, Mainland GCC status choices and navigation to the existing-UID service, mobile DWC GCC expansion and full-service navigation. Native details keep independent state. No desktop/mobile horizontal overflow. Application console errors: zero; unrelated browser-extension metadata errors excluded.
+- Comparison history: the first catalogue pass used left-aligned text-only tiles. After comparing with the supplied small-card reference, tiles were changed to centered white icons/titles with a four-column desktop layout; the focused post-fix comparison confirms the requested style. No actionable P0/P1/P2 findings remain.
+- Local checks: all 53 Node tests and the production build pass. Implementation commit: `8c9c162535302f8a0bf708570e82daecef4af54a`.
+- Full regression passed: https://github.com/rawadelias90-alt/TheGitHoster/actions/runs/38974960291, including every catalogue route at desktop/mobile widths, existing UI, GCC sequence, selection summary, fonts, V2 interactions, PDF completeness and state restoration, and the production build.
+- Deployment remains pending; the update is on `design/gro-site-refresh`.
+
 final result: passed
