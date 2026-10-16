@@ -20,3 +20,11 @@ jobs:
         run: python onboarding-guide-v2/tests/single_screen_ui_test.py
       - name: Business rules
         run: node --test onboarding-guide-v2/tests/*.test.mjs
+      - name: Existing guided and result UI
+        run: python onboarding-guide-v2/tests/ui_test.py
+      - name: GCC journey and wizard navigation
+        run: python onboarding-guide-v2/tests/gcc_ui_test.py
+      - name: Team review document and service UI
+        run: python onboarding-guide-v2/tests/team_review_ui_test.py
+      - name: Font rendering and print navigation
+        run: python onboarding-guide-v2/tests/font_render_test.py
