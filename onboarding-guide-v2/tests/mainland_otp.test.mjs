@@ -11,23 +11,31 @@ for (const entity of ["ad","dubai","alain"]) {
   for (const gccStatus of ["existingEid","existingUid","firstEntry"]) cases.push({entity,service:"nat",category:"gcc",gccStatus});
 }
 cases.push({entity:"ad",service:"ev",hireStatus:"overseas",nationality:"india"},{entity:"dwc",service:"ev",hireStatus:"overseas",nationality:"egypt"});
-test("every Mainland MOHRE case has two ordered OTP checkpoints, not duplicate generic OTP",()=>{
- for(const args of cases.filter(x=>x.entity!=="dwc")) {
+test("every Mainland Work Permit-only case has digital signature between two OTP steps",()=>{
+ for(const args of cases.filter(x=>x.entity!=="dwc" && x.service!=="ev")) {
   const item=resolveCase(args);assert.ok(item,JSON.stringify(args));
   const titles=item.groProcess.map(x=>x.title);
-  const first=titles.indexOf("OTP 1 — Contract Typing"),second=titles.indexOf("OTP 2 — Before Contract Submission");
-  assert.ok(first>=0 && second>first,JSON.stringify(args)+" "+titles.join(" | "));
+  const first=titles.indexOf("OTP 1 — Contract Typing"),signature=titles.indexOf("MOHRE Digital Contract Signature");
+  const second=titles.indexOf("OTP 2 — Before Contract Submission"),submit=titles.indexOf("Submit Work Permit to MOHRE");
+  assert.ok(first>=0 && first<signature && signature<second && second<submit,JSON.stringify(args));
   assert.equal(titles.filter(x=>/OTP/.test(x)).length,2,JSON.stringify(args));
-  assert.ok(second<titles.findIndex(x=>/Approval|Submit to MOHRE/.test(x)),JSON.stringify(args));
-  for(const idx of [first,second]) {
-   const detail=item.groProcess[idx].detail;
-   assert.match(detail,/GRO.*Mobilisation/i);
-   assert.match(detail,/Mobilisation.*candidate/i);
-   assert.match(detail,/candidate.*OTP.*GRO/i);
+  for(const index of [first,second]){
+   assert.match(item.groProcess[index].detail,/GRO.*Mobilisation/i);
+   assert.match(item.groProcess[index].detail,/candidate.*Mobilisation.*GRO/i);
   }
-  assert.match(item.candidateActions.join(" "),/OTP/i);
+  assert.match(item.candidateActions.join(" "),/OTP 1/i);
+  assert.match(item.candidateActions.join(" "),/OTP 2/i);
  }
 });
+test("Mainland Employment Visa routes have no contract OTP requirement",()=>{
+ for(const args of cases.filter(x=>x.entity!=="dwc" && x.service==="ev")){
+   const item=resolveCase(args);
+   assert.ok(item);
+   assert.ok(!item.groProcess.some(x=>/OTP/.test(x.title)));
+   assert.doesNotMatch(item.candidateActions.join(" "),/OTP/);
+ }
+});
+
 test("Dubai South flows retain their original steps and have no OTP additions",()=>{
  for(const args of [
  {entity:"dwc",service:"ev",hireStatus:"local"},

@@ -51,7 +51,7 @@ with sync_playwright() as p:
     assert page.get_by_role("heading", name="Employment Visa and Work Permit").is_visible()
     assert page.get_by_text("Special Hire applies").is_visible()
     assert page.get_by_role("heading", name="Pre-Hire Readiness").is_visible()
-    assert page.get_by_role("heading", name="Documents").is_visible()
+    assert page.get_by_role("heading", name="Documents", exact=True).is_visible()
     assert page.get_by_role("heading", name="Candidate Actions").is_visible()
     assert page.get_by_role("heading", name="GRO Processing", exact=True).is_visible()
     assert page.get_by_role("heading", name="Initial Work Permit Approval", exact=True).is_visible()

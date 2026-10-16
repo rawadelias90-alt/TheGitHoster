@@ -348,6 +348,11 @@ function renderResult(result) {
           ${renderList(result.documents.required)}
           <h3 class="subsection-title">Where applicable / requested</h3>
           ${renderList(result.documents.conditional)}
+          ${result.educationNameNote ? `
+            <div class="process-note education-note" role="note">
+              <h3>Name differences in education documents</h3>
+              <p>${escapeHtml(result.educationNameNote)}</p>
+            </div>` : ""}
         </section>
 
         <section class="detail-section">

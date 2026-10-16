@@ -21,11 +21,16 @@ export const NATIONALITIES = [
 
 const MAINLAND_ENTITIES = ["ad", "dubai", "alain"];
 const COMMON_REQUIRED = ["Passport copy", "Candidate photograph", "Signed AECOM Offer / Contract"];
-const EDUCATION_CONDITIONAL = [
-  "Education Certificate — required for applicable skilled classifications",
-  "Educational Verification / Equivalency — where available and applicable",
-  "Education Details document — where the candidate has an education certificate but no verification or equivalency",
+const EDUCATION_EMPLOYMENT_VISA = [
+  "Education Certificate — attested where required for the applicable skilled classification",
+  "Educational Verification / Equivalency — where required and applicable to the Employment Visa",
+  "Education Details document — where required for a candidate with an education certificate but no equivalency or verification",
+  "University-dependent supporting form (concerned form) — only where requested by the relevant university or authority; not mandatory for every candidate",
 ];
+const EDUCATION_WORK_PERMIT = [
+  "Attested Education Certificate — only where required for the applicable Work Permit classification",
+];
+const EDUCATION_NAME_NOTE = "If the name on the education certificate differs from the passport or other identity document, the candidate must provide an official document confirming that both names belong to the same person, such as a birth certificate, government-issued ID, previous passport, marriage certificate, or court-issued letter. This applies only when an education certificate with a name difference is provided.";
 
 const entityLabel = entity => ENTITIES.find(item => item.value === entity)?.label ?? "";
 const isMainland = entity => MAINLAND_ENTITIES.includes(entity);
@@ -77,14 +82,20 @@ function readinessFor({ service, hireStatus, specialHire, residency, category })
   return items;
 }
 
-function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "" } = {}) {
+function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "", hireStatus = "" } = {}) {
   const required = [...COMMON_REQUIRED];
   const conditional = [
-    ...EDUCATION_CONDITIONAL,
+    ...(service === "ev" ? EDUCATION_EMPLOYMENT_VISA : EDUCATION_WORK_PERMIT),
     "Police Clearance Certificate — where requested or applicable",
     "Emirates ID — where applicable",
-    "Current UAE visa / residency — where applicable",
   ];
+
+  if (service === "ev" && hireStatus === "local") {
+    // One or the other, according to actual in-country immigration status.
+    required.push("In-country status evidence — residence visa cancellation document OR valid visit visa, whichever applies");
+  } else {
+    conditional.push("Current UAE visa / residency — where applicable");
+  }
 
   if (service === "ev" && ["dubai", "dwc"].includes(entity)) {
     conditional.push("External Cover Passport — Employment Visa cases in Dubai Mainland and Dubai South (DWC) only");
@@ -101,21 +112,23 @@ function documentsFor(entity, { specialHire = false, relative = false, category 
 
 const step = (owner, title, detail = "") => ({ owner, title, detail });
 
-const OTP_CANDIDATE_ACTION = "Be available for two MOHRE OTP requests: during contract typing and before submission. GRO asks Mobilisation; Mobilisation obtains the OTP from the candidate and provides it to GRO using an approved secure method. Do not enter OTP codes in this guide.";
-const OTP_READY = "Candidate can access the mobile number needed for two MOHRE contract OTP requests.";
-function mainlandOtpSteps() {
+const OTP_CANDIDATE_ACTION = "Provide OTP 1 to Mobilisation when GRO requests it during contract typing. Then use the digital MOHRE signing link to sign the employment contract and inform Mobilisation when signed. Before GRO submits the signed Work Permit application, provide OTP 2 when Mobilisation requests it. Mobilisation securely provides each candidate OTP to GRO using an approved secure procedure; never enter OTPs into this guide.";
+const OTP_READY = "Candidate can access the mobile number needed for both Mainland MOHRE verification requests and the digital contract-signing link.";
+function mainlandOtpSteps(approvalTitle, approvalDetail, uidContext = "") {
   return [
-    step("GRO", "Contract Preparation", "GRO prepares or types the MOHRE contract."),
-    step("GRO / Mobilisation / Candidate", "OTP 1 — Contract Typing", "GRO requests the OTP from Mobilisation during contract typing. Mobilisation contacts the candidate, obtains the OTP using the approved secure method, then provides the candidate OTP to GRO for verification."),
-    step("GRO", "Contract Review", "GRO reviews contract details before submission."),
-    step("GRO / Mobilisation / Candidate", "OTP 2 — Before Contract Submission", "GRO requests the second OTP from Mobilisation before contract submission. Mobilisation contacts the candidate, obtains the OTP using the approved secure method, then provides the candidate OTP to GRO. GRO verifies it before submitting."),
+    step("GRO", "Contract Preparation", "GRO begins preparing and typing the MOHRE Work Permit contract." + (uidContext ? " " + uidContext : "")),
+    step("GRO / Mobilisation / Candidate", "OTP 1 — Contract Typing", "GRO requests OTP 1 from Mobilisation. Mobilisation contacts the candidate. The candidate provides the first OTP to Mobilisation through an approved secure method, and Mobilisation relays it to GRO to continue contract typing."),
+    step("GRO", "Contract Completed", "After OTP 1 verification, GRO completes the contract and progresses it for candidate digital signing."),
+    step("Candidate", "MOHRE Digital Contract Signature", "MOHRE sends a digital contract-signing link to the candidate. The candidate opens the MOHRE link, signs the contract and informs Mobilisation. Mobilisation confirms signing completion to GRO."),
+    step("GRO", "Signed Contract Review", "GRO confirms the candidate's digital signature and reviews the signed contract and Work Permit application before submission."),
+    step("GRO / Mobilisation / Candidate", "OTP 2 — Before Contract Submission", "GRO requests OTP 2 from Mobilisation before submitting the signed application. Mobilisation contacts the candidate. The candidate provides the second OTP to Mobilisation through an approved secure method, and Mobilisation relays it to GRO for submission verification."),
+    step("GRO", "Submit Work Permit to MOHRE", "After OTP 2 verification, GRO submits the signed Work Permit application to MOHRE."),
+    step("Authority", approvalTitle, approvalDetail),
   ];
 }
 
-
 function groEmploymentMainlandLocal() {
   return [
-    ...mainlandOtpSteps(),
     step("GRO", "Submit to MOHRE", "GRO submits the Employment Visa and Work Permit application through MOHRE."),
     step("Candidate", "Employee Signature", "GRO informs Mobilisation when the application reaches signature stage; Mobilisation coordinates completion with the candidate."),
     step("GRO", "GRO Payment", "GRO proceeds with the applicable authority payment after signature completion."),
@@ -128,7 +141,6 @@ function groEmploymentMainlandLocal() {
 function groEmploymentMainlandOverseas(specialHire = false) {
   if (specialHire) {
     return [
-      ...mainlandOtpSteps(),
       step("GRO", "MOHRE Processing", "GRO manages the Employment Visa and Work Permit application through MOHRE."),
       step("Authority", "Initial Work Permit Approval", "The case reaches the initial Work Permit approval stage before later Special Hire requirements."),
       step("Candidate", "Home-Country Medical", "The candidate completes the required medical in the home country when applicable; this is not an Intake 2 document."),
@@ -140,7 +152,6 @@ function groEmploymentMainlandOverseas(specialHire = false) {
     ];
   }
   return [
-    ...mainlandOtpSteps(),
     step("GRO", "MOHRE Processing", "GRO manages the Employment Visa and Work Permit application through MOHRE."),
     step("Authority", "Initial Work Permit Approval", "Initial Work Permit approval is obtained."),
     step("Candidate", "Employee Signature", "Mobilisation coordinates the required candidate signature."),
@@ -188,12 +199,7 @@ function groWorkPermit(entity) {
       step("Authority", "Work Permit Approval", "Work Permit approval is obtained."),
     ];
   }
-  return [
-    ...mainlandOtpSteps(),
-    step("GRO", "MOHRE Work Permit Process", "GRO processes the Work Permit through MOHRE."),
-    step("Candidate", "Employee Signature", "The candidate completes the required signature when requested by Mobilisation."),
-    step("Authority", "Work Permit Approval", "Work Permit approval is obtained and Mobilisation is informed."),
-  ];
+  return mainlandOtpSteps("Work Permit Approval", "Work Permit approval is obtained and Mobilisation is informed.");
 }
 
 function groNational(entity) {
@@ -204,12 +210,7 @@ function groNational(entity) {
       step("Authority", "Work Permit Approval", "Work Permit approval is obtained before Medical."),
     ];
   }
-  return [
-    ...mainlandOtpSteps(),
-    step("GRO", "MOHRE Work Permit", "GRO processes the National Work Permit through MOHRE."),
-    step("Candidate", "Candidate Signature", "The candidate completes the required signature."),
-    step("Authority", "Work Permit Approval", "Work Permit approval is obtained before Medical."),
-  ];
+  return mainlandOtpSteps("Work Permit Approval", "Work Permit approval is obtained before Medical.");
 }
 
 function employmentJourney({ intake1, local, specialHire }) {
@@ -260,6 +261,7 @@ function buildCase(config) {
     joining: config.joining,
     postJoining: config.postJoining,
     completionPoint: config.completionPoint,
+    educationNameNote: config.educationNameNote ?? EDUCATION_NAME_NOTE,
     guidance: config.guidance ?? "Mobilisation manages candidate communication. This guide supports route identification and operational understanding; it does not verify document readiness, approval or joining authorisation.",
   };
 }
@@ -277,7 +279,6 @@ function employmentCase(entity, hireStatus, specialHire = false) {
       : "Entry Visa";
 
   const candidateActions = [];
-  if (!isDwc) candidateActions.push(OTP_CANDIDATE_ACTION);
   if (specialHire) {
     candidateActions.push("Complete the applicable Home-Country Medical when instructed by Mobilisation.");
     candidateActions.push("Complete the UAE Embassy / original-passport process where required and when instructed by Mobilisation.");
@@ -298,9 +299,12 @@ function employmentCase(entity, hireStatus, specialHire = false) {
     service: "ev",
     descriptor: `${local ? "Local Hire" : "Overseas Hire"}${specialHire ? " · Special Hire" : ""}`,
     specialHire,
-    preHireReadiness: [...readinessFor({ service: "ev", hireStatus, specialHire }), ...(!isDwc ? [OTP_READY] : [])],
+    preHireReadiness: [
+      ...readinessFor({ service: "ev", hireStatus, specialHire }),
+      ...(specialHire ? ["Home-country National ID is collected for the Special Hire application, not for Intake 1 verification. Intake 1 checks passport and photograph only where it applies."] : []),
+    ],
     intake1,
-    documents: documentsFor(entity, { specialHire, service: "ev" }),
+    documents: documentsFor(entity, { specialHire, service: "ev", hireStatus }),
     candidateActions,
     groProcess,
     groNote: specialHire ? "Special Hire sequence may vary according to authority requirements. Home-Country Medical and Embassy requirements occur after initial approval at the applicable later stage and are not initial Intake 2 uploads." : "",
@@ -332,7 +336,7 @@ function workPermitCase(entity, residency) {
     preHireReadiness: [...readinessFor({ service: "wp", residency }), ...(!isDwc ? [OTP_READY] : [])],
     intake1,
     documents: documentsFor(entity, { relative, service: "wp" }),
-    candidateActions: [isDwc ? "Complete the digital candidate signature when requested." : "Complete the employee signature when requested by Mobilisation.", ...(!isDwc ? [OTP_CANDIDATE_ACTION] : [])],
+    candidateActions: isDwc ? ["Complete the digital candidate signature when requested."] : [OTP_CANDIDATE_ACTION],
     groProcess: groWorkPermit(entity),
     journey: workPermitJourney(intake1.required),
     beforeIntake2: `${intake1.required ? "Complete Intake 1, " : ""}obtain Client Approval and confirm the candidate and applicable supporting documents are current before Intake 2.`,
@@ -361,7 +365,7 @@ function emiratiNationalCase(entity) {
     preHireReadiness: [...readinessFor({ service: "nat", category }), ...(!isDwc ? [OTP_READY] : [])],
     intake1: intake1For(entity, "nat"),
     documents: documentsFor(entity, { category, service: "nat" }),
-    candidateActions: [isDwc ? "Complete the required digital candidate signature." : "Complete the required candidate signature.", ...(!isDwc ? [OTP_CANDIDATE_ACTION] : []), "Complete the required Medical after Work Permit approval."],
+    candidateActions: [...(isDwc ? ["Complete the required digital candidate signature."] : [OTP_CANDIDATE_ACTION]), "Complete the required Medical after Work Permit approval."],
     groProcess: groNational(entity),
     journey: nationalJourney(),
     beforeIntake2: "Obtain Client Approval, confirm the National Work Permit route and applicable documents, then submit Intake 2. Intake 1 does not apply.",
@@ -415,7 +419,6 @@ function gccNationalMainlandCase(entity, gccStatus) {
   const actions = existingId
     ? [
         OTP_CANDIDATE_ACTION,
-        "Complete the applicable MOHRE candidate signature when requested through Mobilisation.",
         "If your Emirates ID is expired or near expiry, the candidate must renew it; if valid, no Emirates ID action is needed.",
         "Complete Medical only if requested for GCC pension registration.",
       ]
@@ -424,18 +427,16 @@ function gccNationalMainlandCase(entity, gccStatus) {
         ...(firstEntry ? ["Travel to the UAE; a UID is assigned automatically upon UAE entry."] : []),
         ...(previousEntry ? ["Provide your existing UID from your previous UAE entry."] : []),
         "Link the UID to an active mobile number that you can access for OTP verification and provide the UID and linked mobile to Mobilisation before Intake 2.",
-        "Complete the applicable MOHRE candidate signature when requested through Mobilisation.",
         "After MOHRE approval, the candidate applies for an Emirates ID and shares the issued valid Emirates ID with Mobilisation.",
         "Complete Medical only if requested for GCC pension registration.",
       ];
 
   const groProcess = [
-    ...mainlandOtpSteps(),
-    step("GRO", "Submit to MOHRE", existingId
-      ? "GRO submits the prepared and reviewed MOHRE employment contract / Work Permit after verifying the second OTP."
-      : "GRO submits the prepared and reviewed MOHRE employment contract / Work Permit using the candidate's UID and active linked mobile after verifying the second OTP."),
-    step("Candidate", "Candidate Signature", "Mobilisation coordinates the applicable candidate signature when requested."),
-    step("Authority", "MOHRE Approval", "The applicable MOHRE contract / Work Permit approval is obtained."),
+    ...mainlandOtpSteps(
+      "MOHRE Approval",
+      "The applicable MOHRE contract / Work Permit approval is obtained.",
+      existingId ? "" : "GRO uses the candidate's UID and active linked mobile number for the application."
+    ),
     step("GRO", "Approved Contract Shared", "GRO confirms approval and returns the approved contract to Mobilisation."),
   ];
 
@@ -552,6 +553,7 @@ function cloneForEntity(base, entity) {
   }
   copy.documents = documentsFor(entity, {
     service: copy.service,
+    hireStatus: copy.service === "ev" ? (copy.serviceId.endsWith("-local") ? "local" : "overseas") : "",
     specialHire: copy.specialHire,
     relative: copy.serviceId.endsWith("relative"),
     category: copy.category ?? "",
