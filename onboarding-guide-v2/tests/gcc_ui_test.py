@@ -1,5 +1,6 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from wizard_helpers import choose, continue_to_result
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,9 +12,9 @@ html = index.replace('<link rel="stylesheet" href="styles.css">', f'<style>{css}
 html = html.replace('<script type="module" src="app.js"></script>', f'<script>{services}\n{app}</script>')
 
 def select_category(page, entity, category):
-    page.select_option("#question-entity", entity)
-    page.select_option("#question-service", "nat")
-    page.select_option("#question-category", category)
+    choose(page, "entity", entity)
+    choose(page, "service", "nat")
+    choose(page, "category", category)
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
@@ -26,7 +27,8 @@ with sync_playwright() as p:
         for status in ("existingEid", "existingUid", "firstEntry"):
             select_category(page, entity, "gcc")
             page.select_option("#question-gccStatus", status)
-            page.get_by_role("button", name="View service").click()
+            continue_to_result(page)
+    page.get_by_role("button", name="View service").click()
             assert page.locator(".gro-step h3").all_text_contents() == [
                 "Contract Preparation", "OTP 1 — Contract Typing", "Contract Completed",
                 "MOHRE Digital Contract Signature", "Signed Contract Review",
@@ -50,19 +52,19 @@ with sync_playwright() as p:
     assert page.locator("#phase-emirates-id").count() == 0
 
     page.get_by_role("button", name="Edit answers").click()
-    page.select_option("#question-category", "gcc")
+    choose(page,"category","gcc")
     assert page.locator("#question-gccStatus").is_visible()
     assert page.get_by_role("button", name="View service").is_hidden()
-    page.select_option("#question-gccStatus", "existingUid")
+    choose(page,"gccStatus","existingUid")
     # A switch back to Emirati must remove the GCC answer, not preserve stale values.
-    page.select_option("#question-category", "emirati")
+    choose(page,"category","emirati")
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.locator("#question-gccStatus").input_value() == ""
     assert page.get_by_role("button", name="View service").is_visible()
-    page.select_option("#question-category", "gcc")
+    choose(page,"category","gcc")
     assert page.locator("#question-gccStatus").is_visible()
     assert page.get_by_role("button", name="View service").is_hidden()
-    page.select_option("#question-gccStatus", "existingUid")
+    choose(page,"gccStatus","existingUid")
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
     assert page.get_by_role("heading", name="GCC National Work Permit").is_visible()
@@ -92,15 +94,15 @@ with sync_playwright() as p:
     page.emulate_media(media="screen")
 
     page.get_by_role("button", name="Edit answers").click()
-    page.select_option("#question-gccStatus", "firstEntry")
+    choose(page,"gccStatus","firstEntry")
     page.get_by_role("button", name="View service").click()
     assert page.get_by_text("must travel to UAE", exact=False).count() > 0
     assert page.locator("#phase-emirates-id").count() == 1
 
     page.get_by_role("button", name="Edit answers").click()
-    page.select_option("#question-entity", "dwc")
-    page.select_option("#question-service", "nat")
-    page.select_option("#question-category", "gcc")
+    choose(page,"entity","dwc")
+    choose(page,"service","nat")
+    choose(page,"category","gcc")
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
@@ -131,7 +133,7 @@ with sync_playwright() as p:
     page.set_viewport_size({"width": 390, "height": 844})
     page.get_by_role("button", name="Edit answers").click()
     select_category(page, "alain", "gcc")
-    page.select_option("#question-gccStatus", "existingEid")
+    choose(page,"gccStatus","existingEid")
     page.get_by_role("button", name="View service").click()
     assert page.locator("body").evaluate("(el) => el.scrollWidth <= window.innerWidth")
     mobile = page.locator(".mobile-journey")
