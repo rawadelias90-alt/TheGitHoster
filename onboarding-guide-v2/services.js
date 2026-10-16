@@ -141,7 +141,7 @@ function groEmploymentMainlandLocal() {
 function groEmploymentMainlandOverseas(specialHire = false) {
   if (specialHire) {
     return [
-        step("GRO", "MOHRE Processing", "GRO manages the Employment Visa and Work Permit application through MOHRE."),
+      step("GRO", "MOHRE Processing", "GRO manages the Employment Visa and Work Permit application through MOHRE."),
       step("Authority", "Initial Work Permit Approval", "The case reaches the initial Work Permit approval stage before later Special Hire requirements."),
       step("Candidate", "Home-Country Medical", "The candidate completes the required medical in the home country when applicable; this is not an Intake 2 document."),
       step("GRO", "GRO Processing / Payment", "GRO progresses the case and applicable payment after the authority-system result."),
