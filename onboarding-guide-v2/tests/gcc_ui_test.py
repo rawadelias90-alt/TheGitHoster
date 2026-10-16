@@ -128,6 +128,7 @@ with sync_playwright() as p:
     assert page.locator("#question-service").input_value() == "nat"
     assert page.locator("#question-category").input_value() == "gcc"
     assert page.locator("#question-gccStatus").input_value() == "firstEntry"
+    continue_to_result(page)
     page.get_by_role("button", name="View service").click()
 
     page.set_viewport_size({"width": 390, "height": 844})
