@@ -179,6 +179,7 @@ function renderQuestion() {
       <p class="eyebrow">Guided journey</p>
       <h1 class="question-title" data-screen-heading tabindex="-1">Find the right onboarding route</h1>
       <p class="question-help">Choose the confirmed case details below. Only questions relevant to the selected route will appear.</p>
+      <div class="selection-summary" role="status" aria-label="Selected onboarding details" aria-live="polite" aria-atomic="true" hidden></div>
       <div class="progressive-form" id="progressiveForm">
         ${questionKeys.map((key, index) => {
           const question = QUESTIONS[key];
@@ -210,12 +211,43 @@ function renderQuestion() {
   syncGuidedQuestions();
 }
 
+function syncSelectionSummary(sequence, activeIndex, activeAnswered, nextKey) {
+  const summary = app.querySelector(".selection-summary");
+  if (!summary) return;
+
+  // Show previous completed screens; include the current one only after the last answer.
+  const includeCurrent = Boolean(activeAnswered && !nextKey && resolveCase(state.answers));
+  const selectedKeys = sequence.slice(0, activeIndex + (includeCurrent ? 1 : 0));
+  const selections = selectedKeys
+    .filter(key => state.answers[key])
+    .map(key => ({
+      key,
+      label: QUESTIONS[key]?.options.find(option => option.value === state.answers[key])?.label,
+    }))
+    .filter(item => item.label);
+
+  summary.hidden = selections.length === 0;
+  if (!selections.length) {
+    summary.replaceChildren();
+    return;
+  }
+  summary.innerHTML = `
+    <span class="selection-summary-label">${includeCurrent ? "Selected:" : "Selected so far:"}</span>
+    <span class="selection-summary-items">
+      ${selections.map((item, index) => `
+        ${index ? '<span class="selection-summary-separator" aria-hidden="true">›</span>' : ""}
+        <span class="selection-summary-value" data-selection-key="${escapeHtml(item.key)}">${escapeHtml(item.label)}</span>
+      `).join("")}
+    </span>`;
+}
+
 function syncGuidedQuestions() {
   const sequence = currentSequence();
   if (!sequence.includes(state.activeQuestion)) state.activeQuestion = sequence[0];
   const activeIndex = sequence.indexOf(state.activeQuestion);
   const nextKey = sequence[activeIndex + 1];
   const activeAnswered = Boolean(state.answers[state.activeQuestion]);
+  syncSelectionSummary(sequence, activeIndex, activeAnswered, nextKey);
 
   app.querySelectorAll("[data-question-row]").forEach(row => {
     const key = row.dataset.questionRow;
