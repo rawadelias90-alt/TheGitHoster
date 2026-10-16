@@ -28,15 +28,16 @@ with sync_playwright() as p:
             page.select_option("#question-gccStatus", status)
             page.get_by_role("button", name="View service").click()
             assert page.locator(".gro-step h3").all_text_contents() == [
-                "Contract Preparation", "OTP 1 — Contract Typing", "Contract Review",
-                "OTP 2 — Before Contract Submission", "Submit to MOHRE",
-                "Candidate Signature", "MOHRE Approval", "Approved Contract Shared",
+                "Contract Preparation", "OTP 1 — Contract Typing", "Contract Completed",
+                "MOHRE Digital Contract Signature", "Signed Contract Review",
+                "OTP 2 — Before Contract Submission", "Submit Work Permit to MOHRE",
+                "MOHRE Approval", "Approved Contract Shared",
             ], (entity, status)
-            submission = page.locator(".gro-step").nth(4).inner_text()
-            assert "prepared and reviewed" in submission
+            submission = page.locator(".gro-step").nth(6).inner_text()
+            assert "signed Work Permit application" in submission
             assert "GRO prepares" not in submission
             if status != "existingEid":
-                assert "candidate's UID and active linked mobile" in submission
+                assert "candidate's UID and active linked mobile" in page.locator(".gro-step").nth(0).inner_text()
             page.get_by_role("button", name="Edit answers").click()
 
     select_category(page, "ad", "emirati")
