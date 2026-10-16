@@ -235,8 +235,10 @@ function syncSelectionSummary(sequence, activeIndex, activeAnswered, nextKey) {
     <span class="selection-summary-label">${includeCurrent ? "Selected:" : "Selected so far:"}</span>
     <span class="selection-summary-items">
       ${selections.map((item, index) => `
-        ${index ? '<span class="selection-summary-separator" aria-hidden="true">›</span>' : ""}
-        <span class="selection-summary-value" data-selection-key="${escapeHtml(item.key)}">${escapeHtml(item.label)}</span>
+        <span class="selection-summary-entry">
+          ${index ? '<span class="selection-summary-separator" aria-hidden="true">›</span>' : ""}
+          <span class="selection-summary-value" data-selection-key="${escapeHtml(item.key)}">${escapeHtml(item.label)}</span>
+        </span>
       `).join("")}
     </span>`;
 }
