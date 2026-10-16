@@ -122,7 +122,7 @@ function mainlandOtpSteps(approvalTitle, approvalDetail, uidContext = "") {
     step("Candidate", "MOHRE Digital Contract Signature", "MOHRE sends a digital contract-signing link to the candidate. The candidate opens the MOHRE link, signs the contract and informs Mobilisation. Mobilisation confirms signing completion to GRO."),
     step("GRO", "Signed Contract Review", "GRO confirms the candidate's digital signature and reviews the signed contract and Work Permit application before submission."),
     step("GRO / Mobilisation / Candidate", "OTP 2 — Before Contract Submission", "GRO requests OTP 2 from Mobilisation before submitting the signed application. Mobilisation contacts the candidate. The candidate provides the second OTP to Mobilisation through an approved secure method, and Mobilisation relays it to GRO for submission verification."),
-    step("GRO", "Submit Work Permit to MOHRE", "After OTP 2 verification, GRO submits the signed Work Permit application to MOHRE. This is the Work Permit submission, not a separate Employment Visa submission."),
+    step("GRO", "Submit Work Permit to MOHRE", "After OTP 2 verification, GRO submits the signed Work Permit application to MOHRE."),
     step("Authority", approvalTitle, approvalDetail),
   ];
 }
