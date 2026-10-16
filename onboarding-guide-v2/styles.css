@@ -60,10 +60,19 @@ select:focus { outline: 3px solid #0064b5; outline-offset: 3px; }
 .selection-summary-separator { color: var(--soft); }
 .result-layout, .result-main { display: block; min-width: 0; }
 .result-main { position: relative; }
-.result-toolbar { position: absolute; top: 12px; right: 0; }
+.result-toolbar { flex-shrink: 0; }
 .print-button { min-width: 95px; color: var(--ink); }
-.result-hero { padding-right: 120px; }
-.result-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.result-hero { padding: 0; }
+.service-banner { position: relative; display: flex; align-items: end; min-height: 220px; padding: 76px 28px 24px; border-radius: 18px; overflow: hidden; background: #004d40; color: #fff; }
+.service-banner-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.service-banner[data-entity="dubai"] .service-banner-image { object-position: center top; }
+.service-banner[data-entity="dwc"] .service-banner-image { object-position: center 20%; }
+.service-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,30,27,.72), rgba(0,30,27,.18) 72%, transparent); pointer-events: none; }
+.service-banner-logo { position: absolute; z-index: 1; top: 24px; right: 28px; width: 136px; height: auto; filter: brightness(0) invert(1); }
+.service-banner-copy { position: relative; z-index: 1; max-width: 860px; }
+.service-location { margin: 0 0 8px; font-size: 15px; font-weight: 700; }
+.result-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; }
+.result-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--muted); font-size: 13px; margin-bottom: 0; }
 .change-selection { font-size: 13px; min-height: 36px; padding: 5px 8px; }
 .result-title { font-size: clamp(26px,3.1vw,38px); line-height: 1.25; letter-spacing: -.5px; margin: 0; font-weight: 700; }
 .badge { background: var(--green-wash); color: var(--green-dark); border-radius: 4px; padding: 3px 8px; font-size: 12px; }
@@ -165,9 +174,14 @@ summary::-webkit-details-marker { display: none; }
   .banner-copy > p:last-child { font-size: 14px; }
   .app-shell { width: calc(100% - 32px); padding-top: 22px; }
   .app-footer { width: calc(100% - 32px); }
-  .result-hero { padding-right: 0; }
-  .result-toolbar { position: static; display: flex; justify-content: flex-end; margin-bottom: 12px; }
-  .result-kicker { gap: 4px 7px; }
+  .service-banner { min-height: 230px; padding: 76px 18px 22px; border-radius: 14px; }
+  .service-banner .service-banner-image { object-position: 65% center; }
+  .service-banner-logo { top: 20px; right: 18px; width: 110px; }
+  .service-location { font-size: 14px; }
+  .result-controls { align-items: start; flex-wrap: wrap; gap: 8px 16px; }
+  .result-kicker { flex: 1 1 220px; gap: 4px 7px; }
+  .result-kicker > span:first-child { flex-basis: 100%; }
+  .result-kicker > span:nth-child(2) { display: none; }
   .result-title { font-size: 28px; }
   .journey-rail { display: none; }
   .mobile-journey { display: block; margin: 22px 0 16px; border-block: 1px solid var(--line); }
@@ -200,6 +214,10 @@ summary::-webkit-details-marker { display: none; }
   .app-header, .guide-banner, .app-footer, .journey-rail, .mobile-journey, .result-toolbar, .result-actions, .change-selection { display: none !important; }
   .app-shell { width: 100%; max-width: none; padding: 0; margin: 0; }
   .result-hero { padding: 0; margin-bottom: 18px; }
+  .service-banner { display: block; min-height: 0; padding: 0; overflow: visible; border-radius: 0; background: none !important; color: #111; }
+  .service-banner-image, .service-banner-logo, .service-banner::after { display: none !important; }
+  .service-location { margin-bottom: 6px; font-size: 13px; }
+  .result-controls { display: block; margin-top: 10px; }
   .result-title { font-size: 25px; }
   .summary-grid { grid-template-columns: 1fr; gap: 8px; }
   .flip-trigger, .flip-inner, .flip-back { display: block !important; height: auto !important; transform: none !important; }

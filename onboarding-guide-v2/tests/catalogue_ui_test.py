@@ -36,6 +36,10 @@ with sync_playwright() as p:
             button.click()
             page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
             assert page.locator('.result-title').inner_text() == case['title']
+            expected_banner = {'ad':'abu-dhabi', 'dubai':'dubai', 'dwc':'dubai-south', 'alain':'al-ain'}[entity] + '-banner.png'
+            assert page.locator('.service-banner-image').get_attribute('src') == './assets/' + expected_banner
+            assert page.locator('.service-location').inner_text() == case['entityLabel']
+            assert page.locator('.guide-banner').is_hidden()
             assert page.get_by_role('button', name='Print service guide').is_visible()
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             selector = '.journey-list' if width == 1440 else '.mobile-journey-list'

@@ -1,6 +1,12 @@
 import { ENTITIES, SERVICE_TYPES, NATIONALITIES, resolveCase, getQuestionSequence, browseCases } from "./services.js";
 
 const app = document.getElementById("app");
+const ENTITY_BANNERS = {
+  ad: "abu-dhabi-banner.png",
+  dubai: "dubai-banner.png",
+  dwc: "dubai-south-banner.png",
+  alain: "al-ain-banner.png",
+};
 
 const state = {
   mode: "welcome",
@@ -73,6 +79,7 @@ function escapeHtml(value = "") {
 
 function setBodyMode() {
   document.body.classList.toggle("landing-mode", state.mode === "welcome");
+  document.querySelector(".guide-banner").hidden = state.mode === "result";
 }
 
 function focusHeading() {
@@ -383,23 +390,27 @@ function renderResult(result) {
     <section class="screen result-layout">
 
       <article class="result-main">
-        <div class="result-toolbar">
-          <button class="secondary-button print-button" type="button" data-action="print" aria-label="Print service guide"><img src="./assets/icons/print.svg" width="18" height="18" alt="">Print</button>
-        </div>
-
-
         <header class="result-hero">
-          <div class="result-kicker">
-            <span>${escapeHtml(result.entityLabel)}</span>
-            <span>·</span>
-            <span>${escapeHtml(result.descriptor)}</span>
-            <span>·</span>
-            <span>${escapeHtml(result.authority)}</span>
-            <button class="text-button change-selection" type="button" data-action="edit">Change selection</button>
-            ${result.specialHire ? `<span class="badge">Special Hire applies</span>` : ""}
+          <div class="service-banner" data-entity="${escapeHtml(result.entity)}">
+            <img class="service-banner-image" src="./assets/${ENTITY_BANNERS[result.entity] || 'uae-map-banner.png'}" alt="" width="2172" height="724">
+            <img class="service-banner-logo" src="./assets/aecom-logo.png" alt="AECOM" width="136" height="31">
+            <div class="service-banner-copy">
+              <p class="service-location">${escapeHtml(result.entityLabel)}</p>
+              <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
+            </div>
           </div>
-          <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
-
+          <div class="result-controls">
+            <div class="result-kicker">
+              <span>${escapeHtml(result.descriptor)}</span>
+              <span>·</span>
+              <span>${escapeHtml(result.authority)}</span>
+              <button class="text-button change-selection" type="button" data-action="edit">Change selection</button>
+              ${result.specialHire ? `<span class="badge">Special Hire applies</span>` : ""}
+            </div>
+            <div class="result-toolbar">
+              <button class="secondary-button print-button" type="button" data-action="print" aria-label="Print service guide"><img src="./assets/icons/print.svg" width="18" height="18" alt="">Print</button>
+            </div>
+          </div>
         </header>
       <nav class="journey-rail" aria-label="Service journey">
         <p class="journey-label">Your journey</p>

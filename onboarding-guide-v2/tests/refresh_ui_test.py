@@ -26,6 +26,7 @@ try:
         page.get_by_role('button', name='Start guided journey', exact=True).click()
         choose(page, 'entity', 'dubai'); choose(page, 'service', 'ev'); choose(page, 'hireStatus', 'local')
         page.get_by_role('button', name='View service', exact=True).click()
+        page.wait_for_function("() => ['.service-banner-image', '.service-banner-logo'].every(selector => { const img = document.querySelector(selector); return img && img.complete && img.naturalWidth > 0; })")
         assert page.locator('.journey-rail').is_visible()
         cards = page.locator('[data-action="flip-card"]')
         assert cards.count()==3
@@ -48,7 +49,7 @@ try:
         page.pdf(path=str(OUT/'printed-local-service.pdf'), format='A4', print_background=True)
         printed_pages = [' '.join(pg.extract_text().split()).casefold() for pg in PdfReader(OUT/'printed-local-service.pdf').pages]
         text = '\n'.join(printed_pages)
-        for expected in ['Before Intake 2','Candidate Actions','GRO Processing','Status Change','Completion Point','Passport copy']:
+        for expected in ['Dubai', 'Employment Visa and Work Permit', 'Before Intake 2','Candidate Actions','GRO Processing','Status Change','Completion Point','Passport copy']:
             assert expected.casefold() in text, expected
         assert any('completion point' in text and 'post-joining requirements are completed.' in text for text in printed_pages), 'Completion heading separated from its paragraph'
         assert page.locator('.detail-section').evaluate_all('panels=>panels.map(p=>p.open)')==before
