@@ -21,19 +21,16 @@ button:disabled { cursor: default; }
 .brand { color: var(--ink); text-decoration: none; display: flex; align-items: center; min-height: 44px; font-weight: 700; }
 .text-button { color: var(--green-dark); border: 0; border-radius: 4px; background: transparent; padding: 8px 12px; min-height: 44px; font: 600 14px/1.4 "Segoe UI", Arial, sans-serif; }
 .text-button:hover { background: var(--green-wash); }
-.guide-banner { width: min(980px, calc(100% - 48px)); margin: 24px auto 0; border-radius: 18px; overflow: hidden; background: #004d40 url('./assets/abu-dhabi-banner.png') center 35% / cover no-repeat; color: white; }
+.guide-banner { width: min(980px, calc(100% - 48px)); margin: 24px auto 0; border-radius: 18px; overflow: hidden; background: #004d40; background-image: linear-gradient(to top, rgba(0,30,27,.58), rgba(0,30,27,.08) 72%, transparent), url('./assets/uae-map-banner.png'); background-position: right top; background-size: cover; background-repeat: no-repeat; color: white; }
 .banner-inner { position: relative; min-height: 220px; width: calc(100% - 56px); margin: 0 auto; display: flex; align-items: end; padding: 76px 0 24px; }
-.cover-logo { position: absolute; top: 24px; right: 0; width: 136px; height: auto; object-fit: contain; filter: brightness(0) invert(1); }
 .banner-copy { max-width: 540px; }
 .banner-title { margin: 0 0 8px; font-size: 34px; font-weight: 700; line-height: 1.2; letter-spacing: -.3px; }
 .banner-copy > p:last-child { max-width: 470px; margin: 0; font-size: 16px; line-height: 1.5; }
 .app-shell { width: min(var(--workspace), calc(100% - 48px)); margin: 0 auto; padding: 30px 0 48px; }
 .app-footer { width: min(var(--workspace), calc(100% - 48px)); margin: 0 auto; padding: 20px 0 30px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-.landing-cover { padding: 28px 0 60px; min-height: 250px; }
-.cover-title { margin: 0; font-size: 32px; font-weight: 700; line-height: 1.25; letter-spacing: -.3px; }
-.cover-title span { display: inline; }
-.cover-title span + span::before { content: ' '; }
-.cover-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.landing-mode .app-shell { width: min(980px, calc(100% - 48px)); padding-top: 20px; }
+.landing-cover { padding: 0 0 60px; }
+.cover-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; }
 .cover-primary, .cover-secondary, .primary-button, .secondary-button, .back-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 18px; border: 1px solid var(--line-strong); border-radius: 4px; background: #fff; color: var(--green-dark); font: 600 14px/1.4 "Segoe UI", Arial, sans-serif; }
 .cover-primary, .primary-button { background: var(--green); border-color: var(--green); color: #fff; }
 .cover-primary:hover, .primary-button:hover:not(:disabled) { background: var(--green-dark); border-color: var(--green-dark); }
@@ -162,8 +159,7 @@ summary::-webkit-details-marker { display: none; }
   .brand { font-size: 13px; }
   .app-header .text-button { font-size: 12px; padding-inline: 6px; }
   .banner-inner { min-height: 210px; width: calc(100% - 36px); padding: 72px 0 20px; }
-  .guide-banner { width: calc(100% - 32px); margin-top: 16px; border-radius: 14px; background-position: 40% center; }
-  .cover-logo { width: 110px; top: 20px; }
+  .guide-banner { width: calc(100% - 32px); margin-top: 16px; border-radius: 14px; background-position: right top; }
   .banner-title { font-size: 28px; }
   .banner-copy { max-width: 340px; padding-right: 18px; }
   .banner-copy > p:last-child { font-size: 14px; }
@@ -192,7 +188,7 @@ summary::-webkit-details-marker { display: none; }
   .progressive-actions { flex-direction: column-reverse; }
   .progressive-actions button, .guided-forward-actions, .cover-actions button, .result-actions button { width: 100%; }
   .cover-actions, .result-actions { flex-direction: column; }
-  .cover-title { font-size: 28px; }
+  .landing-mode .app-shell { width: calc(100% - 32px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }

@@ -77,7 +77,7 @@ function setBodyMode() {
 
 function focusHeading() {
   requestAnimationFrame(() => {
-    const heading = app.querySelector("[data-screen-heading]");
+    const heading = app.querySelector("[data-screen-heading]") || document.getElementById("guide-title");
     if (heading) heading.focus({ preventScroll: true });
   });
 }
@@ -112,12 +112,6 @@ function clearDownstream(changedKey) {
 function renderWelcome() {
   app.innerHTML = `
     <section class="screen landing-cover">
-      <div class="cover-title-block">
-        <h1 class="cover-title" data-screen-heading tabindex="-1" aria-label="UAE New Hire Guide">
-          <span>UAE New Hire</span>
-          <span>Guide</span>
-        </h1>
-      </div>
       <div class="cover-actions" aria-label="Guide entry options">
         <button class="cover-primary" type="button" data-action="start">Start guided journey</button>
         <button class="cover-secondary" type="button" data-action="browse">Explore all services</button>
