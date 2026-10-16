@@ -1,0 +1,69 @@
+# New Hire Guide V2 design QA
+
+Review date: 16 October 2026. Selected design: revised option 2.
+
+## Visual evidence
+
+- Source visual truth: `/workspace/scratch/b330fbaf616f/generated_images/exec-f738e87f-8000-42a3-a444-f11e1c6f7a93.png`.
+- Supplied banner: `assets/dubai-skyline-banner.png`; byte-identical to the user attachment.
+- Browser-rendered full-view comparison: `/tmp/guide-v2-qa/full-comparison-final.png` in the cloud browser filesystem.
+- Focused tile comparison: `/tmp/guide-v2-qa/card-comparison.png` in the cloud browser filesystem.
+- Mobile rendered evidence: `/tmp/guide-v2-qa/mobile-flipped.png` in the cloud browser filesystem.
+- Desktop comparison uses the source image and live implementation together. Both content frames are 1487 x 1058 CSS pixels at density 1, displayed at the same 0.42 scale. Focused tile comparison uses unscaled crops from those same frames. Mobile iframe viewport is 390 x 844 CSS pixels, density 1.
+- Matching comparison state: Dubai local Employment Visa, all overview cards closed, Documents open and Pre-Hire Readiness closed. The initial reading state opens Pre-Hire Readiness.
+
+## Required fidelity surfaces
+
+- Typography: Arial body and Segoe UI controls match the supplied Playbook code. Their size and weight intentionally replace the mock's AECOM Sans-like type. Text remains readable and wraps without truncation.
+- Spacing/layout: full-width service details, horizontal desktop journey navigation, three equal flat tiles, two-column documents, independent expandable rows. Mobile stacks tiles and uses a collapsible journey menu. No horizontal overflow at 390px.
+- Colors: flat tile color #008768 sampled from the supplied GRO quick-links reference. White surfaces, dark text, restrained dividers; no hover lift or shadows.
+- Assets: original supplied skyline is sharp and correctly cropped; supplied repository AECOM logo remains legible. Icons are external, unmodified Microsoft Fluent SVG assets with license included. Their compact size is consistent with the GRO quick-link reference.
+- Copy/content: services.js is byte-unchanged from current main. Every catalogue case retains every GRO step, required/conditional documents and candidate actions. Complete source wording is preserved instead of the mock's shortened illustrative list.
+
+## Interaction evidence
+
+- Cloud browser: guided selection, desktop horizontal navigation, keyboard Enter and click flips, three cards staying open independently, mobile 390px layout, expanding nested journey targets, mobile menu closing after navigation, and visible Print control checked.
+- Expanded cards expose their explanatory copy through aria-describedby. Native focusable controls retain keyboard Tab access after journey navigation.
+- No application console errors observed. Browser extension metadata errors are unrelated to guide code.
+- Beforeprint/afterprint expansion and exact restoration, repeated beforeprint events, and suppressed-dialog fallback are covered by automated DOM integration tests. The cloud browser suppresses the native print dialog; clicking Print in that browser restores the original browsing state, verified directly. GitHub Chromium PDF checks passed; all four rendered pages were visually inspected, with short sections and the Completion heading kept together with their text.
+- Validation: 53 Node tests and the Vite production build pass. All Python browser regressions passed in GitHub Actions: selection summary, existing guide UI, GCC contracts, the complete catalogue at desktop/mobile widths, fonts, V2 keyboard interactions, nested navigation, reduced motion, PDF completeness and print-state restoration. Application console errors: zero.
+- Verified implementation commit: `e6394b56072c0346a45209c0b634797b55ed759a`. Successful run: https://github.com/rawadelias90-alt/TheGitHoster/actions/runs/38972051285. The `guide-v2-review-captures` artifact includes desktop/mobile captures, the generated PDF and browser-check results.
+
+## Findings and comparison history
+
+1. Review found native button/summary destinations received tabindex=-1 after navigation. Added a failing keyboard regression test, fixed the focus handler, and verified passing tests.
+2. Review found duplicate root scroll padding plus target scroll margins. Removed the root padding, preserving the established single target offset and the existing browser assertions.
+3. Review identified missing accessible descriptions on flipped controls. Added a failing test, wired the revealed copy as the button description, and verified passing tests.
+4. Cloud browser suppression of window.print initially left all panels expanded. Added a failing regression, restored state when print returns outside print media, and verified the behavior in the cloud browser.
+5. Full-view and focused comparisons after fixes show no actionable P0/P1/P2 visual findings. Supplied banner, requested font change, compact Fluent icons and complete source wording are intentional deviations from the illustrative mock.
+6. PDF QA found a case-sensitive heading assertion and a Completion heading split from its paragraph. Normalized extracted text for visual uppercase styling, kept short print sections together, added a pagination regression and visually confirmed the corrected PDF.
+
+## Branch status
+
+- Published to `design/gro-site-refresh` after user approval. Browser regression, PDF completeness and pagination verification are complete.
+- No merge to main or live-site publishing settings changed.
+
+## Scoped banner and catalogue update: 17 October 2026 (Asia/Dubai)
+
+- Source visual truth: `/workspace/scratch/b330fbaf616f/upload/image(20261016-221228).png` (942 x 207 pixels), requesting the banner logo on the left; `/workspace/scratch/b330fbaf616f/upload/image(20261016-205612).png` (414 x 264 pixels), the compact green-card style reference.
+- Implementation evidence: `/workspace/scratch/guide-v2-entity-cards-1792189143672.jpg` (1225 x 841 screenshot pixels). Desktop browser viewport measured approximately 1239 x 851 CSS pixels; the screenshot has the browser's approximately 0.989 capture scale. Comparison crops use that scale and preserve aspect ratios. The source banner is a cropped reference rather than a full viewport; its red arrow is an annotation, not interface content.
+- Full-view comparison: `/workspace/scratch/b330fbaf616f/qa-final/entity-cards-comparison.png` places both supplied references beside the live catalogue capture. Focused comparison: `/workspace/scratch/b330fbaf616f/qa-final/entity-cards-focused-comparison.png` shows a source tile, the implemented tile and the updated banner together. Different text, tile proportions and four desktop columns are intentional to fit service names and entity grouping.
+- State: Explore services, All locations / All services, panels collapsed. Groups contain 7 Abu Dhabi, 6 Dubai, 7 Al Ain and 7 Dubai South (DWC) service tiles. Mainland GCC variants remain choices inside one GCC tile per entity.
+- Fonts/typography: Playbook Arial body and Segoe UI controls preserved. White bold centered titles and compact descriptors wrap completely, matching the reference's hierarchy.
+- Spacing/layout: logo aligns with the banner title's left edge; on mobile it remains above the title without overlap. Entity headings group compact tiles in four columns on desktop, two on tablet and one on mobile. Open tiles expand across the group width so service information stays readable.
+- Colors/tokens: the existing #008768 flat green, white icons/type and 4px corners match the supplied green cards. No hover movement or shadows added.
+- Image quality/assets: original skyline and AECOM logo preserved. The catalogue reuses the same licensed external Fluent document/person icons. All tile icons loaded successfully.
+- Copy/content: service names, descriptors, outcomes, supporting details, actions and every route preserved. Entity names appear once as group headings instead of repeating on every tile. `services.js` remains unchanged.
+- Interaction checks: entity/service filtering, keyboard Enter to expand, Mainland GCC status choices and navigation to the existing-UID service, mobile DWC GCC expansion and full-service navigation. Native details keep independent state. No desktop/mobile horizontal overflow. Application console errors: zero; unrelated browser-extension metadata errors excluded.
+- Comparison history: the first catalogue pass used left-aligned text-only tiles. After comparing with the supplied small-card reference, tiles were changed to centered white icons/titles with a four-column desktop layout; the focused post-fix comparison confirms the requested style. No actionable P0/P1/P2 findings remain.
+- Local checks: all 53 Node tests and the production build pass. Implementation commit: `8c9c162535302f8a0bf708570e82daecef4af54a`.
+- Full regression passed: https://github.com/rawadelias90-alt/TheGitHoster/actions/runs/38974960291, including every catalogue route at desktop/mobile widths, existing UI, GCC sequence, selection summary, fonts, V2 interactions, PDF completeness and state restoration, and the production build.
+- Deployment remains pending; the update is on `design/gro-site-refresh`.
+
+## Final deployment adjustment: 17 October 2026 (Asia/Dubai)
+
+- User requested the logo back on the banner's upper-right corner and deployment through the existing repository. The logo uses `right: 0` again; the compact green catalogue tiles and entity groups remain intact.
+- All 53 local tests and the production build pass after this adjustment. The complete preceding browser/PDF regression passed in run 38974960291. No service rules or route content changed.
+- Browser inspection confirms the logo's right edge aligns with the banner container. The earlier left-logo evidence records the previous iteration and is superseded by this explicit request.
+
+final result: passed

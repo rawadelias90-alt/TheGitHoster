@@ -1,34 +1,6 @@
 import { ENTITIES, SERVICE_TYPES, NATIONALITIES, resolveCase, getQuestionSequence, browseCases } from "./services.js";
 
 const app = document.getElementById("app");
-const COVER_LOGO = "./assets/aecom-logo.png";
-
-function ensureProgressiveStyles() {
-  if (document.getElementById("progressive-guided-styles")) return;
-  const style = document.createElement("style");
-  style.id = "progressive-guided-styles";
-  style.textContent = `
-    .progressive-screen { max-width: 900px; min-height: calc(100vh - 220px); margin: 0 auto; padding-top: 5vh; }
-    .progressive-form { margin-top: 34px; display: grid; gap: 14px; }
-    .progressive-question { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 18px; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); animation: screen-in .18s ease both; }
-    .progressive-question[hidden] { display: none !important; }
-    .progressive-question__number { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--green-dark); font-size: .68rem; font-weight: 800; }
-    .progressive-question__body { min-width: 0; }
-    .progressive-question__prompt { margin: 0 0 12px; font-size: 1.08rem; font-weight: 700; letter-spacing: -.015em; }
-    .progressive-question__help { margin: 10px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
-    .progressive-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
-    .guided-view-button[hidden] { display: none !important; }
-    @media (max-width: 600px) {
-      .progressive-screen { padding-top: 3vh; }
-      .progressive-question { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
-      .progressive-actions { flex-direction: column-reverse; }
-      .progressive-actions button { width: 100%; }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-ensureProgressiveStyles();
 
 const state = {
   mode: "welcome",
@@ -140,7 +112,6 @@ function clearDownstream(changedKey) {
 function renderWelcome() {
   app.innerHTML = `
     <section class="screen landing-cover">
-      <img class="cover-logo" src="${COVER_LOGO}" alt="AECOM">
       <div class="cover-title-block">
         <h1 class="cover-title" data-screen-heading tabindex="-1" aria-label="UAE New Hire Guide">
           <span>UAE New Hire</span>
@@ -343,6 +314,72 @@ function renderGroProcess(result) {
     ${result.groNote ? `<div class="process-note">${escapeHtml(result.groNote)}</div>` : ""}`;
 }
 
+function renderFlipCard(title, copy, icon, id = "") {
+  const copyId = `overview-${icon}`;
+  return `<section class="summary-item" ${id ? `id="${id}"` : ""}>
+    <button class="flip-trigger" type="button" data-action="flip-card" aria-expanded="false" aria-controls="${copyId}" aria-label="Read ${title}">
+      <span class="flip-inner">
+        <span class="flip-front" aria-hidden="false">
+          <img src="./assets/icons/${icon}.svg" alt="" width="42" height="42">
+          <span class="flip-title">${title}</span><span class="flip-hint">Tap to flip</span>
+        </span>
+        <span class="flip-back" id="${copyId}" aria-hidden="true">
+          <span class="flip-back-title">${title}</span><span class="flip-copy" id="${copyId}-copy">${escapeHtml(copy)}</span>
+          <span class="flip-hint">Return to title</span>
+        </span>
+      </span>
+    </button>
+  </section>`;
+}
+
+function setCardFlipped(button, flipped) {
+  button.setAttribute("aria-expanded", String(flipped));
+  if (flipped) button.setAttribute("aria-describedby", button.querySelector(".flip-copy").id);
+  else button.removeAttribute("aria-describedby");
+  button.querySelector(".flip-front").setAttribute("aria-hidden", String(flipped));
+  button.querySelector(".flip-back").setAttribute("aria-hidden", String(!flipped));
+  const title = button.querySelector(".flip-title").textContent;
+  button.setAttribute("aria-label", `${flipped ? "Close" : "Read"} ${title}`);
+}
+
+function markJourney(targetId) {
+  app.querySelectorAll(".journey-link").forEach(link => {
+    if (link.dataset.target === targetId) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
+}
+
+function revealJourneyTarget(target) {
+  let node = target;
+  while (node && node !== app) {
+    if (node.tagName === "DETAILS") node.open = true;
+    node = node.parentElement;
+  }
+  const card = target.querySelector('[data-action="flip-card"]');
+  if (card) setCardFlipped(card, true);
+}
+
+let printSnapshot = null;
+function preparePrint() {
+  if (state.mode !== "result" || printSnapshot) return;
+  printSnapshot = {
+    panels: [...app.querySelectorAll(".detail-section")].map(panel => [panel, panel.open]),
+    cards: [...app.querySelectorAll('[data-action="flip-card"]')].map(card => [card, card.getAttribute("aria-expanded") === "true"]),
+  };
+  document.body.classList.add("printing-guide");
+  printSnapshot.panels.forEach(([panel]) => panel.open = true);
+  printSnapshot.cards.forEach(([card]) => setCardFlipped(card, true));
+}
+function restoreAfterPrint() {
+  if (!printSnapshot) return;
+  printSnapshot.panels.forEach(([panel, open]) => panel.open = open);
+  printSnapshot.cards.forEach(([card, flipped]) => setCardFlipped(card, flipped));
+  printSnapshot = null;
+  document.body.classList.remove("printing-guide");
+}
+window.addEventListener("beforeprint", preparePrint);
+window.addEventListener("afterprint", restoreAfterPrint);
+
 function renderResult(result) {
   state.result = result;
   const gccWithNewId = result.category === "gcc" && result.journey.includes("Emirates ID");
@@ -350,19 +387,12 @@ function renderResult(result) {
   const completionNumber = gccWithNewId ? "08" : "07";
   app.innerHTML = `
     <section class="screen result-layout">
-      <aside class="journey-rail" aria-label="Service journey">
-        <p class="journey-label">Your journey</p>
-        <ol class="journey-list">${renderJourney(result)}</ol>
-      </aside>
 
       <article class="result-main">
         <div class="result-toolbar">
-          <button class="secondary-button print-button" type="button" data-action="print" aria-label="Print service guide">Print</button>
+          <button class="secondary-button print-button" type="button" data-action="print" aria-label="Print service guide"><img src="./assets/icons/print.svg" width="18" height="18" alt="">Print</button>
         </div>
-        <details class="mobile-journey">
-          <summary>Your journey <span aria-hidden="true">+</span></summary>
-          <ol class="mobile-journey-list">${renderJourney(result)}</ol>
-        </details>
+
 
         <header class="result-hero">
           <div class="result-kicker">
@@ -371,28 +401,31 @@ function renderResult(result) {
             <span>${escapeHtml(result.descriptor)}</span>
             <span>·</span>
             <span>${escapeHtml(result.authority)}</span>
+            <button class="text-button change-selection" type="button" data-action="edit">Change selection</button>
             ${result.specialHire ? `<span class="badge">Special Hire applies</span>` : ""}
           </div>
           <h1 class="result-title" data-screen-heading tabindex="-1">${escapeHtml(result.title)}</h1>
-          <div class="summary-grid">
-            <section class="summary-item" id="phase-client-approval" tabindex="0">
-              <h2>Before Intake 2</h2>
-              <p>${escapeHtml(result.beforeIntake2)}</p>
-            </section>
-            <section class="summary-item" id="phase-intake-2" tabindex="0">
-              <h2>GRO route</h2>
-              <p>${escapeHtml(result.next)}</p>
-            </section>
-            <section class="summary-item" tabindex="0">
-              <h2>Joining</h2>
-              <p>${escapeHtml(result.joining)}</p>
-            </section>
-          </div>
-        </header>
 
-        <section class="detail-section" id="phase-pre-hire">
-          <p class="section-number">01</p>
-          <h2>Pre-Hire Readiness</h2>
+        </header>
+      <nav class="journey-rail" aria-label="Service journey">
+        <p class="journey-label">Your journey</p>
+        <ol class="journey-list">${renderJourney(result)}</ol>
+      </nav>
+        <details class="mobile-journey">
+          <summary>Your journey <img src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <ol class="mobile-journey-list">${renderJourney(result)}</ol>
+        </details>
+        <div class="summary-grid">
+          ${renderFlipCard("Before Intake 2", result.beforeIntake2, "before-intake", "phase-client-approval")}
+          ${renderFlipCard("GRO route", result.next, "gro-route", "phase-intake-2")}
+          ${renderFlipCard("Joining", result.joining, "joining")}
+        </div>
+
+        <details class="detail-section" id="phase-pre-hire" open>
+          <summary><span class="section-number">01</span><h2>Pre-Hire Readiness</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
+
+
           <p class="section-intro">Confirm the candidate’s onboarding position before the case progresses. These are readiness checks, not validations performed by this guide.</p>
           ${result.gccStatus === "firstEntry" ? '<div class="process-note">First UAE entry is required: the candidate must travel to the UAE to receive a UID before the MOHRE case can progress.</div>' : ""}
           ${renderList(result.preHireReadiness)}
@@ -403,65 +436,87 @@ function renderResult(result) {
               <strong>Documents checked</strong>
               ${renderList(result.intake1.documents)}
             </div>` : ""}
-        </section>
+        </div>
+        </details>
 
-        <section class="detail-section">
-          <p class="section-number">02</p>
-          <h2>Documents</h2>
-          <h3 class="subsection-title">Required</h3>
-          ${renderList(result.documents.required)}
+        <details class="detail-section">
+          <summary><span class="section-number">02</span><h2>Documents</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
+
+
+          <div class="document-columns"><div><h3 class="subsection-title">Required</h3>
+          ${renderList(result.documents.required)}</div><div>
           <h3 class="subsection-title">Where applicable / requested</h3>
-          ${renderList(result.documents.conditional)}
+          ${renderList(result.documents.conditional)}</div></div>
           ${result.educationNameNote ? `
             <div class="process-note education-note" role="note">
               <h3>Name differences in education documents</h3>
               <p>${escapeHtml(result.educationNameNote)}</p>
             </div>` : ""}
-        </section>
+        </div>
+        </details>
 
-        <section class="detail-section">
-          <p class="section-number">03</p>
-          <h2>Candidate Actions</h2>
+        <details class="detail-section candidate-actions-section">
+          <summary><span class="section-number">03</span><h2>Candidate Actions</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
+
+
           ${renderList(result.candidateActions)}
-        </section>
+        </div>
+        </details>
 
-        <section class="detail-section gro-section" id="phase-gro-processing">
+        <details class="detail-section gro-section" id="phase-gro-processing">
+          <summary><span class="section-number">04</span><h2>GRO Processing</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
           ${result.specialHire ? '<span id="phase-special-hire" class="phase-anchor" aria-hidden="true"></span>' : ""}
-          <p class="section-number">04</p>
-          <h2>GRO Processing</h2>
+
+
           <p class="section-intro">Intake 2 is the formal trigger for GRO processing. The sequence below reflects the selected route.</p>
           ${renderGroProcess(result)}
-        </section>
+        </div>
+        </details>
 
-        <section class="detail-section" id="phase-joining">
+        <details class="detail-section" id="phase-joining">
+          <summary><span class="section-number">05</span><h2>${escapeHtml(result.joiningHeading)}</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
           ${result.journey.includes("Medical") ? '<span id="phase-medical" class="phase-anchor" aria-hidden="true"></span>' : ""}
-          <p class="section-number">05</p>
-          <h2>${escapeHtml(result.joiningHeading)}</h2>
+
+
           <p class="large-copy">${escapeHtml(result.joining)}</p>
-        </section>
+        </div>
+        </details>
 
         ${gccWithNewId ? `
-          <section class="detail-section" id="phase-emirates-id">
-            <p class="section-number">06</p>
-            <h2>Emirates ID</h2>
-            <p class="large-copy">${escapeHtml(result.emiratesIdAction)}</p>
-          </section>` : ""}
+          <details class="detail-section" id="phase-emirates-id">
+          <summary><span class="section-number">06</span><h2>Emirates ID</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
 
-        <section class="detail-section" id="${result.category === "gcc" ? "phase-pension" : "phase-post-joining"}">
+
+            <p class="large-copy">${escapeHtml(result.emiratesIdAction)}</p>
+          </div>
+        </details>` : ""}
+
+        <details class="detail-section" id="${result.category === "gcc" ? "phase-pension" : "phase-post-joining"}">
+          <summary><span class="section-number">${pensionNumber}</span><h2>${result.category === "gcc" ? "Pension Registration" : "Post-Joining"}</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
           ${result.journey.includes("Pension Enrollment") ? '<span id="phase-pension" class="phase-anchor" aria-hidden="true"></span>' : ""}
-          <p class="section-number">${pensionNumber}</p>
-          <h2>${result.category === "gcc" ? "Pension Registration" : "Post-Joining"}</h2>
+
+
           ${result.category === "gcc" && !gccWithNewId && result.emiratesIdAction ? `
             <p class="section-intro"><strong>Emirates ID (when applicable):</strong> ${escapeHtml(result.emiratesIdAction)}</p>` : ""}
           <p class="large-copy">${escapeHtml(result.postJoining)}</p>
-        </section>
+        </div>
+        </details>
 
-        <section class="detail-section completion-section" id="phase-completion">
-          <p class="section-number">${completionNumber}</p>
-          <h2>Completion Point</h2>
+        <details class="detail-section completion-section" id="phase-completion">
+          <summary><span class="section-number">${completionNumber}</span><h2>Completion Point</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
+          <div class="detail-body">
+
+
           <p class="completion-copy">${escapeHtml(result.completionPoint)}</p>
           <div class="guidance-note">${escapeHtml(result.guidance)}</div>
-        </section>
+        </div>
+        </details>
 
         <div class="result-actions">
           <button class="secondary-button" type="button" data-action="edit">Edit answers</button>
@@ -470,6 +525,7 @@ function renderResult(result) {
         </div>
       </article>
     </section>`;
+  markJourney("phase-pre-hire");
 }
 
 function shortBefore(item) {
@@ -486,6 +542,10 @@ function renderCatalogue() {
   const cases = allCases.filter(item =>
     !(item.category === "gcc" && item.entity !== "dwc" && item.gccStatus !== "existingEid")
   );
+  const entityGroups = ENTITIES.map(entity => ({
+    ...entity,
+    cases: cases.filter(item => item.entity === entity.value),
+  })).filter(entity => entity.cases.length);
   app.innerHTML = `
     <section class="screen">
       <header class="catalogue-header">
@@ -511,17 +571,23 @@ function renderCatalogue() {
         </div>
       </div>
 
-      <div class="catalogue-grid">
-        ${cases.length ? cases.map(item => `
+      <div class="catalogue-entities">
+        ${entityGroups.length ? entityGroups.map(entity => `
+        <section class="entity-services" aria-labelledby="entity-services-${escapeHtml(entity.value)}" data-entity-group="${escapeHtml(entity.value)}">
+          <h2 class="entity-services-title" id="entity-services-${escapeHtml(entity.value)}">${escapeHtml(entity.label)}</h2>
+          <div class="catalogue-grid">
+          ${entity.cases.map(item => `
           <details class="service-preview-card">
             <summary>
+              <img class="preview-icon" src="./assets/icons/${item.service === "nat" ? "joining" : item.service === "wp" ? "before-intake" : "gro-route"}.svg" width="28" height="28" alt="">
               <div>
                 <div class="preview-title">${escapeHtml(item.title)}</div>
-                <div class="preview-meta">${escapeHtml(item.entityLabel)} · ${escapeHtml(item.category === "gcc" && item.entity !== "dwc" ? "GCC National · All UAE status scenarios" : item.descriptor)}</div>
+                <div class="preview-meta">${escapeHtml(item.category === "gcc" && item.entity !== "dwc" ? "GCC National · All UAE status scenarios" : item.descriptor)}</div>
               </div>
-              <div class="preview-outcome">${escapeHtml(item.outcome)}</div>
+              <img class="preview-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt="">
             </summary>
             <div class="preview-body">
+              <p class="preview-outcome">${escapeHtml(item.outcome)}</p>
               <div class="preview-grid">
                 <div><strong>Before Intake 2</strong>${escapeHtml(shortBefore(item))}</div>
                 <div><strong>Processed through</strong>${escapeHtml(item.authority)}</div>
@@ -541,7 +607,9 @@ function renderCatalogue() {
                 </div>` : `
                 <button class="primary-button" type="button" data-action="view-service" data-service-id="${escapeHtml(item.serviceId)}" data-entity="${escapeHtml(item.entity)}">View full service</button>`}
             </div>
-          </details>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
+          </details>`).join("")}
+          </div>
+        </section>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
       </div>
 
       <div class="result-actions">
@@ -613,22 +681,31 @@ document.addEventListener("click", event => {
     render();
     focusHeading();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (action === "flip-card") {
+    setCardFlipped(actionEl, actionEl.getAttribute("aria-expanded") !== "true");
   } else if (action === "journey-scroll") {
     const target = document.getElementById(actionEl.dataset.target);
     if (target) {
+      revealJourneyTarget(target);
+      markJourney(actionEl.dataset.target);
       const mobileJourney = actionEl.closest(".mobile-journey");
-      if (mobileJourney) {
-        mobileJourney.open = false;
-        // Let the browser settle collapse and scroll anchoring before navigating.
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
-        });
-      } else {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      if (mobileJourney) mobileJourney.open = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        target.scrollIntoView({ behavior, block: "start" });
+        const focusTarget = target.querySelector('[data-action="flip-card"]') || (target.tagName === "DETAILS" ? target.querySelector("summary") : target);
+        if (!focusTarget.matches("button, summary, a[href], input, select, textarea, [tabindex]")) focusTarget.tabIndex = -1;
+        focusTarget.focus({ preventScroll: true });
+      }));
     }
   } else if (action === "print") {
-    window.print();
+    preparePrint();
+    try {
+      window.print();
+    } finally {
+      // Some embedded browsers suppress the dialog and emit no afterprint event.
+      if (!window.matchMedia?.("print").matches) restoreAfterPrint();
+    }
   } else if (action === "guided-view-service") {
     const result = resolveCase(state.answers);
     if (!result) return;

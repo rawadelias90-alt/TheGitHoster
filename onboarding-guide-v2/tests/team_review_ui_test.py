@@ -22,6 +22,7 @@ with sync_playwright() as p:
     choose(page,"service","ev")
     choose(page,"hireStatus","local")
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading",name="Employment Visa and Work Permit").is_visible()
     doc=page.locator(".detail-section").filter(has=page.get_by_role("heading",name="Documents",exact=True))
     assert "cancellation" in doc.inner_text().lower() and "visit visa" in doc.inner_text().lower()
@@ -37,6 +38,7 @@ with sync_playwright() as p:
     choose(page,"service","wp")
     choose(page,"residency","golden")
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     doc=page.locator(".detail-section").filter(has=page.get_by_role("heading",name="Documents",exact=True))
     assert "Attested Education Certificate" in doc.inner_text()
     assert "Education Details document" not in doc.inner_text()
@@ -55,6 +57,7 @@ with sync_playwright() as p:
     choose(page,"service","wp")
     choose(page,"residency","relative")
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     gro=page.locator(".gro-step h3").all_inner_texts()
     assert gro == ["DWC Portal","Work Permit Processing","Digital Candidate Signature","Work Permit Approval"]
     assert page.locator(".result-main").get_by_text("Name differences in education documents").count()==1

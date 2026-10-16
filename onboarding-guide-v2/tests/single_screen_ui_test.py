@@ -74,6 +74,7 @@ with sync_playwright() as p:
     current(page,"residency")
     assert page.get_by_role("button",name="View service").is_visible()
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading",name="Golden Visa Work Permit").is_visible()
     assert page.get_by_role("button",name="Print").is_visible()
 
@@ -96,6 +97,7 @@ with sync_playwright() as p:
     assert page.get_by_role("button",name="View service").is_visible()
     assert not page.locator("#question-gccStatus").is_visible()
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading",name="GCC National Work Permit").is_visible()
     assert page.locator(".gro-step h3").filter(has_text="DWC Work Permit").count()>0
 
@@ -109,6 +111,7 @@ with sync_playwright() as p:
     choose(page,"gccStatus","existingUid")
     assert page.get_by_role("button",name="View service").is_visible()
     page.get_by_role("button",name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading",name="Emirates ID",exact=True).is_visible()
 
     # Change GCC to Emirati from Edit Answers; old GCC status must be cleared.

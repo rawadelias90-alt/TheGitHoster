@@ -34,6 +34,7 @@ with sync_playwright() as p:
             card = button.locator('xpath=ancestor::details')
             card.locator('summary').click()
             button.click()
+            page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
             assert page.locator('.result-title').inner_text() == case['title']
             assert page.get_by_role('button', name='Print service guide').is_visible()
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
@@ -77,6 +78,7 @@ with sync_playwright() as p:
                 assert page.locator('#question-residency').input_value() == ''
             continue_to_result(page)
             page.get_by_role('button', name='View service', exact=True).click()
+            page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
             assert page.locator('.result-kicker').inner_text().find(case['descriptor']) >= 0
 
     page.locator('.app-header [data-action="browse"]').click()
