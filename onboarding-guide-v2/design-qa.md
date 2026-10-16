@@ -60,4 +60,10 @@ Review date: 16 October 2026. Selected design: revised option 2.
 - Full regression passed: https://github.com/rawadelias90-alt/TheGitHoster/actions/runs/38974960291, including every catalogue route at desktop/mobile widths, existing UI, GCC sequence, selection summary, fonts, V2 interactions, PDF completeness and state restoration, and the production build.
 - Deployment remains pending; the update is on `design/gro-site-refresh`.
 
+## Final deployment adjustment: 17 October 2026 (Asia/Dubai)
+
+- User requested the logo back on the banner's upper-right corner and deployment through the existing repository. The logo uses `right: 0` again; the compact green catalogue tiles and entity groups remain intact.
+- All 53 local tests and the production build pass after this adjustment. The complete preceding browser/PDF regression passed in run 38974960291. No service rules or route content changed.
+- Browser inspection confirms the logo's right edge aligns with the banner container. The earlier left-logo evidence records the previous iteration and is superseded by this explicit request.
+
 final result: passed
