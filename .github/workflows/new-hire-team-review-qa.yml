@@ -1,0 +1,28 @@
+name: New Hire Team Review QA
+on:
+  push:
+    branches: [fix/new-hire-team-review-20261016]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Business rule tests
+        run: node --test onboarding-guide-v2/tests/*.test.mjs
+      - name: New team review browser test
+        run: python onboarding-guide-v2/tests/team_review_ui_test.py
+      - name: Existing guide UI
+        run: python onboarding-guide-v2/tests/ui_test.py
+      - name: GCC guide UI
+        run: python onboarding-guide-v2/tests/gcc_ui_test.py
+      - name: Font and print QA
+        run: python onboarding-guide-v2/tests/font_render_test.py
