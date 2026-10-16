@@ -32,6 +32,8 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Business rules and font registration
         run: node --test onboarding-guide-v2/tests/*.test.mjs
+      - name: Live selection summary UI
+        run: python onboarding-guide-v2/tests/selection_summary_ui_test.py
       - name: Existing guide UI
         run: python onboarding-guide-v2/tests/ui_test.py
       - name: GCC UI and contract sequence

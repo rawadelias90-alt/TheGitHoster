@@ -124,6 +124,17 @@ button:focus-visible, select:focus-visible, summary:focus-visible, a:focus-visib
 .progress-track { flex: 1; height: 2px; max-width: 180px; background: var(--line); overflow: hidden; }
 .progress-track span { display: block; height: 100%; background: var(--green); transition: width .22s ease; }
 .question-title { max-width: 800px; font-size: clamp(2.25rem,5vw,4.35rem); font-weight: 800; }
+.selection-summary[hidden] { display: none !important; }
+.selection-summary {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px;
+  min-width: 0; max-width: 100%; margin: 22px 0 0; line-height: 1.5;
+}
+.selection-summary-label { color: var(--muted); font-size: .79rem; white-space: nowrap; }
+.selection-summary-items { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 9px; min-width: 0; max-width: 100%; }
+.selection-summary-entry { display: inline-flex; align-items: baseline; gap: 9px; min-width: 0; max-width: 100%; }
+.selection-summary-value { color: var(--ink); font-size: .9rem; font-weight: 700; max-width: 100%; overflow-wrap: anywhere; }
+.selection-summary-separator { color: var(--soft); font-size: .88rem; flex-shrink: 0; }
+.progressive-screen .selection-summary:not([hidden]) + .progressive-form { margin-top: 16px; }
 .question-help { margin: 20px 0 0; color: var(--muted); font-size: 1rem; }
 .question-field { margin-top: 38px; padding: clamp(26px,4vw,38px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 .question-label {
