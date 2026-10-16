@@ -49,6 +49,7 @@ with sync_playwright() as p:
     choose(page,"nationality","india")
     assert page.get_by_role("button", name="View service").count() == 1
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
 
     # Full service result remains unchanged.
     assert page.get_by_role("heading", name="Employment Visa and Work Permit").is_visible()

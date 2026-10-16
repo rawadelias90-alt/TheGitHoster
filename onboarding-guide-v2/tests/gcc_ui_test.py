@@ -29,6 +29,7 @@ with sync_playwright() as p:
             page.select_option("#question-gccStatus", status)
             continue_to_result(page)
             page.get_by_role("button", name="View service").click()
+            page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
             assert page.locator(".gro-step h3").all_text_contents() == [
                 "Contract Preparation", "OTP 1 — Contract Typing", "Contract Completed",
                 "MOHRE Digital Contract Signature", "Signed Contract Review",
@@ -46,6 +47,7 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading", name="Emirati National Work Permit").is_visible()
     assert page.locator(".journey-list").get_by_role("button", name="Go to Medical").is_visible()
     assert page.locator(".result-main").get_by_text("required Medical", exact=False).count() > 0
@@ -67,6 +69,7 @@ with sync_playwright() as p:
     choose(page,"gccStatus","existingUid")
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_role("heading", name="GCC National Work Permit").is_visible()
     assert page.locator("#phase-emirates-id").count() == 1
     assert page.get_by_role("heading", name="Emirates ID", exact=True).is_visible()
@@ -96,6 +99,7 @@ with sync_playwright() as p:
     page.get_by_role("button", name="Edit answers").click()
     choose(page,"gccStatus","firstEntry")
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.get_by_text("must travel to UAE", exact=False).count() > 0
     assert page.locator("#phase-emirates-id").count() == 1
 
@@ -106,6 +110,7 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").is_hidden()
     assert page.get_by_role("button", name="View service").is_visible()
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.locator(".result-kicker").get_by_text("DWC", exact=True).is_visible()
     assert page.get_by_text("Digital Candidate Signature", exact=True).count() > 0
     assert page.locator(".journey-list").get_by_role("button", name="Go to DWC Work Permit Approval").is_visible()
@@ -130,12 +135,14 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").input_value() == "firstEntry"
     continue_to_result(page)
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
 
     page.set_viewport_size({"width": 390, "height": 844})
     page.get_by_role("button", name="Edit answers").click()
     select_category(page, "alain", "gcc")
     choose(page,"gccStatus","existingEid")
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     assert page.locator("body").evaluate("(el) => el.scrollWidth <= window.innerWidth")
     mobile = page.locator(".mobile-journey")
     mobile.locator("summary").click()

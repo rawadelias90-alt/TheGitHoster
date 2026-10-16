@@ -122,6 +122,7 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").is_hidden()
 
     page.get_by_role("button", name="View service").click()
+    page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     page.get_by_role("button", name="Edit answers").click()
     expected(page)
     cont(page)

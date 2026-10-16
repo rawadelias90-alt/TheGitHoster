@@ -4,66 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>AECOM UAE New Hire Guide</title>
+  <title>AECOM UAE New Hire Guide V2</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .journey-item { display: block; }
-    .journey-link {
-      appearance: none;
-      width: 100%;
-      min-height: 44px;
-      padding: 0;
-      border: 0;
-      border-radius: 10px;
-      background: transparent;
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr);
-      gap: 12px;
-      align-items: start;
-      color: inherit;
-      font: inherit;
-      line-height: inherit;
-      text-align: left;
-      cursor: pointer;
-    }
-    .journey-link:hover .journey-name,
-    .journey-link:focus-visible .journey-name { color: var(--ink); }
-    .journey-link:hover .journey-index,
-    .journey-link:focus-visible .journey-index {
-      border-color: var(--green);
-      background: var(--green-wash);
-    }
-    .journey-link:focus-visible {
-      outline: 3px solid rgba(0,171,97,.22);
-      outline-offset: 4px;
-    }
-    .detail-section,
-    .gro-step,
-    .intake-card,
-    .summary-item { scroll-margin-top: 104px; }
-    .mobile-journey ol { list-style: none; padding-left: 0; }
-    .mobile-journey ol li { margin: 0; }
-    .mobile-journey .journey-link {
-      grid-template-columns: 1fr;
-      min-height: 44px;
-      padding: 8px 0;
-    }
-  </style>
+  <link rel="icon" href="./assets/icons/before-intake.svg" type="image/svg+xml">
 </head>
 <body class="landing-mode">
   <header class="app-header">
-    <a class="brand" href="#" data-action="home" aria-label="UAE New Hire Guide home">
-      <span class="brand-product">UAE New Hire Guide</span>
-    </a>
+    <a class="brand" href="#" data-action="home" aria-label="UAE New Hire Guide home"><span class="brand-product">UAE New Hire Guide</span></a>
     <button class="text-button" type="button" data-action="browse">Explore services</button>
   </header>
-
+  <div class="guide-banner">
+    <div class="banner-inner">
+      <img class="cover-logo" src="./assets/aecom-logo.png" alt="AECOM" width="136" height="31">
+      <div class="banner-copy"><p class="banner-title">UAE New Hire Guide</p><p>Your step-by-step guide to employment visa and work permit for new joiners in the UAE.</p></div>
+    </div>
+  </div>
   <main id="app" class="app-shell" aria-live="polite"></main>
-
-  <footer class="app-footer">
-    Guidance tool for Talent Acquisition and Mobilisation. It does not verify documents, approvals or joining readiness.
-  </footer>
-
+  <footer class="app-footer">Guidance tool for Talent Acquisition and Mobilisation. It does not verify documents, approvals or joining readiness.</footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
