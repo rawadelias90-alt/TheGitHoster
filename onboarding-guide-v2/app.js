@@ -542,6 +542,10 @@ function renderCatalogue() {
   const cases = allCases.filter(item =>
     !(item.category === "gcc" && item.entity !== "dwc" && item.gccStatus !== "existingEid")
   );
+  const entityGroups = ENTITIES.map(entity => ({
+    ...entity,
+    cases: cases.filter(item => item.entity === entity.value),
+  })).filter(entity => entity.cases.length);
   app.innerHTML = `
     <section class="screen">
       <header class="catalogue-header">
@@ -567,17 +571,23 @@ function renderCatalogue() {
         </div>
       </div>
 
-      <div class="catalogue-grid">
-        ${cases.length ? cases.map(item => `
+      <div class="catalogue-entities">
+        ${entityGroups.length ? entityGroups.map(entity => `
+        <section class="entity-services" aria-labelledby="entity-services-${escapeHtml(entity.value)}" data-entity-group="${escapeHtml(entity.value)}">
+          <h2 class="entity-services-title" id="entity-services-${escapeHtml(entity.value)}">${escapeHtml(entity.label)}</h2>
+          <div class="catalogue-grid">
+          ${entity.cases.map(item => `
           <details class="service-preview-card">
             <summary>
+              <img class="preview-icon" src="./assets/icons/${item.service === "nat" ? "joining" : item.service === "wp" ? "before-intake" : "gro-route"}.svg" width="28" height="28" alt="">
               <div>
                 <div class="preview-title">${escapeHtml(item.title)}</div>
-                <div class="preview-meta">${escapeHtml(item.entityLabel)} · ${escapeHtml(item.category === "gcc" && item.entity !== "dwc" ? "GCC National · All UAE status scenarios" : item.descriptor)}</div>
+                <div class="preview-meta">${escapeHtml(item.category === "gcc" && item.entity !== "dwc" ? "GCC National · All UAE status scenarios" : item.descriptor)}</div>
               </div>
-              <div class="preview-outcome">${escapeHtml(item.outcome)}</div>
+              <img class="preview-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt="">
             </summary>
             <div class="preview-body">
+              <p class="preview-outcome">${escapeHtml(item.outcome)}</p>
               <div class="preview-grid">
                 <div><strong>Before Intake 2</strong>${escapeHtml(shortBefore(item))}</div>
                 <div><strong>Processed through</strong>${escapeHtml(item.authority)}</div>
@@ -597,7 +607,9 @@ function renderCatalogue() {
                 </div>` : `
                 <button class="primary-button" type="button" data-action="view-service" data-service-id="${escapeHtml(item.serviceId)}" data-entity="${escapeHtml(item.entity)}">View full service</button>`}
             </div>
-          </details>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
+          </details>`).join("")}
+          </div>
+        </section>`).join("") : `<div class="catalogue-empty">No services match these filters.</div>`}
       </div>
 
       <div class="result-actions">
