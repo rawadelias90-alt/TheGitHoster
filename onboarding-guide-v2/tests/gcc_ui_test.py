@@ -28,7 +28,7 @@ with sync_playwright() as p:
             select_category(page, entity, "gcc")
             page.select_option("#question-gccStatus", status)
             continue_to_result(page)
-    page.get_by_role("button", name="View service").click()
+            page.get_by_role("button", name="View service").click()
             assert page.locator(".gro-step h3").all_text_contents() == [
                 "Contract Preparation", "OTP 1 — Contract Typing", "Contract Completed",
                 "MOHRE Digital Contract Signature", "Signed Contract Review",
