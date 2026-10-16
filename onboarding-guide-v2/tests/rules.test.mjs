@@ -104,7 +104,6 @@ test("route-specific GRO sequences preserve authority and signature timing", () 
   const mainlandLocal = resolveCase({entity:"ad",service:"ev",hireStatus:"local"});
   assert.equal(mainlandLocal.authority, "MOHRE");
   assert.deepEqual(mainlandLocal.groProcess.map(s => s.title), [
-    "Contract Preparation", "OTP 1 — Contract Typing", "Contract Review", "OTP 2 — Before Contract Submission",
     "Submit to MOHRE", "Employee Signature", "GRO Payment", "Visa Approval", "Visa Issued", "Status Change",
   ]);
   const dwcOverseas = resolveCase({entity:"dwc",service:"ev",hireStatus:"overseas",nationality:"other"});
@@ -116,12 +115,12 @@ test("route-specific GRO sequences preserve authority and signature timing", () 
 
 test("Work Permit and National routes also expose GRO processing", () => {
   const mainlandWp = resolveCase({entity:"ad",service:"wp",residency:"golden"});
-  assert.deepEqual(mainlandWp.groProcess.map(s => s.title), ["Contract Preparation", "OTP 1 — Contract Typing", "Contract Review", "OTP 2 — Before Contract Submission", "MOHRE Work Permit Process", "Employee Signature", "Work Permit Approval"]);
+  assert.deepEqual(mainlandWp.groProcess.map(s => s.title), ["Contract Preparation", "OTP 1 — Contract Typing", "Contract Completed", "MOHRE Digital Contract Signature", "Signed Contract Review", "OTP 2 — Before Contract Submission", "Submit Work Permit to MOHRE", "Work Permit Approval"]);
   const dwcWp = resolveCase({entity:"dwc",service:"wp",residency:"relative"});
   assert.deepEqual(dwcWp.groProcess.map(s => s.title), ["DWC Portal", "Work Permit Processing", "Digital Candidate Signature", "Work Permit Approval"]);
   const national = resolveCase({entity:"dubai",service:"nat",category:"gcc",gccStatus:"existingEid"});
   assert.equal(national.authority, "MOHRE");
-  assert.ok(national.groProcess.some(step => step.title === "Candidate Signature"));
+  assert.ok(national.groProcess.some(step => step.title === "MOHRE Digital Contract Signature"));
   assert.ok(!national.journey.includes("Medical"));
   assert.ok(national.journey.includes("Pension Registration"));
 });
@@ -146,7 +145,11 @@ test("Education Details wording never calls for an Award document", () => {
   for (const item of SERVICES) {
     const text = [...item.documents.required, ...item.documents.conditional].join(" | ");
     assert.doesNotMatch(text, /Award or Education Details/i, item.serviceId);
-    assert.match(text, /Education Details document/i, item.serviceId);
+    if(item.service === "ev") assert.match(text, /Education Details document/i, item.serviceId);
+    else {
+      assert.match(text, /Attested Education Certificate/i, item.serviceId);
+      assert.doesNotMatch(text, /Education Details document|Educational Verification|Equivalency/i, item.serviceId);
+    }
   }
 });
 
