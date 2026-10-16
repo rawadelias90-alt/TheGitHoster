@@ -8,30 +8,30 @@ const joined = arr => arr.join(" | ");
 
 for (const entity of ["ad", "dubai", "alain"]) {
   for (const status of ["existingEid", "existingUid", "firstEntry"]) {
-    test(`GCC ${entity}/${status} prepares once, completes both OTPs, then submits for signature and approval`, () => {
+    test("GCC "+entity+"/"+status+" prepares once, signs digitally between OTPs and submits for approval", () => {
       const item = gcc(entity, status);
       assert.deepEqual(item.groProcess.map(step => step.title), [
         "Contract Preparation",
         "OTP 1 — Contract Typing",
-        "Contract Review",
+        "Contract Completed",
+        "MOHRE Digital Contract Signature",
+        "Signed Contract Review",
         "OTP 2 — Before Contract Submission",
-        "Submit to MOHRE",
-        "Candidate Signature",
+        "Submit Work Permit to MOHRE",
         "MOHRE Approval",
         "Approved Contract Shared",
       ]);
-      assert.match(item.groProcess[0].detail, /GRO prepares or types/i);
+      assert.match(item.groProcess[0].detail, /GRO begins preparing and typing/i);
       for (const step of item.groProcess.slice(2)) {
         assert.doesNotMatch(step.detail, /\b(?:prepares?|preparation|types?|typing)\b/i,
-          `${step.title} must not repeat contract preparation or typing`);
+          step.title+" must not repeat contract preparation or typing");
       }
-      const submission = item.groProcess[4];
+      const submission = item.groProcess[6];
       assert.equal(submission.owner, "GRO");
-      assert.match(submission.detail, /submits.*prepared and reviewed.*contract.*Work Permit/i);
-      assert.doesNotMatch(submission.detail, /\b(?:prepares?|types?|typing)\b/i);
-      if (status !== "existingEid") assert.match(submission.detail, /candidate's UID and active linked mobile/i);
-      assert.match(joined(item.candidateActions), /two MOHRE OTP requests/i);
-      assert.match(joined(item.candidateActions), /candidate signature/i);
+      assert.match(submission.detail, /submits the signed Work Permit application to MOHRE/i);
+      if (status !== "existingEid") assert.match(item.groProcess[0].detail, /candidate's UID and active linked mobile/i);
+      assert.match(joined(item.candidateActions), /OTP 1.*OTP 2/i);
+      assert.match(joined(item.candidateActions), /digital.*sign/i);
     });
   }
 }
