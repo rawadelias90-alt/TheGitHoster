@@ -299,7 +299,10 @@ function employmentCase(entity, hireStatus, specialHire = false) {
     service: "ev",
     descriptor: `${local ? "Local Hire" : "Overseas Hire"}${specialHire ? " · Special Hire" : ""}`,
     specialHire,
-    preHireReadiness: readinessFor({ service: "ev", hireStatus, specialHire }),
+    preHireReadiness: [
+      ...readinessFor({ service: "ev", hireStatus, specialHire }),
+      ...(specialHire ? ["Home-country National ID is collected for the Special Hire application, not for Intake 1 verification. Intake 1 checks passport and photograph only where it applies."] : []),
+    ],
     intake1,
     documents: documentsFor(entity, { specialHire, service: "ev", hireStatus }),
     candidateActions,
