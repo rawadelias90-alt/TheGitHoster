@@ -112,7 +112,7 @@ with sync_playwright() as p:
     assert page.locator("#question-gccStatus").input_value() == ""
 
     # DWC GCC skips the Mainland GCC-only question.
-    back(page); back(page); back(page)
+    back(page); back(page)
     choose(page, "entity", "dwc")
     expected(page, "Dubai South (DWC)")
     choose(page, "service", "nat")
