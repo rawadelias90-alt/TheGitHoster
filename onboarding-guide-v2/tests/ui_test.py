@@ -22,8 +22,8 @@ with sync_playwright() as p:
     # Branded landing cover
     assert page.locator("body").evaluate("el => el.classList.contains('landing-mode')")
     assert page.locator(".landing-cover").is_visible()
-    assert page.locator(".cover-logo").is_visible()
-    assert page.locator(".cover-logo").get_attribute("src") == "./assets/aecom-logo.png"
+    assert page.locator(".guide-banner").is_visible()
+    assert "uae-map-banner.png" in page.locator(".guide-banner").evaluate("el => getComputedStyle(el).backgroundImage")
     assert page.get_by_role("heading", name="UAE New Hire Guide").is_visible()
     assert page.get_by_role("button", name="Start guided journey").is_visible()
     assert page.get_by_role("button", name="Explore all services").is_visible()
