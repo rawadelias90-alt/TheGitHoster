@@ -66,4 +66,14 @@ Review date: 16 October 2026. Selected design: revised option 2.
 - All 53 local tests and the production build pass after this adjustment. The complete preceding browser/PDF regression passed in run 38974960291. No service rules or route content changed.
 - Browser inspection confirms the logo's right edge aligns with the banner container. The earlier left-logo evidence records the previous iteration and is superseded by this explicit request.
 
+## Inset Abu Dhabi banner: 17 October 2026 (Asia/Dubai)
+
+- Visual reference: `/workspace/scratch/b330fbaf616f/upload/image(20261016-223920).png` (1791 x 429 pixels). Only its centered rounded banner treatment is in scope; its Playbook wording and page body are not replacements for this guide.
+- Image source: `/AECOM material/GRO Banner - Abu Dhabi.png`, materialized from the specified AECOM material folder. The 2172 x 724 image is copied unchanged into `assets/abu-dhabi-banner.png`; SHA256 `c9e6648b97e6a229096d2edb1139dcfb5b95f75f3ccf7ca730f695318c043875`.
+- Browser evidence: `/workspace/scratch/new-hire-abu-dhabi-banner-1792190967322.jpg` (1239 x 851 pixels, matching the desktop CSS viewport at density 1). Full-view comparison: `/workspace/scratch/b330fbaf616f/qa-final/abu-dhabi-banner-comparison.png`; focused comparison: `/workspace/scratch/b330fbaf616f/qa-final/abu-dhabi-banner-focused.png`. Both compare the source and rendered implementation together; focused crops are normalized to 980px wide. The reference banner is approximately 980 x 327; the implementation is intentionally shorter at 980 x 220 as requested.
+- Layout/spacing: 980px maximum width, centered white side margins, 24px top margin and 18px rounded corners. Mobile uses 16px side margins and 14px corners, with a 210px minimum height. Logo remains upper right; text does not overlap it. No desktop/mobile horizontal overflow.
+- Fonts/colors/assets: existing Playbook Arial/Segoe UI typography and white text retained. The supplied Abu Dhabi image provides the approved teal treatment, with a crop preserving the skyline. Original image quality is retained; no generated or replacement artwork is used.
+- Copy/content: guide title, subtitle, all service information and grouped green cards remain intact. Only banner presentation and the expected image in the existing browser regression changed.
+- Checks: all 53 local tests and production build pass. Cloud browser verifies the 1239 x 851 desktop view and 390 x 844 mobile view, plus catalogue entry and all four entity groups. No application console errors; unrelated extension metadata errors excluded. No actionable P0/P1/P2 findings in the first visual comparison; no further visual iteration required.
+
 final result: passed
