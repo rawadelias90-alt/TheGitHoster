@@ -104,6 +104,7 @@ test("06 Intake 1 checks only passport/photograph; Special Hire National ID is a
   assert.equal(item.specialHire,true);
   assert.ok(item.documents.required.includes("Home-country National ID"));
   assert.ok(!item.intake1.documents.includes("Home-country National ID"));
+  assert.match(item.preHireReadiness.join(" | "),/Home-country National ID.*application.*not.*Intake 1/i);
  }
  for(const entity of allEntities) assert.ok(!ev(entity,"local").documents.required.includes("Home-country National ID"));
  assert.ok(emir("ad").documents.required.includes("National ID"));
