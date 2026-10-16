@@ -1,5 +1,6 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from wizard_helpers import choose
 import subprocess
 import sys
 import time
@@ -35,12 +36,12 @@ try:
             )
         assert "AECOM Sans" in page.locator("body").evaluate("el => getComputedStyle(el).fontFamily")
 
-        # Desktop guided flow and field typography.
+        # Desktop one-question wizard and field typography.
         page.get_by_role("button", name="Start guided journey").click()
-        page.select_option("#question-entity", "ad")
-        page.select_option("#question-service", "wp")
-        page.select_option("#question-residency", "golden")
-        assert page.locator("#question-entity").evaluate("el => getComputedStyle(el).fontWeight") == "400"
+        choose(page,"entity","ad")
+        choose(page,"service","wp")
+        choose(page,"residency","golden")
+        assert page.locator("#question-residency").evaluate("el => getComputedStyle(el).fontWeight") == "400"
         assert "AECOM Sans" in page.locator("#question-entity").evaluate("el => getComputedStyle(el).fontFamily")
         page.get_by_role("button", name="View service").click()
         assert page.locator(".result-title").evaluate("el => getComputedStyle(el).fontWeight") == "800"

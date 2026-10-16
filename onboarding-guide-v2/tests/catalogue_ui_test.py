@@ -1,6 +1,7 @@
 """Catalogue edits must restore the chosen route without stale candidate details."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from wizard_helpers import choose, continue_to_result
 import json
 import re
 import subprocess
@@ -64,7 +65,7 @@ with sync_playwright() as p:
                     assert page.get_by_role('button', name='View service', exact=True).is_hidden()
                     # Use a known fixture nationality matching the catalogue scenario.
                     nationality = 'egypt' if case['specialHire'] else 'other'
-                    page.select_option('#question-nationality', nationality)
+                    choose(page, 'nationality', nationality)
             elif case['service'] == 'wp':
                 expected = 'relative' if service_id.endswith('-relative') else 'golden'
                 assert page.locator('#question-residency').input_value() == expected
@@ -74,6 +75,7 @@ with sync_playwright() as p:
                 assert page.locator('#question-category').input_value() == case['category']
                 assert page.locator('#question-gccStatus').input_value() == (case.get('gccStatus') or '')
                 assert page.locator('#question-residency').input_value() == ''
+            continue_to_result(page)
             page.get_by_role('button', name='View service', exact=True).click()
             assert page.locator('.result-kicker').inner_text().find(case['descriptor']) >= 0
 

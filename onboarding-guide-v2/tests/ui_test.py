@@ -1,5 +1,6 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from wizard_helpers import choose
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,23 +28,25 @@ with sync_playwright() as p:
     assert page.get_by_role("button", name="Start guided journey").is_visible()
     assert page.get_by_role("button", name="Explore all services").is_visible()
 
-    # Progressive guided journey: existing controls remain in place while new ones appear.
+    # The guided journey uses one visible question per screen, with automatic progression.
     page.get_by_role("button", name="Start guided journey").click()
     assert page.get_by_role("heading", name="Find the right onboarding route").is_visible()
     assert page.locator("#question-entity").is_visible()
     assert page.locator("#question-service").is_hidden()
 
-    page.select_option("#question-entity", "ad")
+    choose(page,"entity","ad")
     assert page.locator("#question-entity").input_value() == "ad"
+    assert page.locator("#question-entity").is_hidden()
+    assert page.locator(".progressive-question:visible").count() == 1
     assert page.locator("#question-service").is_visible()
 
-    page.select_option("#question-service", "ev")
+    choose(page,"service","ev")
     assert page.locator("#question-service").input_value() == "ev"
     assert page.locator("#question-hireStatus").is_visible()
 
-    page.select_option("#question-hireStatus", "overseas")
+    choose(page,"hireStatus","overseas")
     assert page.locator("#question-nationality").is_visible()
-    page.select_option("#question-nationality", "india")
+    choose(page,"nationality","india")
     assert page.get_by_role("button", name="View service").count() == 1
     page.get_by_role("button", name="View service").click()
 
@@ -102,16 +105,16 @@ with sync_playwright() as p:
     # Mobile progressive branch and downstream reset.
     page.set_viewport_size({"width": 390, "height": 844})
     page.get_by_role("button", name="Start guided journey").click()
-    page.select_option("#question-entity", "dwc")
-    page.select_option("#question-service", "ev")
-    page.select_option("#question-hireStatus", "overseas")
+    choose(page,"entity","dwc")
+    choose(page,"service","ev")
+    choose(page,"hireStatus","overseas")
     assert page.locator("#question-nationality").is_visible()
 
-    page.select_option("#question-service", "wp")
+    choose(page,"service","wp")
     assert page.locator("#question-residency").is_visible()
     assert page.locator("#question-hireStatus").is_hidden()
     assert page.locator("#question-nationality").is_hidden()
-    page.select_option("#question-residency", "golden")
+    choose(page,"residency","golden")
     assert page.get_by_role("button", name="View service").count() == 1
     assert page.locator("body").evaluate("(el) => el.scrollWidth <= window.innerWidth")
 

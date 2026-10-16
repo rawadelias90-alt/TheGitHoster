@@ -32,6 +32,7 @@ ensureProgressiveStyles();
 
 const state = {
   mode: "welcome",
+  activeQuestion: "entity",
   answers: { entity: "", service: "", hireStatus: "", nationality: "", residency: "", category: "", gccStatus: "" },
   result: null,
   browseEntity: "all",
@@ -118,6 +119,7 @@ function setMode(mode) {
 function resetAnswers() {
   Object.keys(state.answers).forEach(key => state.answers[key] = "");
   state.result = null;
+  state.activeQuestion = "entity";
 }
 
 function clearDownstream(changedKey) {
@@ -156,6 +158,20 @@ function currentSequence() {
   return getQuestionSequence(state.answers);
 }
 
+function focusActiveQuestion() {
+  requestAnimationFrame(() => {
+    app.querySelector(".progressive-question:not([hidden]) select[data-question]")?.focus({ preventScroll: true });
+  });
+}
+
+function moveToQuestion(key) {
+  if (!currentSequence().includes(key)) return;
+  state.activeQuestion = key;
+  syncGuidedQuestions();
+  window.scrollTo(0, 0);
+  focusActiveQuestion();
+}
+
 function renderQuestion() {
   const questionKeys = ["entity", "service", "hireStatus", "nationality", "residency", "category", "gccStatus"];
   app.innerHTML = `
@@ -167,24 +183,27 @@ function renderQuestion() {
         ${questionKeys.map((key, index) => {
           const question = QUESTIONS[key];
           return `
-            <div class="progressive-question" data-question-row="${key}" ${key === "entity" ? "" : "hidden"}>
-              <div class="progressive-question__number">${String(index + 1).padStart(2, "0")}</div>
+            <div class="progressive-question" data-question-row="${key}" ${key === state.activeQuestion ? "" : "hidden"}>
+              <div class="progressive-question__number" aria-hidden="true">${String(index + 1).padStart(2, "0")}</div>
               <div class="progressive-question__body">
                 <label class="question-label" for="question-${key}">${escapeHtml(question.label)}</label>
-                <p class="progressive-question__prompt">${escapeHtml(question.title)}</p>
+                <p class="progressive-question__prompt" id="prompt-${key}">${escapeHtml(question.title)}</p>
                 <div class="select-wrap">
-                  <select id="question-${key}" data-question="${key}">
+                  <select id="question-${key}" data-question="${key}" aria-describedby="prompt-${key} help-${key}">
                     <option value="">${escapeHtml(question.placeholder)}</option>
                     ${question.options.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("")}
                   </select>
                 </div>
-                <p class="progressive-question__help">${escapeHtml(question.help)}</p>
+                <p class="progressive-question__help" id="help-${key}">${escapeHtml(question.help)}</p>
               </div>
             </div>`;
         }).join("")}
         <div class="progressive-actions">
-          <button class="back-button" type="button" data-action="home">Back to start</button>
-          <button class="primary-button guided-view-button" type="button" data-action="guided-view-service" hidden>View service</button>
+          <button class="back-button guided-back-button" type="button" data-action="guided-back">Back to start</button>
+          <div class="guided-forward-actions">
+            <button class="secondary-button guided-next-button" type="button" data-action="guided-next" hidden>Continue</button>
+            <button class="primary-button guided-view-button" type="button" data-action="guided-view-service" hidden>View service</button>
+          </div>
         </div>
       </div>
     </section>`;
@@ -193,17 +212,28 @@ function renderQuestion() {
 
 function syncGuidedQuestions() {
   const sequence = currentSequence();
-  const visible = new Set(sequence);
+  if (!sequence.includes(state.activeQuestion)) state.activeQuestion = sequence[0];
+  const activeIndex = sequence.indexOf(state.activeQuestion);
+  const nextKey = sequence[activeIndex + 1];
+  const activeAnswered = Boolean(state.answers[state.activeQuestion]);
+
   app.querySelectorAll("[data-question-row]").forEach(row => {
     const key = row.dataset.questionRow;
-    row.hidden = !visible.has(key);
+    row.hidden = key !== state.activeQuestion;
     const number = row.querySelector(".progressive-question__number");
-    if (number && visible.has(key)) number.textContent = String(sequence.indexOf(key) + 1).padStart(2, "0");
+    if (number && !row.hidden) number.textContent = String(activeIndex + 1).padStart(2, "0");
     const select = row.querySelector("select[data-question]");
     if (select && select.value !== (state.answers[key] || "")) select.value = state.answers[key] || "";
   });
+  const back = app.querySelector(".guided-back-button");
+  if (back) {
+    back.textContent = activeIndex === 0 ? "Back to start" : "Back";
+    back.dataset.action = activeIndex === 0 ? "home" : "guided-back";
+  }
+  const continueButton = app.querySelector(".guided-next-button");
+  if (continueButton) continueButton.hidden = !(activeAnswered && nextKey);
   const viewButton = app.querySelector(".guided-view-button");
-  if (viewButton) viewButton.hidden = !resolveCase(state.answers);
+  if (viewButton) viewButton.hidden = !(activeAnswered && !nextKey && resolveCase(state.answers));
 }
 
 const JOURNEY_TARGETS = {
@@ -502,9 +532,18 @@ function findBrowseCase(serviceId, entity) {
 app.addEventListener("change", event => {
   if (event.target.matches("select[data-question]")) {
     const key = event.target.dataset.question;
-    state.answers[key] = event.target.value;
-    clearDownstream(key);
-    syncGuidedQuestions();
+    const changed = state.answers[key] !== event.target.value;
+    if (changed) {
+      state.answers[key] = event.target.value;
+      clearDownstream(key);
+    }
+    const sequence = currentSequence();
+    const next = event.target.value ? sequence[sequence.indexOf(key) + 1] : "";
+    if (next) moveToQuestion(next);
+    else {
+      state.activeQuestion = key;
+      syncGuidedQuestions();
+    }
     return;
   }
   if (event.target.id === "browseEntity") { state.browseEntity = event.target.value; render(); }
@@ -521,9 +560,20 @@ document.addEventListener("click", event => {
     setMode("welcome");
   } else if (action === "start") {
     if (state.mode === "browse" || state.mode === "welcome") resetAnswers();
+    state.activeQuestion = "entity";
     state.mode = "guided";
     render();
-    focusHeading();
+    focusActiveQuestion();
+  } else if (action === "guided-back") {
+    const sequence = currentSequence();
+    const index = sequence.indexOf(state.activeQuestion);
+    if (state.mode !== "guided" || index <= 0) return;
+    moveToQuestion(sequence[index - 1]);
+  } else if (action === "guided-next") {
+    if (state.mode !== "guided" || !state.answers[state.activeQuestion]) return;
+    const sequence = currentSequence();
+    const next = sequence[sequence.indexOf(state.activeQuestion) + 1];
+    if (next) moveToQuestion(next);
   } else if (action === "browse") {
     state.mode = "browse";
     render();
@@ -554,9 +604,10 @@ document.addEventListener("click", event => {
     focusHeading();
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (action === "edit") {
+    state.activeQuestion = "entity";
     state.mode = "guided";
     render();
-    focusHeading();
+    focusActiveQuestion();
   } else if (action === "restart") {
     resetAnswers();
     setMode("welcome");

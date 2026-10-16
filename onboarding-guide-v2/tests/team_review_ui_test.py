@@ -1,5 +1,6 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from wizard_helpers import choose
 import re
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -17,9 +18,9 @@ with sync_playwright() as p:
 
     # Local Employment Visa documents have either/or in-country evidence and no OTP.
     page.get_by_role("button",name="Start guided journey").click()
-    page.select_option("#question-entity","dubai")
-    page.select_option("#question-service","ev")
-    page.select_option("#question-hireStatus","local")
+    choose(page,"entity","dubai")
+    choose(page,"service","ev")
+    choose(page,"hireStatus","local")
     page.get_by_role("button",name="View service").click()
     assert page.get_by_role("heading",name="Employment Visa and Work Permit").is_visible()
     doc=page.locator(".detail-section").filter(has=page.get_by_role("heading",name="Documents",exact=True))
@@ -33,8 +34,8 @@ with sync_playwright() as p:
 
     # Golden Visa Work Permit has signature between two distinct OTP checkpoints.
     page.get_by_role("button",name="Edit answers").click()
-    page.select_option("#question-service","wp")
-    page.select_option("#question-residency","golden")
+    choose(page,"service","wp")
+    choose(page,"residency","golden")
     page.get_by_role("button",name="View service").click()
     doc=page.locator(".detail-section").filter(has=page.get_by_role("heading",name="Documents",exact=True))
     assert "Attested Education Certificate" in doc.inner_text()
@@ -50,9 +51,9 @@ with sync_playwright() as p:
 
     # DWC Work Permit keeps authority's own digital signature and no OTP.
     page.get_by_role("button",name="Edit answers").click()
-    page.select_option("#question-entity","dwc")
-    page.select_option("#question-service","wp")
-    page.select_option("#question-residency","relative")
+    choose(page,"entity","dwc")
+    choose(page,"service","wp")
+    choose(page,"residency","relative")
     page.get_by_role("button",name="View service").click()
     gro=page.locator(".gro-step h3").all_inner_texts()
     assert gro == ["DWC Portal","Work Permit Processing","Digital Candidate Signature","Work Permit Approval"]
