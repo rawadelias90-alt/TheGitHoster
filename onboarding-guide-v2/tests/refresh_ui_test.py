@@ -21,7 +21,7 @@ try:
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.on('console', lambda message: errors.append(message.text) if message.type=='error' else None)
         page.goto('http://127.0.0.1:8767/', wait_until='networkidle')
-        assert page.locator('.guide-banner').evaluate("el => getComputedStyle(el).backgroundImage").endswith('dubai-skyline-banner.png")')
+        assert page.locator('.guide-banner').evaluate("el => getComputedStyle(el).backgroundImage").endswith('abu-dhabi-banner.png")')
         assert page.locator('.cover-logo').evaluate('el => el.complete && el.naturalWidth > 0')
         page.get_by_role('button', name='Start guided journey', exact=True).click()
         choose(page, 'entity', 'dubai'); choose(page, 'service', 'ev'); choose(page, 'hireStatus', 'local')

@@ -21,8 +21,8 @@ button:disabled { cursor: default; }
 .brand { color: var(--ink); text-decoration: none; display: flex; align-items: center; min-height: 44px; font-weight: 700; }
 .text-button { color: var(--green-dark); border: 0; border-radius: 4px; background: transparent; padding: 8px 12px; min-height: 44px; font: 600 14px/1.4 "Segoe UI", Arial, sans-serif; }
 .text-button:hover { background: var(--green-wash); }
-.guide-banner { background: #004d40 url('./assets/dubai-skyline-banner.png') center 55% / cover no-repeat; color: white; }
-.banner-inner { position: relative; min-height: 250px; width: min(var(--workspace), calc(100% - 48px)); margin: 0 auto; display: flex; align-items: end; padding: 36px 0; }
+.guide-banner { width: min(980px, calc(100% - 48px)); margin: 24px auto 0; border-radius: 18px; overflow: hidden; background: #004d40 url('./assets/abu-dhabi-banner.png') center 35% / cover no-repeat; color: white; }
+.banner-inner { position: relative; min-height: 220px; width: calc(100% - 56px); margin: 0 auto; display: flex; align-items: end; padding: 76px 0 24px; }
 .cover-logo { position: absolute; top: 24px; right: 0; width: 136px; height: auto; object-fit: contain; filter: brightness(0) invert(1); }
 .banner-copy { max-width: 540px; }
 .banner-title { margin: 0 0 8px; font-size: 34px; font-weight: 700; line-height: 1.2; letter-spacing: -.3px; }
@@ -161,8 +161,8 @@ summary::-webkit-details-marker { display: none; }
   .app-header { padding-inline: 16px; min-height: 58px; }
   .brand { font-size: 13px; }
   .app-header .text-button { font-size: 12px; padding-inline: 6px; }
-  .banner-inner { min-height: 224px; width: calc(100% - 32px); padding: 76px 0 24px; }
-  .guide-banner { background-position: 48% center; }
+  .banner-inner { min-height: 210px; width: calc(100% - 36px); padding: 72px 0 20px; }
+  .guide-banner { width: calc(100% - 32px); margin-top: 16px; border-radius: 14px; background-position: 40% center; }
   .cover-logo { width: 110px; top: 20px; }
   .banner-title { font-size: 28px; }
   .banner-copy { max-width: 340px; padding-right: 18px; }
