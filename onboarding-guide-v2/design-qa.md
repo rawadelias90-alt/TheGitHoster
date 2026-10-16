@@ -1,6 +1,6 @@
 # New Hire Guide V2 design QA
 
-Review date: 17 October 2026. Selected design: revised option 2.
+Review date: 16 October 2026. Selected design: revised option 2.
 
 ## Visual evidence
 
@@ -25,8 +25,9 @@ Review date: 17 October 2026. Selected design: revised option 2.
 - Cloud browser: guided selection, desktop horizontal navigation, keyboard Enter and click flips, three cards staying open independently, mobile 390px layout, expanding nested journey targets, mobile menu closing after navigation, and visible Print control checked.
 - Expanded cards expose their explanatory copy through aria-describedby. Native focusable controls retain keyboard Tab access after journey navigation.
 - No application console errors observed. Browser extension metadata errors are unrelated to guide code.
-- Beforeprint/afterprint expansion and exact restoration, repeated beforeprint events, and suppressed-dialog fallback are covered by automated DOM integration tests. The cloud browser suppresses the native print dialog; clicking Print in that browser restores the original browsing state, verified directly. Native printed/PDF pagination still requires the prepared GitHub browser regression or a normal desktop print preview.
-- Local validation: 53 Node tests pass; Vite production build passes with all required static assets. Existing browser regression scripts were adapted to expand content for legacy visible-content assertions. Full Python browser/PDF regression is prepared but was not run locally.
+- Beforeprint/afterprint expansion and exact restoration, repeated beforeprint events, and suppressed-dialog fallback are covered by automated DOM integration tests. The cloud browser suppresses the native print dialog; clicking Print in that browser restores the original browsing state, verified directly. GitHub Chromium PDF checks passed; all four rendered pages were visually inspected, with short sections and the Completion heading kept together with their text.
+- Validation: 53 Node tests and the Vite production build pass. All Python browser regressions passed in GitHub Actions: selection summary, existing guide UI, GCC contracts, the complete catalogue at desktop/mobile widths, fonts, V2 keyboard interactions, nested navigation, reduced motion, PDF completeness and print-state restoration. Application console errors: zero.
+- Verified implementation commit: `e6394b56072c0346a45209c0b634797b55ed759a`. Successful run: https://github.com/rawadelias90-alt/TheGitHoster/actions/runs/38972051285. The `guide-v2-review-captures` artifact includes desktop/mobile captures, the generated PDF and browser-check results.
 
 ## Findings and comparison history
 
@@ -35,10 +36,11 @@ Review date: 17 October 2026. Selected design: revised option 2.
 3. Review identified missing accessible descriptions on flipped controls. Added a failing test, wired the revealed copy as the button description, and verified passing tests.
 4. Cloud browser suppression of window.print initially left all panels expanded. Added a failing regression, restored state when print returns outside print media, and verified the behavior in the cloud browser.
 5. Full-view and focused comparisons after fixes show no actionable P0/P1/P2 visual findings. Supplied banner, requested font change, compact Fluent icons and complete source wording are intentional deviations from the illustrative mock.
+6. PDF QA found a case-sensitive heading assertion and a Completion heading split from its paragraph. Normalized extracted text for visual uppercase styling, kept short print sections together, added a pagination regression and visually confirmed the corrected PDF.
 
-## Remaining verification
+## Branch status
 
-- Run the GitHub browser regression, including PDF completeness and pagination, after the branch can be pushed.
+- Published to `design/gro-site-refresh` after user approval. Browser regression, PDF completeness and pagination verification are complete.
 - No merge to main or live-site publishing settings changed.
 
 final result: passed
