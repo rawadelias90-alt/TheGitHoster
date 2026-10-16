@@ -456,7 +456,7 @@ function renderResult(result) {
         </div>
         </details>
 
-        <details class="detail-section">
+        <details class="detail-section candidate-actions-section">
           <summary><span class="section-number">03</span><h2>Candidate Actions</h2><img class="section-chevron" src="./assets/icons/chevron-down.svg" width="20" height="20" alt=""></summary>
           <div class="detail-body">
 

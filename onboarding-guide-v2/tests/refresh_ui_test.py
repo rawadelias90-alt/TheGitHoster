@@ -46,9 +46,11 @@ try:
         before = page.locator('.detail-section').evaluate_all('panels=>panels.map(p=>p.open)')
         card_before = cards.evaluate_all('cards=>cards.map(c=>c.getAttribute("aria-expanded"))')
         page.pdf(path=str(OUT/'printed-local-service.pdf'), format='A4', print_background=True)
-        text='\n'.join(pg.extract_text() for pg in PdfReader(OUT/'printed-local-service.pdf').pages)
+        printed_pages = [' '.join(pg.extract_text().split()).casefold() for pg in PdfReader(OUT/'printed-local-service.pdf').pages]
+        text = '\n'.join(printed_pages)
         for expected in ['Before Intake 2','Candidate Actions','GRO Processing','Status Change','Completion Point','Passport copy']:
-            assert expected in text, expected
+            assert expected.casefold() in text, expected
+        assert any('completion point' in text and 'post-joining requirements are completed.' in text for text in printed_pages), 'Completion heading separated from its paragraph'
         assert page.locator('.detail-section').evaluate_all('panels=>panels.map(p=>p.open)')==before
         assert cards.evaluate_all('cards=>cards.map(c=>c.getAttribute("aria-expanded"))')==card_before
         page.set_viewport_size({'width':390,'height':844})
