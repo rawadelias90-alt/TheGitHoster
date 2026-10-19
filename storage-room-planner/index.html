@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Storage Room | 3D planning model</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1c3541;background:#f1f5f8;--teal:#0d8c85;--line:#e0e8ed;--ink:#193342}
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;padding:20px}main{max-width:1160px;margin:0 auto}.header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin:0 0 18px}.kicker{font-size:11px;font-weight:800;letter-spacing:.16em;color:#087c78}.heading{font-size:clamp(20px,3vw,28px);letter-spacing:-.04em;margin:4px 0 0;font-weight:750}.tag{font-size:12px;color:#527183;background:#e8eff3;border:1px solid #dae5eb;padding:7px 12px;border-radius:99px}.shell{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:start}.viewer,.sidebar{border:1px solid #e1e7ec;background:#fff;border-radius:18px;box-shadow:0 7px 25px rgba(31,65,81,.04);overflow:hidden}.viewer-inner{position:relative;background:radial-gradient(circle at 45% 34%,#fafdff 0%,#edf4f8 77%,#e8f0f5 100%)}canvas{display:block;touch-action:none;width:100%;height:530px;cursor:grab;outline:none}canvas:active{cursor:grabbing}.view-label{position:absolute;top:15px;left:17px;color:#557280;font-size:10px;letter-spacing:.11em;font-weight:800}.view-label span{display:block;color:#254658;font-size:12px;letter-spacing:0;margin-top:4px}.float-buttons{position:absolute;right:13px;top:14px;display:flex;flex-direction:column;gap:7px}.float-buttons button{width:35px;height:35px;display:grid;place-items:center;background:#fff9;border:1px solid #cfdee5;border-radius:9px;font-size:18px;color:#426173;cursor:pointer;backdrop-filter:blur(8px)}.actions{display:flex;gap:8px;padding:13px 15px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}.actions button{appearance:none;background:#f4f7f9;border:1px solid #e0e8ec;color:#496476;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}.actions button.active{background:#e3f4f1;color:#087d78;border-color:#a8ded4}.actions .hint{font-size:11px;margin-left:auto;color:#728a98}.sidehead{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#75909b;font-weight:800;margin:20px 18px 12px}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 14px}.metric{background:#f6f9fa;padding:13px 12px;border-radius:12px}.metric strong{font-size:20px;display:block;letter-spacing:-.045em;white-space:nowrap}.metric small{font-size:11px;color:#718894}.legend{display:flex;align-items:center;gap:10px;font-size:12px;color:#375261;margin:0 18px 13px}.swatch{width:11px;height:11px;border-radius:3px;flex:none}.range-block{margin:0 18px 16px}.range-title{display:flex;justify-content:space-between;font-size:12px;color:#3f6070;margin-bottom:8px}.range-title output{font-variant-numeric:tabular-nums;font-weight:750;color:#234451}.range-block input{width:100%;accent-color:#0b938c}.notice{font-size:11px;color:#657e8d;line-height:1.55;margin:14px 18px 20px;padding:11px 12px;background:#f1f7f7;border-left:3px solid #0d8c85;border-radius:6px}.bottomline{margin:16px 0 0;color:#6e8794;font-size:11px;line-height:1.6}.separator{height:1px;background:#edf1f4;margin:16px 0 0}
+@media(max-width:760px){body{padding:12px}.shell{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:0}.sidehead{grid-column:span 2}.metrics{grid-column:span 2;grid-template-columns:repeat(4,1fr)}.metric{padding:10px 8px}.metric strong{font-size:16px}.legend{margin-bottom:10px}.range-block{grid-column:span 2}.notice{grid-column:span 2}canvas{height:440px}.actions .hint{width:100%;margin-left:0}.heading{font-size:24px}}
+@media(max-width:460px){.metrics{grid-template-columns:repeat(2,1fr)}.actions button{flex:1;min-width:88px;padding:9px 8px}canvas{height:410px}.header{margin-bottom:12px}.tag{font-size:11px}}
+ .planner-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 16px}.planner-controls button,.move-pad button{border:1px solid #d3e0e6;background:#f4f8fa;border-radius:9px;padding:10px 7px;font-weight:700;font-size:12px;color:#305365;cursor:pointer}.planner-controls button.primary{background:#0d8c85;color:white;border-color:#0d8c85}.box-status{margin:12px 17px;color:#256b69;font-size:12px;font-weight:700;line-height:1.5}.move-pad{margin:0 auto 10px;display:grid;grid-template-columns:repeat(3,48px);gap:5px;justify-content:center}.move-pad button{font-size:20px;padding:7px}.move-options{margin:0 17px;display:grid;gap:9px}.move-options label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#4d6877}.move-options select{max-width:110px;padding:7px;border:1px solid #d5e1e8;border-radius:7px;background:white}.planner-help{font-size:11px;line-height:1.5;color:#6c8491;margin:13px 17px}
+</style></head>
+<body><main>
+<div class="header"><div><div class="kicker">CORRECTED 3D LAYOUT</div><h1 class="heading">Bedroom → storage space</h1></div><div class="tag">Interactive box placement · 71 × 51 × 61 cm (W × H × D)</div></div>
+<div class="shell">
+<section class="viewer"><div class="viewer-inner">
+<canvas id="model" aria-label="Interactive storage room. Drag a box to reposition it or drag empty space to rotate the room."></canvas>
+<div class="view-label">STORAGE ROOM <span id="viewLabel">3D cutaway view</span></div>
+<div class="float-buttons"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="reset" aria-label="Reset view">↺</button></div>
+</div><div class="actions"><button type="button" id="perspective" class="active">3D view</button><button type="button" id="top">Top view</button><button type="button" id="walls" class="active">Cutaway walls</button><button type="button" id="grid" class="active">60 cm grid</button><button type="button" id="labels" class="active" aria-pressed="true">Hide labels</button><span class="hint">Drag boxes to move · Drag background to rotate · Scroll to zoom</span></div></section>
+<aside class="sidebar"><div class="sidehead">Room dimensions</div>
+<div class="metrics"><div class="metric"><strong>3.00 m</strong><small>Width · 5 tiles</small></div><div class="metric"><strong>4.20 m</strong><small>Length · 7 tiles</small></div><div class="metric"><strong>3.00 m</strong><small>Ceiling height</small></div><div class="metric"><strong>60 cm</strong><small>Floor grid</small></div></div>
+<div class="sidehead">Box planner</div>
+<div class="planner-controls">
+<button id="addBox" class="primary">+ Add box</button><button id="removeBox">Remove selected</button>
+<button id="rotateBox">Rotate 90°</button><button id="clearBoxes">Clear all</button>
+</div>
+<div class="box-status" id="boxStatus">0 boxes · select Add box to begin</div>
+<div class="sidehead">Move selected box</div>
+<div class="move-pad"><span></span><button id="moveUp" aria-label="Move box forward">↑</button><span></span>
+<button id="moveLeft" aria-label="Move box left">←</button><button id="moveDown" aria-label="Move box backward">↓</button><button id="moveRight" aria-label="Move box right">→</button></div>
+<div class="move-options"><label>Movement step <select id="stepSize"><option value=".01">1 cm</option><option value=".2" selected>20 cm</option><option value=".6">60 cm</option></select></label>
+<label>Stack level <select id="boxLevel"><option value="0">Floor</option><option value="1">Level 2</option><option value="2">Level 3</option><option value="3">Level 4</option><option value="4">Level 5</option></select></label></div>
+
+</aside></div>
+<div class="bottomline"><b>For box planning:</b> Wrapped cargo 0.71 × 0.51 × 0.61 m (W × H × D). Use Add box to place items edge to edge. Arrows stop at box edges and walls; drag for precise placement. The 60 cm grid is a floor measurement guide, not a recommended stacking pattern.</div>
+</main>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('model'),ctx=canvas.getContext('2d');
+const state={W:3,L:4.2,H:3,BW:1.8,BD:1.5,az:-.94,el:.71,zoom:1,grid:true,cut:true,view:'3d',labels:true,drag:false};
+let cw=700,ch=530,dpr=1,prev=null,lastMove=null,boxDrag=null;const boxes=[];let selected=null,nextId=1;
+const BOX={width:.71,depth:.61,height:.51};
+const $=id=>document.getElementById(id);
+const vec=(x,y,z=0)=>[x,y,z],sub=(a,b)=>a.map((n,i)=>n-b[i]),dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{let l=Math.hypot(...a);return a.map(v=>v/l)};
+function camera(){const {az,el}=state,center=[1.5,1.45,1.30],eye=[center[0]+Math.cos(az)*Math.cos(el)*10,center[1]+Math.sin(az)*Math.cos(el)*10,center[2]+Math.sin(el)*10];let f=norm(sub(center,eye)),r=norm(cross(f,[0,0,1])),u=norm(cross(r,f));return {center,eye,f,r,u};}
+function transform(p,cam){let a=sub(p,cam.center);return [dot(a,cam.r),dot(a,cam.u)];}
+let cam,scale,ox,oy;
+function project(p){let a=transform(p,cam);return [ox+a[0]*scale,oy-a[1]*scale];}
+function fit(){cam=camera();let b=[];for(let x of [0,3])for(let y of [-1.5,4.2])for(let z of [0,3])b.push(transform([x,y,z],cam));let xs=b.map(v=>v[0]),ys=b.map(v=>v[1]);const bw=Math.max(...xs)-Math.min(...xs),bh=Math.max(...ys)-Math.min(...ys);scale=state.zoom*Math.min((cw-60)/(bw+.5),(ch-70)/(bh+.6));ox=cw/2-(Math.max(...xs)+Math.min(...xs))*scale/2;oy=ch/2+(Math.max(...ys)+Math.min(...ys))*scale/2;}
+function polygon(pts,fill,stroke,line=1,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();pts.forEach((p,i)=>{const a=project(p);if(!i)ctx.moveTo(...a);else ctx.lineTo(...a)});ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke()}ctx.restore()}
+function line(a,b,color,width=1,dash=[]){const A=project(a),B=project(b);ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(...A);ctx.lineTo(...B);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
+function label(text,point,background='#ffffffea',fg='#355461',tiny=false){const p=project(point);ctx.save();ctx.font=`${tiny?'600 10px':'700 11px'} system-ui,-apple-system,sans-serif`;let tw=ctx.measureText(text).width;let ww=tw+17,hh=tiny?24:26;ctx.fillStyle=background;ctx.strokeStyle='#ffffff85';ctx.beginPath();ctx.roundRect(p[0]-ww/2,p[1]-hh/2,ww,hh,8);ctx.fill();ctx.stroke();ctx.fillStyle=fg;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,p[0],p[1]+.5);ctx.restore()}
+function walls(){let segments=[{a:[0,0],b:[0,4.2],c:'#95aebc'},{a:[3,0],b:[3,4.2],c:'#95aebc'},{a:[0,4.2],b:[3,4.2],c:'#95aebc'}, {a:[0,-state.BD],b:[state.BW,-state.BD],c:'#4eaa88'},{a:[0,0],b:[state.BW,0],c:'#4eaa88'},{a:[state.BW,-state.BD],b:[state.BW,0],c:'#4eaa88'}];let order=segments.map(s=>({...s,d:dot(sub([(s.a[0]+s.b[0])/2,(s.a[1]+s.b[1])/2,0],cam.eye),cam.f)})).sort((a,b)=>b.d-a.d);
+for(let s of order){let {a,b,c}=s;let A=vec(...a,0),B=vec(...b,0),U=vec(...a,state.cut?1.13:3),V=vec(...b,state.cut?1.13:3),T=vec(...a,3),S=vec(...b,3);
+if(state.view==='top'){polygon([A,B,vec(...b,.18),vec(...a,.18)],c,null,0,.7);continue}
+if(state.cut){polygon([U,V,S,T],c,null,1,.10);line(U,T,'#728d9e6f',.8,[4,6]);line(V,S,'#728d9e6f',.8,[4,6])}
+polygon([A,B,V,U],c,'#7995a4',.8,state.cut?.75:.42);line(U,V,'#617f91',1.4)
+}}
+function grid(){if(!state.grid)return;for(let i=0;i<=5;i++){let x=i*.6;line([x,0,.022],[x,4.2,.022],'#ffffffed',i===0||i===5?1.5:1.05)}for(let j=0;j<=7;j++){let y=j*.6;line([0,y,.023],[3,y,.023],'#ffffffed',j===0||j===7?1.5:1.05)}}
+function guides(){if(state.view==='top')return;for(let x of [0,3])for(let y of [-1.5,4.2])line([x,y,0],[x,y,3],'#59758698',1.2);
+for(let z=.6;z<3.01;z+=.6)line([3,0,z],[3.09,0,z],'#1c7d80a9',1.3)}
+function dims(){if(state.view!=='top')return;const C='#416378a3';line([0,4.48,.03],[3,4.48,.03],C,1.1);line([0,4.34,.03],[0,4.58,.03],C,1.1);line([3,4.34,.03],[3,4.58,.03],C,1.1);if(state.labels)label('3.00 m · 5 tiles',[1.5,4.48,.04]);line([-.36,0,.03],[-.36,4.2,.03],C,1.1);line([-.48,0,.03],[-.24,0,.03],C,1.1);line([-.48,4.2,.03],[-.24,4.2,.03],C,1.1);if(state.labels)label('4.20 m · 7 tiles',[-.36,2.1,.03]); }
+function render(){if(!cw||!ch)return;ctx.clearRect(0,0,cw,ch);fit();
+// Ground shadow to give the model a visual anchor.
+polygon([[-.11,-1.64,-.1],[3.15,-1.64,-.1],[3.15,4.30,-.1],[-.11,4.30,-.1]],'#d6e4eb9b',null);
+polygon([[0,0,0],[3,0,0],[3,4.2,0],[0,4.2,0]],'#e2ebee','#8ea8b6',1.5);
+
+polygon([[0,-state.BD,.009],[state.BW,-state.BD,.009],[state.BW,0,.009],[0,0,.009]],'#2eaa74',null);
+polygon([[state.BW,-state.BD,.009],[3,-state.BD,.009],[3,0,.009],[state.BW,0,.009]],'#ccd7df',null);
+grid();walls();guides();drawBoxes();
+if(state.labels && state.view==='top'){
+label('BATHROOM',[state.BW*.51,-state.BD*.54,.05],'#e5f9ed','#187f55',true);
+label('ENTRY',[(state.BW+3)/2,-state.BD*.48,.05],'#f7fafce8','#516c7f',true);
+}
+dims();
+}
+function redraw(){requestAnimationFrame(render)}
+function resized(){let b=canvas.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);cw=b.width;ch=b.height;canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
+new ResizeObserver(resized).observe(canvas);window.addEventListener('resize',resized);
+// Drag a box on its current floor/stack level; drag empty space to orbit the camera.
+const pointerPos=e=>{const r=canvas.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+function screenToFloorDelta(dx,dy){
+  // Orthographic projection inverse for the XY plane at a constant Z.
+  const p0=project([0,0,0]),px=project([1,0,0]),py=project([0,1,0]);
+  const ax=px[0]-p0[0],ay=px[1]-p0[1],bx=py[0]-p0[0],by=py[1]-p0[1];
+  const det=ax*by-ay*bx;
+  if(Math.abs(det)<.00001)return null;
+  return [(dx*by-dy*bx)/det,(ax*dy-ay*dx)/det];
+}
+canvas.addEventListener('pointerdown',e=>{
+  if(e.button!==undefined&&e.button!==0)return;
+  const pos=pointerPos(e),hit=hitBox(pos);
+  if(hit){
+    selected=hit.id;syncBoxUI();
+    boxDrag={id:hit.id,start:pos,originX:hit.x,originY:hit.y,moved:false};
+    canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';redraw();return;
+  }
+  state.drag=true;prev=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+  if(boxDrag){
+    const b=boxes.find(o=>o.id===boxDrag.id);if(!b)return;
+    const pos=pointerPos(e),delta=screenToFloorDelta(pos[0]-boxDrag.start[0],pos[1]-boxDrag.start[1]);
+    if(!delta)return;
+    // Drag freely to centimetre precision; collisions stop at exact contact.
+    const nx=Math.round((boxDrag.originX+delta[0])*100)/100;
+    const ny=Math.round((boxDrag.originY+delta[1])*100)/100;
+    const next=moveToContact(b,nx,ny);
+    if(next.x!==b.x||next.y!==b.y){Object.assign(b,next);boxDrag.moved=true;syncBoxUI();redraw()}
+    return;
+  }
+  if(!state.drag||!prev)return;
+  const dx=e.clientX-prev[0],dy=e.clientY-prev[1];prev=[e.clientX,e.clientY];
+  state.az+=dx*.009;state.el=Math.max(.20,Math.min(1.52,state.el+dy*.007));
+  state.view='3d';$('perspective').classList.add('active');$('top').classList.remove('active');
+  $('viewLabel').textContent='3D interactive view';redraw();
+});
+function endPointer(){state.drag=false;prev=null;boxDrag=null;canvas.style.cursor='grab'}
+canvas.addEventListener('pointerup',endPointer);
+canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('lostpointercapture',endPointer);
+canvas.addEventListener('pointerleave',()=>{if(!boxDrag&&!state.drag)canvas.style.cursor='grab'});
+canvas.addEventListener('pointermove',e=>{
+ if(boxDrag||state.drag)return;
+ canvas.style.cursor=hitBox(pointerPos(e))?'move':'grab';
+});
+canvas.addEventListener('wheel',e=>{e.preventDefault();state.zoom=Math.max(.6,Math.min(2.7,state.zoom*(e.deltaY<0?1.11:.9)));redraw()},{passive:false});
+$('zoomIn').onclick=()=>{state.zoom=Math.min(2.7,state.zoom*1.17);redraw()};$('zoomOut').onclick=()=>{state.zoom=Math.max(.6,state.zoom/1.17);redraw()};
+function toggle(id,on){$(id).classList.toggle('active',on)}
+function setView(which){state.view=which;if(which==='top'){state.az=-Math.PI/2;state.el=1.52;$('viewLabel').textContent='Top-down floor plan'}else{state.az=-.94;state.el=.71;$('viewLabel').textContent='3D cutaway view'}state.zoom=1;toggle('perspective',which==='3d');toggle('top',which==='top');redraw()}
+$('reset').onclick=()=>setView('3d');$('top').onclick=()=>setView('top');$('perspective').onclick=()=>setView('3d');
+$('walls').onclick=()=>{state.cut=!state.cut;toggle('walls',state.cut);$('walls').textContent=state.cut?'Cutaway walls':'Full-height walls';redraw()};
+$('grid').onclick=()=>{state.grid=!state.grid;toggle('grid',state.grid);redraw()};
+$('labels').onclick=()=>{state.labels=!state.labels;toggle('labels',state.labels);$('labels').textContent=state.labels?'Hide labels':'Show labels';$('labels').setAttribute('aria-pressed',String(state.labels));redraw()};
+
+
+function dimsBox(b){return b.rot?[BOX.depth,BOX.width]:[BOX.width,BOX.depth]}
+function overlaps(a,b){if(a.id===b.id||a.level!==b.level)return false;const [aw,al]=dimsBox(a),[bw,bl]=dimsBox(b);return a.x<b.x+bw-.001&&a.x+aw>b.x+.001&&a.y<b.y+bl-.001&&a.y+al>b.y+.001}
+function valid(b){const [w,l]=dimsBox(b);return b.x>=-.0001&&b.y>=-.0001&&b.x+w<=3.0001&&b.y+l<=4.2001&&b.level>=0&&b.level<=4&&(b.level+1)*BOX.height<=state.H+.0001&&!boxes.some(o=>overlaps(b,o))}
+function status(message){$('boxStatus').textContent=`${boxes.length} box${boxes.length===1?'':'es'} · ${message}`}
+function syncBoxUI(){const b=boxes.find(o=>o.id===selected);$('boxLevel').value=b?String(b.level):'0';status(b?`Box #${b.id} selected · ${b.rot?'61 × 71':'71 × 61'} cm footprint · 51 cm high · level ${b.level+1}`:'No box selected')}
+// Sweep each movement axis to the first box edge or room boundary.
+// This preserves the chosen step in open space and closes smaller gaps exactly.
+function moveAxis(b,axis,target){
+ const [w,l]=dimsBox(b),size=axis==='x'?w:l,other=axis==='x'?'y':'x',span=axis==='x'?l:w;
+ const limit=axis==='x'?state.W:state.L,start=b[axis],direction=Math.sign(target-start);
+ let position=Math.max(0,Math.min(limit-size,target));
+ for(const o of boxes){
+  if(o.id===b.id||o.level!==b.level)continue;
+  const [ow,ol]=dimsBox(o),osize=axis==='x'?ow:ol,ospan=axis==='x'?ol:ow;
+  if(b[other]>=o[other]+ospan-1e-7||b[other]+span<=o[other]+1e-7)continue;
+  if(direction>0&&o[axis]>=start+size-1e-7)position=Math.min(position,o[axis]-size);
+  if(direction<0&&o[axis]+osize<=start+1e-7)position=Math.max(position,o[axis]+osize);
+ }
+ return {...b,[axis]:Number(position.toFixed(6))};
+}
+function moveToContact(b,x,y){return moveAxis(moveAxis(b,'x',x),'y',y)}
+function mutateBox(update){const b=boxes.find(o=>o.id===selected);if(!b){status('Select a box first');return}const copy={...b,...update};if(!valid(copy)){status('Blocked: outside room or overlaps another box');return}Object.assign(b,copy);syncBoxUI();redraw()}
+function addBox(){
+ for(let level=0;level<5;level++){
+  const row=boxes.filter(b=>b.level===level);
+  const xs=[0,...row.map(b=>Number((b.x+dimsBox(b)[0]).toFixed(6)))].sort((a,b)=>a-b);
+  const ys=[0,...row.map(b=>Number((b.y+dimsBox(b)[1]).toFixed(6)))].sort((a,b)=>a-b);
+  for(const y of ys)for(const x of xs){const b={id:nextId,x,y,level,rot:false};if(valid(b)){nextId++;boxes.push(b);selected=b.id;syncBoxUI();redraw();return}}
+ }
+ status('No free position for another box');
+}
+// Fabric, webbing and stretch-wrap textures are drawn locally: no external assets.
+const cargoTextures=new Map();
+function cargoTexture(color,top=false){
+const key=color+top;if(cargoTextures.has(key))return cargoTextures.get(key);
+const c=document.createElement('canvas');c.width=384;c.height=288;const t=c.getContext('2d');
+t.fillStyle=top?'#b4bec0':color;t.fillRect(0,0,384,288);
+const shade=t.createLinearGradient(0,0,384,288);shade.addColorStop(0,'#ffffff28');shade.addColorStop(.5,'#00000008');shade.addColorStop(1,'#00000060');t.fillStyle=shade;t.fillRect(0,0,384,288);
+// Fine woven fabric and irregular folds.
+for(let i=0;i<384;i+=4){t.strokeStyle=i%8?'#ffffff10':'#00000016';t.beginPath();t.moveTo(i,0);t.lineTo(i+Math.sin(i)*7,288);t.stroke()}
+for(let j=2;j<288;j+=5){t.strokeStyle='#ffffff12';t.beginPath();t.moveTo(0,j);t.lineTo(384,j);t.stroke()}
+for(let i=0;i<9;i++){const x=18+i*43;t.strokeStyle='#ffffff28';t.lineWidth=2;t.beginPath();t.moveTo(x,9);t.bezierCurveTo(x-20,85,x+18,186,x-9,282);t.stroke()}
+if(top){
+t.fillStyle='#dbe0dc';t.fillRect(18,17,348,11);t.fillRect(18,260,348,11);
+t.fillStyle='#242b2d';t.fillRect(0,0,384,12);t.fillRect(0,276,384,12);t.fillRect(0,0,12,288);t.fillRect(372,0,12,288);
+t.fillStyle='#242b2ddb';t.fillRect(78,0,17,288);t.fillRect(289,0,17,288);
+}else{
+t.fillStyle='#202a2b';t.fillRect(0,0,384,17);t.fillRect(0,271,384,17);
+for(const x of [72,295]){t.fillRect(x,0,16,288);t.strokeStyle='#76817e';t.lineWidth=1;t.strokeRect(x+3,0,10,288)}
+// Two short carrying handles and stitched attachment points.
+t.strokeStyle='#182426';t.lineWidth=9;t.beginPath();t.moveTo(105,51);t.lineTo(122,70);t.lineTo(254,70);t.lineTo(272,51);t.stroke();
+t.strokeStyle='#79817a';t.lineWidth=1;t.strokeRect(96,36,19,29);t.strokeRect(263,36,19,29);
+t.fillStyle='#1d2829';t.fillRect(106,198,165,11);
+}
+// Clear wrap: overlapping horizontal layers and diagonal reflective creases.
+for(let j=16;j<288;j+=13){t.strokeStyle=j%2?'#eaffff4a':'#ffffff27';t.lineWidth=j%3?1:3;t.beginPath();t.moveTo(0,j+4);t.bezierCurveTo(100,j-5,255,j+7,384,j);t.stroke()}
+const glare=t.createLinearGradient(0,0,384,60);glare.addColorStop(0,'#ffffff00');glare.addColorStop(.24,'#ffffff08');glare.addColorStop(.36,'#ffffff60');glare.addColorStop(.42,'#ffffff12');glare.addColorStop(.8,'#ffffff00');glare.addColorStop(.91,'#ffffff40');glare.addColorStop(1,'#ffffff08');t.fillStyle=glare;t.fillRect(0,0,384,288);
+t.strokeStyle='#f4ffff76';t.lineWidth=2;for(let i=0;i<4;i++){t.beginPath();t.moveTo(i*111-35,0);t.lineTo(i*111+40,288);t.stroke()}
+cargoTextures.set(key,c);return c;
+}
+function cargoFace(points,texture,stroke){
+const p=points.map(project);ctx.save();ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.clip();
+ctx.transform((p[1][0]-p[0][0])/texture.width,(p[1][1]-p[0][1])/texture.width,(p[3][0]-p[0][0])/texture.height,(p[3][1]-p[0][1])/texture.height,p[0][0],p[0][1]);ctx.drawImage(texture,0,0);ctx.restore();polygon(points,null,stroke,1);
+}
+function drawBoxes(){
+const center=b=>{const [w,l]=dimsBox(b);return [b.x+w/2,b.y+l/2,(b.level+.5)*BOX.height]};
+const ordered=[...boxes].sort((a,b)=>dot(sub(center(b),cam.eye),cam.f)-dot(sub(center(a),cam.eye),cam.f));
+for(const b of ordered){const [w,l]=dimsBox(b),x=b.x,y=b.y,z=b.level*BOX.height,h=BOX.height,sel=b.id===selected;
+const bottom=[[x,y,z],[x+w,y,z],[x+w,y+l,z],[x,y+l,z]],top=bottom.map(p=>[p[0],p[1],p[2]+h]);
+const color=['#d97e21','#293738','#328bad','#b39727'][Math.floor((b.id-1)/2)%4];
+const sides=[{ids:[0,1],n:[0,-1,0]},{ids:[1,2],n:[1,0,0]},{ids:[2,3],n:[0,1,0]},{ids:[3,0],n:[-1,0,0]}];
+for(const {ids:[a,c],n} of sides){if(dot(n,sub(cam.eye,center(b)))>0)cargoFace([top[a],top[c],bottom[c],bottom[a]],cargoTexture(color),sel?'#117f83':'#3f4d4f')}
+cargoFace(top,cargoTexture(color,true),sel?'#117f83':'#6a7779');
+if(sel)polygon(top,null,'#117f83',3);
+if(state.labels){const pt=project([x+w/2,y+l/2,z+h+.012]);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui,sans-serif';const width=Math.max(23,ctx.measureText(String(b.id)).width+12);ctx.fillStyle='#f6f5e9ee';ctx.fillRect(pt[0]-width/2,pt[1]-10,width,20);ctx.fillStyle=sel?'#075b60':'#263e42';ctx.fillText(String(b.id),pt[0],pt[1]);ctx.restore()}
+}}
+function hitBox(point){for(const b of [...boxes].sort((a,b)=>b.level-a.level||b.id-a.id)){const [w,l]=dimsBox(b),z=(b.level+1)*BOX.height,poly=[[b.x,b.y,z],[b.x+w,b.y,z],[b.x+w,b.y+l,z],[b.x,b.y+l,z]].map(project);let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>point[1])!==(yj>point[1])&&point[0]<(xj-xi)*(point[1]-yi)/(yj-yi)+xi)inside=!inside}if(inside)return b}return null}
+$('addBox').onclick=addBox;
+$('removeBox').onclick=()=>{if(selected===null){status('Select a box first');return}const i=boxes.findIndex(b=>b.id===selected);if(i>=0)boxes.splice(i,1);selected=boxes.length?boxes[boxes.length-1].id:null;syncBoxUI();redraw()};
+$('clearBoxes').onclick=()=>{if(boxes.length&&!confirm('Remove all boxes from the layout?'))return;boxes.length=0;selected=null;syncBoxUI();redraw()};
+$('rotateBox').onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b)mutateBox({rot:!b.rot});else status('Select a box first')};
+for(const [id,dx,dy] of [['moveLeft',-1,0],['moveRight',1,0],['moveUp',0,1],['moveDown',0,-1]])$(id).onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b){let step=Number($('stepSize').value);mutateBox(moveToContact(b,b.x+dx*step,b.y+dy*step))}else status('Select a box first')};
+$('boxLevel').onchange=()=>mutateBox({level:Number($('boxLevel').value)});
+window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!['SELECT','INPUT'].includes(document.activeElement.tagName)){e.preventDefault();$('move'+e.key.slice(5)).click()}});
+syncBoxUI();
+
+resized();
+})();
+</script></body></html>
