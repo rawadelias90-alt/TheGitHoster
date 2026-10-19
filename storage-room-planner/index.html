@@ -20,6 +20,7 @@
 <div class="sidehead">Box planner</div>
 <div class="planner-controls">
 <button id="addBox" class="primary">+ Add box</button><button id="removeBox">Remove selected</button>
+<button id="restoreLayout" style="grid-column:span 2">Restore 37-box layout</button>
 <button id="rotateBox">Rotate 90°</button><button id="clearBoxes">Clear all</button>
 </div>
 <div class="box-status" id="boxStatus">0 boxes · select Add box to begin</div>
@@ -30,7 +31,7 @@
 <label>Stack level <select id="boxLevel"><option value="0">Floor</option><option value="1">Level 2</option><option value="2">Level 3</option><option value="3">Level 4</option><option value="4">Level 5</option></select></label></div>
 
 </aside></div>
-<div class="bottomline"><b>For box planning:</b> Wrapped cargo 0.71 × 0.51 × 0.61 m (W × H × D). Use Add box to place items edge to edge. Arrows stop at box edges and walls; drag for precise placement. The 60 cm grid is a floor measurement guide, not a recommended stacking pattern.</div>
+<div class="bottomline"><b>For box planning:</b> Wrapped cargo 0.71 × 0.51 × 0.61 m (W × H × D). Use Add box to place items edge to edge. Arrows stop at box edges and walls; drag for precise placement. Default: 37 boxes. Window: 180 × 150 cm, sill 120 cm above floor, recess 60 cm. Chair shown schematically. The 60 cm grid is a floor measurement guide.</div>
 </main>
 <script>
 (()=>{'use strict';
@@ -38,26 +39,69 @@ const canvas=document.getElementById('model'),ctx=canvas.getContext('2d');
 const state={W:3,L:4.2,H:3,BW:1.8,BD:1.5,az:-.94,el:.71,zoom:1,grid:true,cut:true,view:'3d',labels:true,drag:false};
 let cw=700,ch=530,dpr=1,prev=null,lastMove=null,boxDrag=null;const boxes=[];let selected=null,nextId=1;
 const BOX={width:.71,depth:.61,height:.51};
+// Window centred in the rear wall; recess extends outward, beyond the room.
+const WINDOW={x:.6,width:1.8,sill:1.2,height:1.5,depth:.6};
+// Small schematic chair facing the window; its footprint stays clear of cargo.
+const CHAIR={id:'chair',fixed:true,x:1.29,y:3.5,width:.42,depth:.42,height:.8};
+function defaultLayout(){
+ boxes.length=0;const used=new Set([31,29,30,27,28,24,10,7,4,3,26,25,35,36,37]);let id=1;
+ const allocate=()=>{while(used.has(id))id++;return id++};
+ const stack=(x,y,levels,rot,topId)=>{for(let level=0;level<levels;level++)boxes.push({id:level===levels-1?topId:allocate(),x,y,level,rot})};
+ [31,29,30,27,28].forEach((id,i)=>stack(0,Number((.65+i*.71).toFixed(2)),3,true,id));
+ [24,10,7,4,3].forEach((id,i)=>stack(2.39,Number((.65+i*.71).toFixed(2)),2,true,id));
+ stack(0,0,3,false,26);stack(.71,0,3,false,25);
+ [37,36,35].forEach((id,i)=>stack(1.2,Number((.65+i*.71).toFixed(2)),2,true,id));
+ selected=null;nextId=38;
+}
 const $=id=>document.getElementById(id);
 const vec=(x,y,z=0)=>[x,y,z],sub=(a,b)=>a.map((n,i)=>n-b[i]),dot=(a,b)=>a.reduce((v,n,i)=>v+n*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{let l=Math.hypot(...a);return a.map(v=>v/l)};
 function camera(){const {az,el}=state,center=[1.5,1.45,1.30],eye=[center[0]+Math.cos(az)*Math.cos(el)*10,center[1]+Math.sin(az)*Math.cos(el)*10,center[2]+Math.sin(el)*10];let f=norm(sub(center,eye)),r=norm(cross(f,[0,0,1])),u=norm(cross(r,f));return {center,eye,f,r,u};}
 function transform(p,cam){let a=sub(p,cam.center);return [dot(a,cam.r),dot(a,cam.u)];}
 let cam,scale,ox,oy;
 function project(p){let a=transform(p,cam);return [ox+a[0]*scale,oy-a[1]*scale];}
-function fit(){cam=camera();let b=[];for(let x of [0,3])for(let y of [-1.5,4.2])for(let z of [0,3])b.push(transform([x,y,z],cam));let xs=b.map(v=>v[0]),ys=b.map(v=>v[1]);const bw=Math.max(...xs)-Math.min(...xs),bh=Math.max(...ys)-Math.min(...ys);scale=state.zoom*Math.min((cw-60)/(bw+.5),(ch-70)/(bh+.6));ox=cw/2-(Math.max(...xs)+Math.min(...xs))*scale/2;oy=ch/2+(Math.max(...ys)+Math.min(...ys))*scale/2;}
+function fit(){cam=camera();let b=[];for(let x of [0,3])for(let y of [-1.5,4.8])for(let z of [0,3])b.push(transform([x,y,z],cam));let xs=b.map(v=>v[0]),ys=b.map(v=>v[1]);const bw=Math.max(...xs)-Math.min(...xs),bh=Math.max(...ys)-Math.min(...ys);scale=state.zoom*Math.min((cw-60)/(bw+.5),(ch-70)/(bh+.6));ox=cw/2-(Math.max(...xs)+Math.min(...xs))*scale/2;oy=ch/2+(Math.max(...ys)+Math.min(...ys))*scale/2;}
 function polygon(pts,fill,stroke,line=1,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();pts.forEach((p,i)=>{const a=project(p);if(!i)ctx.moveTo(...a);else ctx.lineTo(...a)});ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke()}ctx.restore()}
 function line(a,b,color,width=1,dash=[]){const A=project(a),B=project(b);ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(...A);ctx.lineTo(...B);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
 function label(text,point,background='#ffffffea',fg='#355461',tiny=false){const p=project(point);ctx.save();ctx.font=`${tiny?'600 10px':'700 11px'} system-ui,-apple-system,sans-serif`;let tw=ctx.measureText(text).width;let ww=tw+17,hh=tiny?24:26;ctx.fillStyle=background;ctx.strokeStyle='#ffffff85';ctx.beginPath();ctx.roundRect(p[0]-ww/2,p[1]-hh/2,ww,hh,8);ctx.fill();ctx.stroke();ctx.fillStyle=fg;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,p[0],p[1]+.5);ctx.restore()}
-function walls(){let segments=[{a:[0,0],b:[0,4.2],c:'#95aebc'},{a:[3,0],b:[3,4.2],c:'#95aebc'},{a:[0,4.2],b:[3,4.2],c:'#95aebc'}, {a:[0,-state.BD],b:[state.BW,-state.BD],c:'#4eaa88'},{a:[0,0],b:[state.BW,0],c:'#4eaa88'},{a:[state.BW,-state.BD],b:[state.BW,0],c:'#4eaa88'}];let order=segments.map(s=>({...s,d:dot(sub([(s.a[0]+s.b[0])/2,(s.a[1]+s.b[1])/2,0],cam.eye),cam.f)})).sort((a,b)=>b.d-a.d);
+function walls(){let segments=[{a:[0,0],b:[0,4.2],c:'#95aebc'},{a:[3,0],b:[3,4.2],c:'#95aebc'},{a:[0,-state.BD],b:[state.BW,-state.BD],c:'#4eaa88'},{a:[0,0],b:[state.BW,0],c:'#4eaa88'},{a:[state.BW,-state.BD],b:[state.BW,0],c:'#4eaa88'}];let order=segments.map(s=>({...s,d:dot(sub([(s.a[0]+s.b[0])/2,(s.a[1]+s.b[1])/2,0],cam.eye),cam.f)})).sort((a,b)=>b.d-a.d);
 for(let s of order){let {a,b,c}=s;let A=vec(...a,0),B=vec(...b,0),U=vec(...a,state.cut?1.13:3),V=vec(...b,state.cut?1.13:3),T=vec(...a,3),S=vec(...b,3);
 if(state.view==='top'){polygon([A,B,vec(...b,.18),vec(...a,.18)],c,null,0,.7);continue}
 if(state.cut){polygon([U,V,S,T],c,null,1,.10);line(U,T,'#728d9e6f',.8,[4,6]);line(V,S,'#728d9e6f',.8,[4,6])}
 polygon([A,B,V,U],c,'#7995a4',.8,state.cut?.75:.42);line(U,V,'#617f91',1.4)
 }}
+function windowWall(){
+ const x=WINDOW.x,r=x+WINDOW.width,y=state.L,d=y+WINDOW.depth,s=WINDOW.sill,t=s+WINDOW.height;
+ const panel=(a,b,c,e)=>polygon([[a,y,c],[b,y,c],[b,y,e],[a,y,e]],'#95aebc','#7995a440',.7,state.cut?.13:.42);
+ if(state.view==='top'){
+  polygon([[x,y,s],[r,y,s],[r,d,s],[x,d,s]],'#d9e9e4','#7c9994',1);
+  line([x,d,s],[r,d,s],'#477d75',2);return;
+ }
+ panel(0,x,0,3);panel(r,3,0,3);panel(x,r,0,s);panel(x,r,t,3);
+ polygon([[x,y,s],[r,y,s],[r,d,s],[x,d,s]],'#e2e9e3','#91aaa3',1);
+ polygon([[x,y,t],[r,y,t],[r,d,t],[x,d,t]],'#d8e5e4b0','#91aaa360',.7);
+ polygon([[x,y,s],[x,d,s],[x,d,t],[x,y,t]],'#c6d9d3a0','#91aaa3',.8);
+ polygon([[r,y,s],[r,d,s],[r,d,t],[r,y,t]],'#c6d9d3a0','#91aaa3',.8);
+ const frame=[[x,d,s],[r,d,s],[r,d,t],[x,d,t]];
+ polygon(frame,'#d7eeeea8','#48867d',2);
+ line([x+WINDOW.width/2,d,s],[x+WINDOW.width/2,d,t],'#7a9f98',1.3);
+ line([x,y,s],[x,y,t],'#7d9a92',1);line([r,y,s],[r,y,t],'#7d9a92',1);
+}
+function chairBlock(x,y,z,w,l,height,color){
+ const base=[[x,y,z],[x+w,y,z],[x+w,y+l,z],[x,y+l,z]],top=base.map(p=>[p[0],p[1],p[2]+height]);
+ for(const [a,b,n] of [[0,1,[0,-1,0]],[1,2,[1,0,0]],[2,3,[0,1,0]],[3,0,[-1,0,0]]])if(dot(n,sub(cam.eye,[x+w/2,y+l/2,z]))>0)polygon([base[a],base[b],top[b],top[a]],color,'#657c7860',.7);
+ polygon(top,color,'#657c7860',.7);
+}
+function drawChair(){
+ const {x,y,width:w,depth:l}=CHAIR;
+ for(const dx of [.04,w-.07])for(const dy of [.04,l-.07])chairBlock(x+dx,y+dy,0,.03,.03,.43,'#697c77');
+ chairBlock(x,y,.43,w,l,.06,'#d7d2bf');
+ // Backrest is on the room side, so the chair faces the window.
+ chairBlock(x+.02,y,.49,w-.04,.045,.31,'#c2c6b9');
+}
 function grid(){if(!state.grid)return;for(let i=0;i<=5;i++){let x=i*.6;line([x,0,.022],[x,4.2,.022],'#ffffffed',i===0||i===5?1.5:1.05)}for(let j=0;j<=7;j++){let y=j*.6;line([0,y,.023],[3,y,.023],'#ffffffed',j===0||j===7?1.5:1.05)}}
 function guides(){if(state.view==='top')return;for(let x of [0,3])for(let y of [-1.5,4.2])line([x,y,0],[x,y,3],'#59758698',1.2);
 for(let z=.6;z<3.01;z+=.6)line([3,0,z],[3.09,0,z],'#1c7d80a9',1.3)}
-function dims(){if(state.view!=='top')return;const C='#416378a3';line([0,4.48,.03],[3,4.48,.03],C,1.1);line([0,4.34,.03],[0,4.58,.03],C,1.1);line([3,4.34,.03],[3,4.58,.03],C,1.1);if(state.labels)label('3.00 m · 5 tiles',[1.5,4.48,.04]);line([-.36,0,.03],[-.36,4.2,.03],C,1.1);line([-.48,0,.03],[-.24,0,.03],C,1.1);line([-.48,4.2,.03],[-.24,4.2,.03],C,1.1);if(state.labels)label('4.20 m · 7 tiles',[-.36,2.1,.03]); }
+function dims(){if(state.view!=='top')return;const C='#416378a3';line([0,5.05,.03],[3,5.05,.03],C,1.1);line([0,4.94,.03],[0,5.15,.03],C,1.1);line([3,4.94,.03],[3,5.15,.03],C,1.1);if(state.labels)label('3.00 m · 5 tiles',[1.5,5.05,.04]);line([-.36,0,.03],[-.36,4.2,.03],C,1.1);line([-.48,0,.03],[-.24,0,.03],C,1.1);line([-.48,4.2,.03],[-.24,4.2,.03],C,1.1);if(state.labels)label('4.20 m · 7 tiles',[-.36,2.1,.03]); }
 function render(){if(!cw||!ch)return;ctx.clearRect(0,0,cw,ch);fit();
 // Ground shadow to give the model a visual anchor.
 polygon([[-.11,-1.64,-.1],[3.15,-1.64,-.1],[3.15,4.30,-.1],[-.11,4.30,-.1]],'#d6e4eb9b',null);
@@ -65,7 +109,7 @@ polygon([[0,0,0],[3,0,0],[3,4.2,0],[0,4.2,0]],'#e2ebee','#8ea8b6',1.5);
 
 polygon([[0,-state.BD,.009],[state.BW,-state.BD,.009],[state.BW,0,.009],[0,0,.009]],'#2eaa74',null);
 polygon([[state.BW,-state.BD,.009],[3,-state.BD,.009],[3,0,.009],[state.BW,0,.009]],'#ccd7df',null);
-grid();walls();guides();drawBoxes();
+grid();walls();windowWall();guides();drawBoxes();
 if(state.labels && state.view==='top'){
 label('BATHROOM',[state.BW*.51,-state.BD*.54,.05],'#e5f9ed','#187f55',true);
 label('ENTRY',[(state.BW+3)/2,-state.BD*.48,.05],'#f7fafce8','#516c7f',true);
@@ -132,9 +176,10 @@ $('grid').onclick=()=>{state.grid=!state.grid;toggle('grid',state.grid);redraw()
 $('labels').onclick=()=>{state.labels=!state.labels;toggle('labels',state.labels);$('labels').textContent=state.labels?'Hide labels':'Show labels';$('labels').setAttribute('aria-pressed',String(state.labels));redraw()};
 
 
-function dimsBox(b){return b.rot?[BOX.depth,BOX.width]:[BOX.width,BOX.depth]}
+function dimsBox(b){if(b.fixed)return [b.width,b.depth];return b.rot?[BOX.depth,BOX.width]:[BOX.width,BOX.depth]}
 function overlaps(a,b){if(a.id===b.id||a.level!==b.level)return false;const [aw,al]=dimsBox(a),[bw,bl]=dimsBox(b);return a.x<b.x+bw-.001&&a.x+aw>b.x+.001&&a.y<b.y+bl-.001&&a.y+al>b.y+.001}
-function valid(b){const [w,l]=dimsBox(b);return b.x>=-.0001&&b.y>=-.0001&&b.x+w<=3.0001&&b.y+l<=4.2001&&b.level>=0&&b.level<=4&&(b.level+1)*BOX.height<=state.H+.0001&&!boxes.some(o=>overlaps(b,o))}
+function chairObstacles(b){return b.level*BOX.height<CHAIR.height?[{...CHAIR,level:b.level}]:[]}
+function valid(b){const [w,l]=dimsBox(b);return b.x>=-.0001&&b.y>=-.0001&&b.x+w<=3.0001&&b.y+l<=4.2001&&b.level>=0&&b.level<=4&&(b.level+1)*BOX.height<=state.H+.0001&&![...boxes,...chairObstacles(b)].some(o=>overlaps(b,o))}
 function status(message){$('boxStatus').textContent=`${boxes.length} box${boxes.length===1?'':'es'} · ${message}`}
 function syncBoxUI(){const b=boxes.find(o=>o.id===selected);$('boxLevel').value=b?String(b.level):'0';status(b?`Box #${b.id} selected · ${b.rot?'61 × 71':'71 × 61'} cm footprint · 51 cm high · level ${b.level+1}`:'No box selected')}
 // Sweep each movement axis to the first box edge or room boundary.
@@ -143,7 +188,7 @@ function moveAxis(b,axis,target){
  const [w,l]=dimsBox(b),size=axis==='x'?w:l,other=axis==='x'?'y':'x',span=axis==='x'?l:w;
  const limit=axis==='x'?state.W:state.L,start=b[axis],direction=Math.sign(target-start);
  let position=Math.max(0,Math.min(limit-size,target));
- for(const o of boxes){
+ for(const o of [...boxes,...chairObstacles(b)]){
   if(o.id===b.id||o.level!==b.level)continue;
   const [ow,ol]=dimsBox(o),osize=axis==='x'?ow:ol,ospan=axis==='x'?ol:ow;
   if(b[other]>=o[other]+ospan-1e-7||b[other]+span<=o[other]+1e-7)continue;
@@ -197,9 +242,9 @@ const p=points.map(project);ctx.save();ctx.beginPath();p.forEach((v,i)=>i?ctx.li
 ctx.transform((p[1][0]-p[0][0])/texture.width,(p[1][1]-p[0][1])/texture.width,(p[3][0]-p[0][0])/texture.height,(p[3][1]-p[0][1])/texture.height,p[0][0],p[0][1]);ctx.drawImage(texture,0,0);ctx.restore();polygon(points,null,stroke,1);
 }
 function drawBoxes(){
-const center=b=>{const [w,l]=dimsBox(b);return [b.x+w/2,b.y+l/2,(b.level+.5)*BOX.height]};
-const ordered=[...boxes].sort((a,b)=>dot(sub(center(b),cam.eye),cam.f)-dot(sub(center(a),cam.eye),cam.f));
-for(const b of ordered){const [w,l]=dimsBox(b),x=b.x,y=b.y,z=b.level*BOX.height,h=BOX.height,sel=b.id===selected;
+const center=b=>{const [w,l]=dimsBox(b);return [b.x+w/2,b.y+l/2,b.fixed?b.height/2:(b.level+.5)*BOX.height]};
+const ordered=[...boxes,CHAIR].sort((a,b)=>dot(sub(center(b),cam.eye),cam.f)-dot(sub(center(a),cam.eye),cam.f));
+for(const b of ordered){if(b.fixed){drawChair();continue}const [w,l]=dimsBox(b),x=b.x,y=b.y,z=b.level*BOX.height,h=BOX.height,sel=b.id===selected;
 const bottom=[[x,y,z],[x+w,y,z],[x+w,y+l,z],[x,y+l,z]],top=bottom.map(p=>[p[0],p[1],p[2]+h]);
 const color=['#d97e21','#293738','#328bad','#b39727'][Math.floor((b.id-1)/2)%4];
 const sides=[{ids:[0,1],n:[0,-1,0]},{ids:[1,2],n:[1,0,0]},{ids:[2,3],n:[0,1,0]},{ids:[3,0],n:[-1,0,0]}];
@@ -210,12 +255,14 @@ if(state.labels){const pt=project([x+w/2,y+l/2,z+h+.012]);ctx.save();ctx.textAli
 }}
 function hitBox(point){for(const b of [...boxes].sort((a,b)=>b.level-a.level||b.id-a.id)){const [w,l]=dimsBox(b),z=(b.level+1)*BOX.height,poly=[[b.x,b.y,z],[b.x+w,b.y,z],[b.x+w,b.y+l,z],[b.x,b.y+l,z]].map(project);let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>point[1])!==(yj>point[1])&&point[0]<(xj-xi)*(point[1]-yi)/(yj-yi)+xi)inside=!inside}if(inside)return b}return null}
 $('addBox').onclick=addBox;
+$('restoreLayout').onclick=()=>{if(confirm('Restore the original 37-box layout? Current box changes will be replaced.')){defaultLayout();syncBoxUI();redraw()}};
 $('removeBox').onclick=()=>{if(selected===null){status('Select a box first');return}const i=boxes.findIndex(b=>b.id===selected);if(i>=0)boxes.splice(i,1);selected=boxes.length?boxes[boxes.length-1].id:null;syncBoxUI();redraw()};
 $('clearBoxes').onclick=()=>{if(boxes.length&&!confirm('Remove all boxes from the layout?'))return;boxes.length=0;selected=null;syncBoxUI();redraw()};
 $('rotateBox').onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b)mutateBox({rot:!b.rot});else status('Select a box first')};
 for(const [id,dx,dy] of [['moveLeft',-1,0],['moveRight',1,0],['moveUp',0,1],['moveDown',0,-1]])$(id).onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b){let step=Number($('stepSize').value);mutateBox(moveToContact(b,b.x+dx*step,b.y+dy*step))}else status('Select a box first')};
 $('boxLevel').onchange=()=>mutateBox({level:Number($('boxLevel').value)});
 window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!['SELECT','INPUT'].includes(document.activeElement.tagName)){e.preventDefault();$('move'+e.key.slice(5)).click()}});
+defaultLayout();
 syncBoxUI();
 
 resized();
