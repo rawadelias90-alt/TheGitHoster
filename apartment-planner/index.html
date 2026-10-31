@@ -1,13 +1,132 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Casa · Apartment Studio</title>
-    <script type="module" crossorigin src="./assets/index-B5VFFEum.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DJ55O6ok.css">
+    <title>Casa · Your studio has moved</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: #f3eee4;
+        color: #343a30;
+        font:
+          15px Arial,
+          sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      main {
+        max-width: 480px;
+        margin: 24px;
+        padding: 36px;
+        border-radius: 28px;
+        background: #fffaf1;
+        box-shadow: 0 20px 80px #3d493021;
+      }
+      h1 {
+        font:
+          36px Georgia,
+          serif;
+        letter-spacing: -1px;
+        margin: 0 0 14px;
+      }
+      p {
+        line-height: 1.6;
+        color: #78705f;
+      }
+      a,
+      button {
+        display: block;
+        border-radius: 24px;
+        border: 0;
+        background: #354b3b;
+        color: #fff;
+        padding: 14px 20px;
+        font: inherit;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        margin-top: 12px;
+      }
+      .secondary {
+        background: #e6dfce;
+        color: #394636;
+      }
+      small {
+        display: block;
+        color: #8b826f;
+        font-size: 12px;
+        line-height: 1.5;
+        margin-top: 20px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <main>
+      <h1>Your studio has a new home.</h1>
+      <p id="message">Opening the new shared apartment studio…</p>
+      <button id="backup" hidden>Download my old layouts</button
+      ><a id="open" href="https://casa-apartment-studio.rawad-elias.chatgpt.site">Open the new studio ↗</a
+      ><small id="help" hidden
+        >In the new studio, choose Layouts → Import old layouts. They stay on
+        your device until you choose Share this layout.</small
+      >
+    </main>
+    <script>
+      const target = "https://casa-apartment-studio.rawad-elias.chatgpt.site";
+      let current = null,
+        layouts = {},
+        storePicks = [];
+      try {
+        current = JSON.parse(
+          localStorage.getItem("casa-public-model-v1") || "null",
+        );
+        layouts = JSON.parse(
+          localStorage.getItem("casa-public-layouts-v1") || "{}",
+        );
+        storePicks = JSON.parse(
+          localStorage.getItem("casa-retailer-products-v1") || "[]",
+        );
+      } catch {}
+      if (
+        !current &&
+        !Object.keys(layouts || {}).length &&
+        !storePicks.length
+      ) {
+        location.replace(target);
+      } else {
+        document.getElementById("message").textContent =
+          "Your previous work is stored in this browser. Download a backup before opening the new studio.";
+        document.getElementById("backup").hidden = false;
+        document.getElementById("help").hidden = false;
+        document.getElementById("backup").onclick = () => {
+          const blob = new Blob(
+              [
+                JSON.stringify(
+                  {
+                    format: "casa-local-backup",
+                    version: 1,
+                    current,
+                    layouts: layouts || {},
+                    storePicks,
+                  },
+                  null,
+                  2,
+                ),
+              ],
+              { type: "application/json" },
+            ),
+            url = URL.createObjectURL(blob),
+            a = document.createElement("a");
+          a.href = url;
+          a.download = "casa-old-layouts.json";
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+          document.getElementById("message").textContent =
+            "Your backup is ready. Open the new studio, then import it under Layouts.";
+        };
+      }
+    </script>
   </body>
 </html>
