@@ -20,16 +20,307 @@ export const NATIONALITIES = [
 ];
 
 const MAINLAND_ENTITIES = ["ad", "dubai", "alain"];
-const COMMON_REQUIRED = ["Passport copy", "Candidate photograph", "Signed AECOM Offer / Contract"];
-const EDUCATION_EMPLOYMENT_VISA = [
-  "Education Certificate — attested where required for the applicable skilled classification",
-  "Educational Verification / Equivalency — where required and applicable to the Employment Visa",
-  "Education Details document — where required for a candidate with an education certificate but no equivalency or verification",
-  "University-dependent supporting form (concerned form) — only where requested by the relevant university or authority; not mandatory for every candidate",
-];
-const EDUCATION_WORK_PERMIT = [
-  "Attested Education Certificate — only where required for the applicable Work Permit classification",
-];
+const FINAL_DOCUMENT_REQUIREMENTS = {
+  "ad-0": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Educational Details Form — if the candidate holds an educational certificate but does not have UAE equivalency",
+      "Home-country Police Clearance Certificate attested by the UAE Embassy in the home country — required for overseas candidates or candidates in the UAE on a tourist or visit visa",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document",
+      "Current valid tourist or visit visa — if currently in the UAE on that status",
+      "Previous labour-card/work-permit and/or residence-visa cancellation documents — if leaving another UAE employer, according to actual status",
+      "Copies of UAE visas issued in previous years"
+    ]
+  },
+  "ad-1": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "ad-2": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID",
+      "Sponsor passport copy",
+      "Sponsor valid UAE residence visa",
+      "Sponsor valid Emirates ID",
+      "Sponsor No Objection Letter"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "ad-3": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "Valid Emirates ID",
+      "Family Book",
+      "Family member details"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "ad-4": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "GCC-country National ID"
+    ],
+    "conditional": [
+      "Valid Emirates ID — if held; otherwise advise Mobilisation",
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UID and linked active mobile number — where applicable; for first UAE entry, Mobilisation advises on entry and UID readiness",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "aa-0": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Educational Details Form — if the candidate holds an educational certificate but does not have UAE equivalency",
+      "Home-country Police Clearance Certificate attested by the UAE Embassy in the home country — required for overseas candidates or candidates in the UAE on a tourist or visit visa",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document",
+      "Current valid tourist or visit visa — if currently in the UAE on that status",
+      "Previous labour-card/work-permit and/or residence-visa cancellation documents — if leaving another UAE employer, according to actual status",
+      "Copies of UAE visas issued in previous years"
+    ]
+  },
+  "aa-1": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "aa-2": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID",
+      "Sponsor passport copy",
+      "Sponsor valid UAE residence visa",
+      "Sponsor valid Emirates ID",
+      "Sponsor No Objection Letter"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "aa-3": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "Valid Emirates ID",
+      "Family Book",
+      "Family member details"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "aa-4": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "GCC-country National ID"
+    ],
+    "conditional": [
+      "Valid Emirates ID — if held; otherwise advise Mobilisation",
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UID and linked active mobile number — where applicable; for first UAE entry, Mobilisation advises on entry and UID readiness",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dxb-0": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Passport Full Cover — front cover"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Educational Details Form — if the candidate holds an educational certificate but does not have UAE equivalency",
+      "Home-country Police Clearance Certificate attested by the UAE Embassy in the home country — required for overseas candidates or candidates in the UAE on a tourist or visit visa",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document",
+      "Current valid tourist or visit visa — if currently in the UAE on that status",
+      "Previous labour-card/work-permit and/or residence-visa cancellation documents — if leaving another UAE employer, according to actual status",
+      "Copies of UAE visas issued in previous years"
+    ]
+  },
+  "dxb-1": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dxb-2": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID",
+      "Sponsor passport copy",
+      "Sponsor valid UAE residence visa",
+      "Sponsor valid Emirates ID",
+      "Sponsor No Objection Letter"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dxb-3": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "Valid Emirates ID",
+      "Family Book",
+      "Family member details"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dxb-4": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "GCC-country National ID"
+    ],
+    "conditional": [
+      "Valid Emirates ID — if held; otherwise advise Mobilisation",
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UID and linked active mobile number — where applicable; for first UAE entry, Mobilisation advises on entry and UID readiness",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dwc-0": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Passport Full Cover — front cover"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Educational Details Form — if the candidate holds an educational certificate but does not have UAE equivalency",
+      "Home-country Police Clearance Certificate attested by the UAE Embassy in the home country — required for overseas candidates or candidates in the UAE on a tourist or visit visa",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document",
+      "Current valid tourist or visit visa — if currently in the UAE on that status",
+      "Previous labour-card/work-permit and/or residence-visa cancellation documents — if leaving another UAE employer, according to actual status",
+      "Copies of UAE visas issued in previous years"
+    ]
+  },
+  "dwc-1": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID",
+      "Current UAE Medical Insurance Card"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dwc-2": {
+    "required": [
+      "Passport copy — at least six months’ validity",
+      "Candidate photograph",
+      "Current UAE residence visa — at least six months’ validity",
+      "Current valid Emirates ID",
+      "Sponsor passport copy",
+      "Sponsor valid UAE residence visa",
+      "Sponsor valid Emirates ID",
+      "Sponsor No Objection Letter",
+      "Current UAE Medical Insurance Card"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "UAE Equivalency Certificate — where applicable; holding a degree alone does not make equivalency mandatory",
+      "Previous labour-card or work-permit cancellation — if leaving another UAE employer",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dwc-3": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "Valid Emirates ID",
+      "Family Book",
+      "Family member details"
+    ],
+    "conditional": [
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  },
+  "dwc-4": {
+    "required": [
+      "Passport copy",
+      "Candidate photograph",
+      "GCC-country National ID"
+    ],
+    "conditional": [
+      "Valid Emirates ID — if held; otherwise advise Mobilisation",
+      "UAE Attested Degree Certificate — if an attested certificate is required for the role or applicable skilled classification",
+      "Official evidence linking different names — if the education certificate name differs from the passport or identity document"
+    ]
+  }
+};
 const EDUCATION_NAME_NOTE = "If the name on the education certificate differs from the passport or other identity document, the candidate must provide an official document confirming that both names belong to the same person, such as a birth certificate, government-issued ID, previous passport, marriage certificate, or court-issued letter. This applies only when an education certificate with a name difference is provided.";
 
 const entityLabel = entity => ENTITIES.find(item => item.value === entity)?.label ?? "";
@@ -62,7 +353,7 @@ function readinessFor({ service, hireStatus, specialHire, residency, category })
     "Correct sponsoring entity is confirmed",
     "Correct onboarding service is confirmed",
     "Personal email and contact number are confirmed",
-    "Current UAE visa / residency is confirmed where applicable",
+    "Current tourist/visit status, previous visas and cancellation evidence are confirmed for Employment Visa cases where applicable; current residence documentation is confirmed for existing-residency Work Permit cases",
     "Skilled status is confirmed where applicable",
     "Expected joining date is confirmed for planning and coordination",
   ];
@@ -82,32 +373,23 @@ function readinessFor({ service, hireStatus, specialHire, residency, category })
   return items;
 }
 
-function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "", hireStatus = "" } = {}) {
-  const required = [...COMMON_REQUIRED];
-  const conditional = [
-    ...(service === "ev" ? EDUCATION_EMPLOYMENT_VISA : EDUCATION_WORK_PERMIT),
-    "Police Clearance Certificate — where requested or applicable",
-    "Emirates ID — where applicable",
-  ];
-
-  if (service === "ev" && hireStatus === "local") {
-    // One or the other, according to actual in-country immigration status.
-    required.push("In-country status evidence — residence visa cancellation document OR valid visit visa, whichever applies");
-  } else {
-    conditional.push("Current UAE visa / residency — where applicable");
+function documentsFor(entity, { specialHire = false, relative = false, category = "", service = "", hireStatus = "", gccStatus = "" } = {}) {
+  const location = {ad:"ad",alain:"aa",dubai:"dxb",dwc:"dwc"}[entity];
+  const serviceIndex = service === "ev" ? "0" : service === "wp" ? (relative ? "2" : "1") : category === "emirati" ? "3" : "4";
+  const source = FINAL_DOCUMENT_REQUIREMENTS[location + "-" + serviceIndex];
+  if (!source) return { required: [], conditional: [] };
+  const documents = structuredClone(source);
+  if (service === "ev" && hireStatus === "overseas") {
+    documents.conditional = documents.conditional.filter(item => !item.startsWith("Current valid tourist or visit visa"));
   }
-
-  if (service === "ev" && ["dubai", "dwc"].includes(entity)) {
-    conditional.push("External Cover Passport — Employment Visa cases in Dubai Mainland and Dubai South (DWC) only");
+  if (service === "ev" && specialHire) documents.required.push("Home-country National ID");
+  if (service === "ev" && !specialHire && ["ad", "alain"].includes(entity)) {
+    documents.conditional.push("Home-country National ID — also required for Iraqi, Iranian and Afghan Employment Visa candidates; this alone does not make them Special Hires");
   }
-  if (specialHire) required.push("Home-country National ID");
-  if (relative) {
-    conditional.push("Sponsor passport, residence visa, Emirates ID and No Objection Certificate — where applicable");
+  if (service === "nat" && category === "gcc" && entity !== "dwc" && gccStatus) {
+    documents.conditional = documents.conditional.filter(item => gccStatus === "existingEid" ? !item.startsWith("UID and linked") : !item.startsWith("Valid Emirates ID"));
   }
-  if (category === "gcc") required.push("GCC-country National ID");
-  if (category === "emirati") required.push("National ID", "Family Book");
-
-  return { required, conditional };
+  return documents;
 }
 
 const step = (owner, title, detail = "") => ({ owner, title, detail });
@@ -458,7 +740,7 @@ function gccNationalMainlandCase(entity, gccStatus) {
     descriptor: `GCC National · ${label}`,
     preHireReadiness: readiness,
     intake1: intake1For(entity, "nat"),
-    documents: documentsFor(entity, { category: "gcc", service: "nat" }),
+    documents: documentsFor(entity, { category: "gcc", service: "nat", gccStatus }),
     candidateActions: actions,
     groProcess,
     groNote: "UID and linked mobile are operational information, not document uploads. Candidate owns Emirates ID issuance or renewal. GCC pension registration starts once a valid Emirates ID is available; Medical is required only when requested for pension registration.",
@@ -557,6 +839,7 @@ function cloneForEntity(base, entity) {
     specialHire: copy.specialHire,
     relative: copy.serviceId.endsWith("relative"),
     category: copy.category ?? "",
+    gccStatus: copy.gccStatus ?? "",
   });
   return copy;
 }
@@ -638,3 +921,4 @@ export function browseCases(entityFilter = "all", serviceFilter = "all") {
   }
   return results;
 }
+

@@ -29,7 +29,7 @@ with sync_playwright() as p:
     assert "Current UAE visa / residency" not in doc.inner_text()
     assert "Name differences in education documents" in doc.inner_text()
     assert "previous passport" in doc.inner_text()
-    assert "university" in doc.inner_text().lower()
+    assert "Educational Details Form" in doc.inner_text()
     assert "OTP 1" not in page.locator(".gro-sequence").inner_text()
     assert "OTP 2" not in page.locator(".gro-sequence").inner_text()
 
@@ -40,7 +40,7 @@ with sync_playwright() as p:
     page.get_by_role("button",name="View service").click()
     page.locator(".detail-section").evaluate_all("panels => panels.forEach(panel => panel.open = true)")
     doc=page.locator(".detail-section").filter(has=page.get_by_role("heading",name="Documents",exact=True))
-    assert "Attested Education Certificate" in doc.inner_text()
+    assert "UAE Attested Degree Certificate" in doc.inner_text()
     assert "Education Details document" not in doc.inner_text()
     assert "Educational Verification / Equivalency" not in doc.inner_text()
     assert "Name differences in education documents" in doc.inner_text()
@@ -69,3 +69,4 @@ with sync_playwright() as p:
     assert page.get_by_text("Name differences in education documents").is_visible()
     page.emulate_media(media="screen")
     browser.close()
+

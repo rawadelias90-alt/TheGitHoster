@@ -48,35 +48,24 @@ test("02 Mainland Work Permit only: signature between two OTPs, followed by Work
  }
 });
 
-test("03 Local Employment Visa documentation requires cancellation OR visit visa, not current residence visa",()=>{
+test("03 Employment Visa uses visit status and previous cancellation; existing-residency Work Permits require current residence",()=>{
  for(const entity of allEntities){
-  const item=ev(entity,"local");
-  const docs=[...item.documents.required,...item.documents.conditional].join(" | ");
-  assert.match(docs,/residence.*cancellation.*or.*visit visa/i,entity);
-  assert.doesNotMatch(docs,/Current UAE visa \/ residency/i,entity);
- }
- for(const entity of allEntities){
-  assert.match(wp(entity,"golden").documents.conditional.join(" | "),/Current UAE visa \/ residency/i);
-  assert.match(wp(entity,"relative").documents.conditional.join(" | "),/Sponsor.*residence visa/i);
+  const local=ev(entity,"local");
+  const docs=[...local.documents.required,...local.documents.conditional].join(" | ");
+  assert.match(docs,/tourist or visit visa/i);
+  assert.match(docs,/residence-visa cancellation/i);
+  assert.doesNotMatch(docs,/Current UAE residence visa/i);
+  assert.match(wp(entity,"golden").documents.required.join(" | "),/Current UAE residence visa/i);
+  assert.match(wp(entity,"relative").documents.required.join(" | "),/Sponsor valid UAE residence visa/i);
  }
 });
-
-test("04 Work Permit-only education requests attested degree, no details/equivalency or concerned form",()=>{
- for(const item of wpAll){
-  const docs=[...item.documents.required,...item.documents.conditional].join(" | ");
-  assert.match(docs,/Attested Education Certificate/i,item.serviceId);
-  assert.doesNotMatch(docs,/Education Details|Equivalency|Educational Verification|concerned form/i,item.serviceId);
- }
-});
-test("04 Employment Visa retains conditional evidence and a university-dependent form",()=>{
- for(const item of evCases){
+test("04 Final education rules retain conditional equivalency for Employment Visa and existing-residency Work Permits",()=>{
+ for(const item of [...evCases,...wpAll]){
   const docs=item.documents.conditional.join(" | ");
-  assert.match(docs,/Education Certificate/i);
-  assert.match(docs,/Educational Verification \/ Equivalency/i);
-  assert.match(docs,/Education Details document/i);
-  assert.match(docs,/university.*form/i);
-  assert.match(docs,/where required|where requested|only when required/i);
-  assert.doesNotMatch(item.documents.required.join(" | "),/Education Details|concerned form/i);
+  assert.match(docs,/Attested Degree Certificate/i);
+  assert.equal(/UAE Equivalency Certificate/.test(docs),item.service!=="nat");
+  assert.equal(/Educational Details Form/.test(docs),item.service==="ev");
+  assert.doesNotMatch(docs,/Educational Verification|university.*form/i);
  }
 });
 
@@ -107,7 +96,7 @@ test("06 Intake 1 checks only passport/photograph; Special Hire National ID is a
   assert.match(item.preHireReadiness.join(" | "),/Home-country National ID.*application.*not.*Intake 1/i);
  }
  for(const entity of allEntities) assert.ok(!ev(entity,"local").documents.required.includes("Home-country National ID"));
- assert.ok(emir("ad").documents.required.includes("National ID"));
+ assert.ok(emir("ad").documents.required.includes("Valid Emirates ID"));
  assert.ok(gcc("ad","existingEid").documents.required.includes("GCC-country National ID"));
 });
 
@@ -135,3 +124,4 @@ test("GCC pension dependencies and effective-date logic remain intact",()=>{
   assert.match(item.completionPoint,/pension/i);
  }
 });
+

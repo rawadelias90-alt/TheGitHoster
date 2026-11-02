@@ -62,9 +62,9 @@ test("Intake 1 is limited to passport and photograph quality verification", () =
 test("education document logic stays separate from Intake 1", () => {
   const item = resolveCase({entity:"ad",service:"ev",hireStatus:"overseas",nationality:"other"});
   const conditional = item.documents.conditional.join(" | ");
-  assert.match(conditional, /Education Certificate/);
-  assert.match(conditional, /Educational Verification \/ Equivalency/);
-  assert.match(conditional, /Education Details document/);
+  assert.match(conditional, /Attested Degree Certificate/);
+  assert.match(conditional, /UAE Equivalency Certificate/);
+  assert.match(conditional, /Educational Details Form/);
   assert.ok(!item.intake1.documents.some(x => /education/i.test(x)));
 });
 
@@ -73,10 +73,10 @@ test("External Cover Passport is Dubai-only where applicable", () => {
   const alain = resolveCase({entity:"alain",service:"ev",hireStatus:"local"});
   const dubai = resolveCase({entity:"dubai",service:"ev",hireStatus:"local"});
   const dwc = resolveCase({entity:"dwc",service:"ev",hireStatus:"local"});
-  assert.ok(!ad.documents.conditional.some(x => /External Cover Passport/.test(x)));
-  assert.ok(!alain.documents.conditional.some(x => /External Cover Passport/.test(x)));
-  assert.ok(dubai.documents.conditional.some(x => /External Cover Passport/.test(x)));
-  assert.ok(dwc.documents.conditional.some(x => /External Cover Passport/.test(x)));
+  assert.ok(!ad.documents.required.some(x => /Passport Full Cover/.test(x)));
+  assert.ok(!alain.documents.required.some(x => /Passport Full Cover/.test(x)));
+  assert.ok(dubai.documents.required.some(x => /Passport Full Cover/.test(x)));
+  assert.ok(dwc.documents.required.some(x => /Passport Full Cover/.test(x)));
 });
 
 test("Special Hire documents and later actions are separated correctly", () => {
@@ -84,8 +84,8 @@ test("Special Hire documents and later actions are separated correctly", () => {
   assert.equal(special.specialHire, true);
   assert.equal(special.outcome, "Special Hire Entry Visa");
   assert.ok(special.documents.required.includes("Home-country National ID"));
-  assert.ok(!special.documents.required.some(x => /Medical|Embassy/i.test(x)));
-  assert.ok(!special.documents.conditional.some(x => /Medical|Embassy/i.test(x)));
+  assert.ok(!special.documents.required.some(x => /Home-Country Medical|UAE Embassy Process/i.test(x)));
+  assert.ok(!special.documents.conditional.some(x => /Home-Country Medical|UAE Embassy Process/i.test(x)));
   assert.ok(special.groProcess.some(step => /Home-Country Medical/.test(step.title)));
   assert.ok(special.groProcess.some(step => /UAE Embassy Process/.test(step.title)));
 });
@@ -93,7 +93,7 @@ test("Special Hire documents and later actions are separated correctly", () => {
 test("national routes require National ID and Emirati-only Family Book", () => {
   const emir = resolveCase({entity:"ad",service:"nat",category:"emirati"});
   const gcc = resolveCase({entity:"ad",service:"nat",category:"gcc",gccStatus:"existingEid"});
-  assert.ok(emir.documents.required.includes("National ID"));
+  assert.ok(emir.documents.required.includes("Valid Emirates ID"));
   assert.ok(emir.documents.required.includes("Family Book"));
   assert.ok(gcc.documents.required.includes("GCC-country National ID"));
   assert.ok(!gcc.documents.required.includes("Family Book"));
@@ -145,10 +145,10 @@ test("Education Details wording never calls for an Award document", () => {
   for (const item of SERVICES) {
     const text = [...item.documents.required, ...item.documents.conditional].join(" | ");
     assert.doesNotMatch(text, /Award or Education Details/i, item.serviceId);
-    if(item.service === "ev") assert.match(text, /Education Details document/i, item.serviceId);
+    if(item.service === "ev") assert.match(text, /Educational Details Form/i, item.serviceId);
     else {
-      assert.match(text, /Attested Education Certificate/i, item.serviceId);
-      assert.doesNotMatch(text, /Education Details document|Educational Verification|Equivalency/i, item.serviceId);
+      assert.match(text, /Attested Degree Certificate/i, item.serviceId);
+      assert.doesNotMatch(text, /Educational Details Form|Educational Verification/i, item.serviceId);
     }
   }
 });
@@ -164,8 +164,9 @@ test("External Cover Passport is limited to Dubai Employment Visa routes", () =>
     ];
     for (const item of cases) {
       assert.ok(item, entity);
-      const hasCover = item.documents.conditional.some(x => /External Cover Passport/i.test(x));
+      const hasCover = item.documents.required.some(x => /Passport Full Cover/i.test(x));
       assert.equal(hasCover, item.service === "ev" && ["dubai", "dwc"].includes(entity), item.serviceId + "/" + entity);
     }
   }
 });
+

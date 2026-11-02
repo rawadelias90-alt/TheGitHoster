@@ -132,7 +132,7 @@ test("Emirati route stays unchanged in mainland and DWC", () => {
     assert.equal(item.serviceId,"nat-"+(entity==="dwc"?"dwc":"mainland")+"-emirati");
     assert.equal(item.gccStatus,undefined);
     assert.ok(item.documents.required.includes("Family Book"));
-    assert.ok(item.documents.required.includes("National ID"));
+    assert.ok(item.documents.required.includes("Valid Emirates ID"));
     assert.ok(item.journey.includes("Medical"));
     assert.ok(item.journey.includes("Pension Enrollment"));
     assert.doesNotMatch(joined(item.candidateActions),/UID/);
@@ -155,3 +155,4 @@ test("Browse exposes three mainland GCC variants per entity but one DWC route", 
   assert.equal(dwc.length,1);
   assert.equal(dwc[0].gccStatus,undefined);
 });
+
