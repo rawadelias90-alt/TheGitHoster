@@ -257,7 +257,7 @@ function hitBox(point){for(const b of [...boxes].sort((a,b)=>b.level-a.level||b.
 $('addBox').onclick=addBox;
 $('restoreLayout').onclick=()=>{if(confirm('Restore the original 37-box layout? Current box changes will be replaced.')){defaultLayout();syncBoxUI();redraw()}};
 $('removeBox').onclick=()=>{if(selected===null){status('Select a box first');return}const i=boxes.findIndex(b=>b.id===selected);if(i>=0)boxes.splice(i,1);selected=boxes.length?boxes[boxes.length-1].id:null;syncBoxUI();redraw()};
-$('clearBoxes').onclick=()=>{if(boxes.length&&!confirm('Remove all boxes from the layout?'))return;boxes.length=0;selected=null;syncBoxUI();redraw()};
+$('clearBoxes').onclick=()=>{if(boxes.length&&!confirm('Remove all boxes from the layout?'))return;boxes.length=0;selected=null;nextId=1;syncBoxUI();redraw()};
 $('rotateBox').onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b)mutateBox({rot:!b.rot});else status('Select a box first')};
 for(const [id,dx,dy] of [['moveLeft',-1,0],['moveRight',1,0],['moveUp',0,1],['moveDown',0,-1]])$(id).onclick=()=>{const b=boxes.find(o=>o.id===selected);if(b){let step=Number($('stepSize').value);mutateBox(moveToContact(b,b.x+dx*step,b.y+dy*step))}else status('Select a box first')};
 $('boxLevel').onchange=()=>mutateBox({level:Number($('boxLevel').value)});
