@@ -200,11 +200,14 @@ function moveAxis(b,axis,target){
 function moveToContact(b,x,y){return moveAxis(moveAxis(b,'x',x),'y',y)}
 function mutateBox(update){const b=boxes.find(o=>o.id===selected);if(!b){status('Select a box first');return}const copy={...b,...update};if(!valid(copy)){status('Blocked: outside room or overlaps another box');return}Object.assign(b,copy);syncBoxUI();redraw()}
 function addBox(){
+ const usedIds=new Set(boxes.map(b=>b.id));
+ let availableId=1;
+ while(usedIds.has(availableId))availableId++;
  for(let level=0;level<5;level++){
   const row=boxes.filter(b=>b.level===level);
   const xs=[0,...row.map(b=>Number((b.x+dimsBox(b)[0]).toFixed(6)))].sort((a,b)=>a-b);
   const ys=[0,...row.map(b=>Number((b.y+dimsBox(b)[1]).toFixed(6)))].sort((a,b)=>a-b);
-  for(const y of ys)for(const x of xs){const b={id:nextId,x,y,level,rot:false};if(valid(b)){nextId++;boxes.push(b);selected=b.id;syncBoxUI();redraw();return}}
+  for(const y of ys)for(const x of xs){const b={id:availableId,x,y,level,rot:false};if(valid(b)){nextId=Math.max(nextId,availableId+1);boxes.push(b);selected=b.id;syncBoxUI();redraw();return}}
  }
  status('No free position for another box');
 }
